@@ -1,0 +1,18 @@
+name: Validate Project
+
+on: [pull_request]
+
+jobs:
+  validate-project:
+    # ubuntu-latest provides many dependencies.
+    # See: https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout latest commit
+      uses: actions/checkout@v2
+    - name: Execute verification script - Validate source
+      run: ci/ci-exec.sh ci/bin/validate.sh
+      env:
+        GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
+        GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}

@@ -1,0 +1,23 @@
+name: Publish Release
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  publish-release:
+    # ubuntu-latest provides many dependencies.
+    # See: https://github.com/actions/virtual-environments/blob/master/images/linux/Ubuntu1804-README.md
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout latest commit
+      uses: actions/checkout@v2
+    - name: Execute publish script - Publish project artifacts
+      run: ci/ci-exec.sh ci/bin/publish.sh
+      env:
+        GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
+        GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
+        RELEASE_ENVIRONMENT: true
