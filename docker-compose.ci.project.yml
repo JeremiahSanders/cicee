@@ -1,0 +1,16 @@
+version: "3.7"
+
+##
+# Project-specific CI environment extensions
+##
+
+services:
+
+  ci-exec:
+    # depends_on:
+    #   - ci-generate-nuget-config
+    # environment:
+      # Environment variables with only a key are resolved to their values on the machine running (Docker) Compose.
+      #--
+      # Project
+      #--

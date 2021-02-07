@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+
+# shellcheck disable=SC2155
+
+###
+# Load the project's continuous integration environment.
+#   (CICEE v1.1.0)
+###
+
+# Context
+# declare
+# -r	Make names readonly. These names cannot then be assigned values by subsequent assignment statements or unset.
+# -x	Mark each name for export to subsequent commands via the environment.
+declare -x PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../.. && pwd)"
+
+# Source local environment, if available. Enables setting local defaults.
+CI_ENV_FILE="${PROJECT_ROOT}/ci/.env"
+if [[ -f "${CI_ENV_FILE}" ]]; then
+  source "${CI_ENV_FILE}" &&
+    printf "\nSourced '%s'.\n\n" "${CI_ENV_FILE}"
+fi
+
+# Application Metadata
+PROJECT_METADATA="${PROJECT_ROOT}/.project-metadata.json"
+if [ -f "$PROJECT_METADATA" ]; then
+  declare -x PROJECT_NAME="$(jq --raw-output 'if .name== null then "unknown-project" else .name end' "${PROJECT_METADATA}")"
+  declare -x PROJECT_TITLE="$(jq --raw-output 'if .title== null then "Unknown Project" else .title end' "${PROJECT_METADATA}")"
+  declare -x PROJECT_VERSION="$(jq --raw-output 'if .version== null then "0.0.0" else .version end' "${PROJECT_METADATA}")"
+else
+  declare -x PROJECT_NAME="unknown-project"
+  declare -x PROJECT_TITLE="Unknown Project"
+  declare -x PROJECT_VERSION="0.0.0"
+fi
+declare -x CURRENT_GIT_BRANCH="$(git branch | sed -n '/\* /s///p')"
+declare -x CURRENT_GIT_HASH="$(git log --pretty=format:'%h' -n 1)"
+
+# PROJECT_VERSION_DOTNET - .NET version string
+# PROJECT_VERSION_DIST   - SemVer version string
+if [ "${RELEASE_ENVIRONMENT:-false}" = true ]; then
+  declare -x PROJECT_VERSION_DOTNET="${PROJECT_VERSION}"
+  declare -x PROJECT_VERSION_DIST="${PROJECT_VERSION}"
+else
+  declare -x PROJECT_VERSION_DOTNET="${PROJECT_VERSION}-sha-${CURRENT_GIT_HASH}"
+  declare -x PROJECT_VERSION_DIST="${PROJECT_VERSION}+sha.${CURRENT_GIT_HASH}"
+fi
+declare -x DOCKER_IMAGE_TAG="${PROJECT_VERSION_DOTNET}"
+declare -x DOCKER_IMAGE_REPOSITORY="${DOCKER_IMAGE_REPOSITORY:-$PROJECT_NAME}"
+declare -x DOCKER_IMAGE="${DOCKER_IMAGE_REPOSITORY}:${DOCKER_IMAGE_TAG}"
+
+printf "\nLoaded %s version %s environment.\n\n\n" "${PROJECT_NAME}" "${PROJECT_VERSION_DIST}"
