@@ -24,7 +24,8 @@ source "${PROJECT_ROOT}/ci/lib/ci-env-load.sh" &&
 #--
 __compose() {
     # .NET Project publish
-    # "${PROJECT_ROOT}/ci/lib/dotnet-publish.sh"
+     "${PROJECT_ROOT}/ci/lib/dotnet-publish.sh" &&
+         "${PROJECT_ROOT}/ci/lib/dotnet-pack.sh"
 
     # Docker build
     # "${PROJECT_ROOT}/ci/lib/docker-build.sh"
