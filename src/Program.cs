@@ -1,12 +1,14 @@
-﻿using System;
+﻿using System.CommandLine;
+using System.Threading.Tasks;
 
 namespace Cicee
 {
-    class Program
+  class Program
+  {
+    static async Task Main(string[] args)
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Hello World!");
-        }
+      var rootCommand = CiceeRootCommand.Create();
+      await rootCommand.InvokeAsync(args);
     }
+  }
 }
