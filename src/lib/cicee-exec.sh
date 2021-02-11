@@ -23,11 +23,11 @@ declare -x LIB_ROOT="${LIB_ROOT:-$1}"
 declare -x PROJECT_ROOT="${PROJECT_ROOT:-$2}"
 declare -x CI_COMMAND="${CI_COMMAND:-$3}"
 declare -x CI_ENTRYPOINT="${CI_ENTRYPOINT:-${4:-}}"
-
+# shellcheck source=./ci-env-load.sh
 source "${LIB_ROOT}/ci-env-load.sh"
 
 "${LIB_ROOT}/ci-env-display.sh" &&
-    printf "Beginning Continuous Integration Containerized Execution...\n__\n  | Entrypoint   : %s\n  | Command      : %s\n  | Project Root : %s\n  | CICEE Library: %s\n\n" "${CI_ENTRYPOINT:-}" "${CI_COMMAND}" "${PROJECT_ROOT}" "${LIB_ROOT}"
+    printf "\n|__\nBeginning Continuous Integration Containerized Execution...\n__\n  | Entrypoint   : %s\n  | Command      : %s\n  | Project Root : %s\n  | CICEE Library: %s\n\n" "${CI_ENTRYPOINT:-}" "${CI_COMMAND}" "${PROJECT_ROOT}" "${LIB_ROOT}"
 
 declare -r DOCKERCOMPOSE_DEPENDENCIES="${PROJECT_ROOT}/docker-compose.ci.dependencies.yml"
 declare -r DOCKERCOMPOSE_CICEE="${LIB_ROOT}/docker-compose.yml"
