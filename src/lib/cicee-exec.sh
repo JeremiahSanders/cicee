@@ -19,9 +19,9 @@ set -o pipefail
 # CI_ENTRYPOINT - Container's Entrypoint
 
 # Provide fallbacks to environment variables by using arguments. (Windows doesn't pass the Environment dictionary to bash as it should.)
-declare -x LIB_ROOT="${LIB_ROOT:-$1}"
-declare -x PROJECT_ROOT="${PROJECT_ROOT:-$2}"
-declare -x CI_COMMAND="${CI_COMMAND:-$3}"
+declare -x LIB_ROOT="${LIB_ROOT:-${1}}"
+declare -x PROJECT_ROOT="${PROJECT_ROOT:-${2}}"
+declare -x CI_COMMAND="${CI_COMMAND:-${3}}"
 declare -x CI_ENTRYPOINT="${CI_ENTRYPOINT:-${4:-}}"
 # shellcheck source=./ci-env-load.sh
 source "${LIB_ROOT}/ci-env-load.sh"
