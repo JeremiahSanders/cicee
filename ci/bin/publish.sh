@@ -8,7 +8,7 @@
 set -o errexit
 # Fail if an unset variable is used.
 set -o nounset
-# Sets the exit code of a pipeline to that of the rightmost command to exit with a non-zero status, 
+# Sets the exit code of a pipeline to that of the rightmost command to exit with a non-zero status,
 # or zero if all commands of the pipeline exit successfully.
 set -o pipefail
 
@@ -23,15 +23,8 @@ source "${PROJECT_ROOT}/ci/lib/ci-env-load.sh" &&
 # Compose the project's artifacts, e.g., compiled binaries, Docker images.
 #--
 __compose() {
-    # .NET Project publish
-     "${PROJECT_ROOT}/ci/lib/dotnet-publish.sh" &&
-         "${PROJECT_ROOT}/ci/lib/dotnet-pack.sh"
-
-    # Docker build
-    # "${PROJECT_ROOT}/ci/lib/docker-build.sh"
-
-    # AWS CDK synth
-    # "${PROJECT_ROOT}/ci/lib/cdk-synth.sh"
+    "${PROJECT_ROOT}/ci/lib/dotnet-publish.sh" &&
+        "${PROJECT_ROOT}/ci/lib/dotnet-pack.sh"
 
     printf "Composition complete.\n\n"
 }
@@ -40,15 +33,11 @@ __compose() {
 # Publish the project's artifact composition.
 #--
 __publish() {
-    # AWS ECR login
-    # "${PROJECT_ROOT}/ci/lib/docker-login-aws-ecr-get-login-password.sh"
+    for packageFile in "${PROJECT_ROOT}"/build/dist/*.nupkg; do
+        dotnet nuget push "${packageFile}" --api-key "${NUGET_API_KEY}" --source https://api.nuget.org/v3/index.json &&
+            printf "\n  Pushed '%s'" "${packageFile}"
+    done
 
-    # Docker push
-    # "${PROJECT_ROOT}/ci/lib/docker-push.sh"
-
-    # AWS CDK deploy
-    # "${PROJECT_ROOT}/ci/lib/cdk-deploy.sh"
-    
     printf "Publishing complete.\n\n"
 }
 
