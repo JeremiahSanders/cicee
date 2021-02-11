@@ -5,12 +5,12 @@ version: "3.7"
 ##
 
 services:
-
   ci-exec:
     # depends_on:
     #   - ci-generate-nuget-config
-    # environment:
+    environment:
       # Environment variables with only a key are resolved to their values on the machine running (Docker) Compose.
       #--
       # Project
       #--
+      NUGET_API_KEY:
