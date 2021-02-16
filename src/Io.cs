@@ -1,5 +1,4 @@
 using System.IO;
-using Cicee.Exec;
 using LanguageExt;
 using LanguageExt.Common;
 
@@ -11,14 +10,14 @@ namespace Cicee
     {
       return Directory.Exists(directory)
         ? new Result<string>(directory)
-        : new Result<string>(new BadRequestException($"Directory '{directory}' does not exist."));
+        : new Result<string>(e: new DirectoryNotFoundException(message: $"Directory '{directory}' does not exist."));
     }
 
     public static Result<string> EnsureFileExists(string file)
     {
       return File.Exists(file)
         ? new Result<string>(file)
-        : new Result<string>(new BadRequestException($"File '{file}' does not exist."));
+        : new Result<string>(e: new FileNotFoundException(message: $"File '{file}' does not exist.", file));
     }
 
     public static Result<string> TryLoadFileString(string file)

@@ -13,10 +13,10 @@
 declare -x PROJECT_ROOT="${PROJECT_ROOT-:$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../.. && pwd)}"
 
 # Source local environment, if available. Enables setting local defaults.
-CI_ENV_FILE="${PROJECT_ROOT}/ci/.env"
-if [[ -f "${CI_ENV_FILE}" ]]; then
-  source "${CI_ENV_FILE}" &&
-    printf "\nSourced '%s'.\n\n" "${CI_ENV_FILE}"
+CI_ENV_INIT="${CI_ENV_INIT:-${PROJECT_ROOT}/ci/ci.env}"
+if [[ -f "${CI_ENV_INIT}" ]]; then
+  source "${CI_ENV_INIT}" &&
+    printf "\nSourced '%s'.\n\n" "${CI_ENV_INIT}"
 fi
 
 # Application Metadata
