@@ -12,10 +12,15 @@ namespace Cicee
       return Prelude.Try(() =>
         {
           var deserialized = JsonSerializer.Deserialize<T>(possibleJson,
-            new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
-          return deserialized ?? throw new Exception($"Failed to deserialize. Value:\n{possibleJson}");
+            options: new JsonSerializerOptions {PropertyNameCaseInsensitive = true});
+          return deserialized ?? throw new Exception(message: $"Failed to deserialize. Value:\n{possibleJson}");
         })
         .Try()!;
+    }
+
+    public static Result<string> TrySerialize<T>(T obj)
+    {
+      return Prelude.Try(() => JsonSerializer.Serialize(obj)).Try()!;
     }
   }
 }

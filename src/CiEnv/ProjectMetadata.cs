@@ -1,4 +1,4 @@
-namespace Cicee
+namespace Cicee.CiEnv
 {
   public record ProjectMetadata
   {

@@ -1,5 +1,6 @@
 ﻿using System.CommandLine;
 using System.Threading.Tasks;
+using Cicee.Commands;
 
 namespace Cicee
 {

@@ -1,7 +1,7 @@
 using System.CommandLine;
-using Cicee.Exec;
+using Cicee.Commands.Exec;
 
-namespace Cicee
+namespace Cicee.Commands
 {
   static class CiceeRootCommand
   {
