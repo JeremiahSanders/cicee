@@ -29,12 +29,20 @@ declare -r DOCKERCOMPOSE_DEPENDENCIES="${PROJECT_ROOT}/docker-compose.ci.depende
 declare -r DOCKERCOMPOSE_CICEE="${LIB_ROOT}/docker-compose.yml"
 declare -r DOCKERCOMPOSE_PROJECT="${PROJECT_ROOT}/docker-compose.ci.project.yml"
 
-declare -a PROJECT_FILE_ARGS=()
-if [[ -f "${DOCKERCOMPOSE_DEPENDENCIES}" ]]; then
-  PROJECT_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_DEPENDENCIES}")
-fi
+declare -a COMPOSE_FILE_ARGS=()
+# Use project docker-compose as the primary file (by loading it first). Affects docker container name generation.
 if [[ -f "${DOCKERCOMPOSE_PROJECT}" ]]; then
-  PROJECT_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT}")
+  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT}")
+fi
+# Add dependencies
+if [[ -f "${DOCKERCOMPOSE_DEPENDENCIES}" ]]; then
+  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_DEPENDENCIES}")
+fi
+# Add CICEE
+COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_CICEE}")
+# Re-add project, to load project settings last (to override all other dependencies, e.g., CICEE defaults).
+if [[ -f "${DOCKERCOMPOSE_PROJECT}" ]]; then
+  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT}")
 fi
 
 __arrange() {
@@ -54,8 +62,7 @@ __arrange() {
   }
   __pull_dependencies(){
     docker-compose \
-      --file "${DOCKERCOMPOSE_CICEE}" \
-      "${PROJECT_FILE_ARGS[@]}" \
+      "${COMPOSE_FILE_ARGS[@]}" \
       pull \
       --ignore-pull-failures \
       --include-deps \
@@ -70,8 +77,7 @@ __arrange() {
 
 __act() {
   docker-compose \
-    --file "${DOCKERCOMPOSE_CICEE}" \
-    "${PROJECT_FILE_ARGS[@]}" \
+    "${COMPOSE_FILE_ARGS[@]}" \
     up \
     --abort-on-container-exit \
     --build \
@@ -82,8 +88,7 @@ __act() {
 
 __cleanup() {
   docker-compose \
-    --file "${DOCKERCOMPOSE_CICEE}" \
-    "${PROJECT_FILE_ARGS[@]}" \
+    "${COMPOSE_FILE_ARGS[@]}" \
     down \
     --volumes \
     --remove-orphans
