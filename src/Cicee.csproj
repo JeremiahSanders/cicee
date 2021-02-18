@@ -15,7 +15,6 @@
     <Description>Continuous Integration Containerized Execution Environment</Description>
     <PackAsTool>true</PackAsTool>
     <PackageId>cicee</PackageId>
-    <PackageVersion>0.0.0</PackageVersion>
     <Product>cicee</Product>
     <Title>CICEE</Title>
     <ToolCommandName>cicee</ToolCommandName>
