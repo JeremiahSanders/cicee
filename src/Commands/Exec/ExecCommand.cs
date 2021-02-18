@@ -8,26 +8,34 @@ namespace Cicee.Commands.Exec
     private static Option CommandOption()
     {
       return new Option<string>(
-        aliases: new[] {"--command", "-c"},
-        description: "Execution command"
+        new[] {"--command", "-c"},
+        "Execution command"
       ) {IsRequired = false};
     }
 
     private static Option EntrypointOption()
     {
       return new Option<string?>(
-        aliases: new[] {"--entrypoint", "-e"},
-        description: "Execution entrypoint"
+        new[] {"--entrypoint", "-e"},
+        "Execution entrypoint"
+      ) {IsRequired = false};
+    }
+
+    private static Option ImageOption()
+    {
+      return new Option<string?>(
+        new[] {"--image", "-i"},
+        "Execution image. Overrides $PROJECT_ROOT/ci/Dockerfile."
       ) {IsRequired = false};
     }
 
     public static Command Create()
     {
-      var command = new Command(name: "exec", description: "Execute")
+      var command = new Command("exec", "Execute")
       {
-        ProjectRootOption.Create(), CommandOption(), EntrypointOption()
+        ProjectRootOption.Create(), CommandOption(), EntrypointOption(), ImageOption()
       };
-      command.Handler = CommandHandler.Create<string, string?, string?>(ExecEntrypoint.HandleAsync);
+      command.Handler = CommandHandler.Create<string, string?, string?, string?>(ExecEntrypoint.HandleAsync);
       return command;
     }
   }

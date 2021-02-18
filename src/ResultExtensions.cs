@@ -27,5 +27,10 @@ namespace Cicee
     {
       return result.Match(value => result, exception => new Result<T>(mapper(exception)));
     }
+
+    public static Either<Exception, T> ToEither<T>(this Result<T> result)
+    {
+      return result.Match(Prelude.Right<Exception,T>,Prelude.Left<Exception,T>);
+    }
   }
 }

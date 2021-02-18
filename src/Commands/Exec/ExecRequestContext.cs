@@ -9,6 +9,8 @@ namespace Cicee.Commands.Exec
     ProjectMetadata ProjectMetadata,
     string? Command,
     string? Entrypoint,
-    string? EnvironmentInitializationScriptPath
+    string? EnvironmentInitializationScriptPath,
+    string? Dockerfile,
+    string? Image
   );
 }

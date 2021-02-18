@@ -32,6 +32,12 @@ namespace Cicee.Tests.Unit.Commands.Exec
               Description: "Execution entrypoint",
               Aliases: new[] {"--entrypoint", "-e"},
               IsRequired: false
+            ),
+            new OptionValues(
+              Name: "image",
+              Description: "Execution image. Overrides $PROJECT_ROOT/ci/Dockerfile.",
+              Aliases: new[] {"--image", "-i"},
+              IsRequired: false
             )
           }
         );

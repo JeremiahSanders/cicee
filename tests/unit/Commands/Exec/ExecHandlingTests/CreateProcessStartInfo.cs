@@ -18,7 +18,9 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         ProjectMetadata: new ProjectMetadata {CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition()},
         Command: "ls",
         Entrypoint: "-al",
-        EnvironmentInitializationScriptPath: "ci/ci.env"
+        EnvironmentInitializationScriptPath: "ci/ci.env",
+        Dockerfile: "ci/Dockerfile",
+        Image: null
       );
     }
 
@@ -37,7 +39,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       var happyPathExpectedResult = baseExpectedResult with
       {
         Arguments =
-        $"-c \"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" CI_COMMAND=\\\"{happyPathRequest.Command}\\\" CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" CI_ENV_INIT=\\\"{happyPathRequest.EnvironmentInitializationScriptPath}\\\" {Path.Combine(path1: happyPathDependencies.GetLibraryRootPath(), path2: "cicee-exec.sh")}\"",
+        $"-c \"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" CI_COMMAND=\\\"{happyPathRequest.Command}\\\" CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" CI_ENV_INIT=\\\"{happyPathRequest.EnvironmentInitializationScriptPath}\\\" CI_EXEC_DOCKERFILE=\\\"{happyPathRequest.Dockerfile}\\\" {Path.Combine(path1: happyPathDependencies.GetLibraryRootPath(), path2: "cicee-exec.sh")}\"",
         Environment = happyPathDependencies.GetEnvironmentVariables()
       };
       var happyPathExpected = new Result<ProcessStartInfoResult>(happyPathExpectedResult);
