@@ -17,4 +17,5 @@ dotnet pack "${PROJECT_ROOT}/src" \
   -p:GenerateTargetFrameworkAttribute=false \
   -p:GenerateAssemblyInfo=false \
   -p:Version="${PROJECT_VERSION_DOTNET}" \
+  -p:PackageVersion="${PROJECT_VERSION_DOTNET}" \
   "$@"
