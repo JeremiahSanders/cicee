@@ -6,6 +6,7 @@ namespace Cicee.Commands.Exec
   public record ExecRequest(
     string ProjectRoot,
     string? Command,
-    string? Entrypoint
+    string? Entrypoint,
+    string? Image
   );
 }

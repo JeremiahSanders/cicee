@@ -7,7 +7,7 @@ namespace Cicee.Commands.Exec
 {
   public static class ExecEntrypoint
   {
-    public static async Task HandleAsync(string projectRoot, string? command, string? entrypoint)
+    public static async Task HandleAsync(string projectRoot, string? command, string? entrypoint, string? image)
     {
       static void SetExitCode(int exitCode)
       {
@@ -37,7 +37,8 @@ namespace Cicee.Commands.Exec
           request: new ExecRequest(
             projectRoot,
             command,
-            entrypoint
+            entrypoint,
+            image
           )
         ))
         .IfFail(exception =>

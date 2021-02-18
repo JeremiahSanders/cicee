@@ -27,23 +27,25 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="lib\cicee-exec.sh" />
     <Content Include="lib\cicee-exec.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <None Remove="lib\docker-compose.yml" />
+    <Content Include="lib\docker-compose.dockerfile.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="lib\docker-compose.image.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="lib\docker-compose.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="lib\Dockerfile" />
     <Content Include="lib\Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="lib\ci-env-display.sh" />
     <Content Include="lib\ci-env-display.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="lib\ci-env-load.sh" />
     <Content Include="lib\ci-env-load.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

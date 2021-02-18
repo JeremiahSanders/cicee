@@ -54,7 +54,8 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
           var ciEnvPath = Path.Combine(defaultProjectRoot, path2: "ci", path3: "ci.env");
           var projectMetadataPath = Path.Combine(defaultProjectRoot, path2: ".project-metadata.json");
           var ciceeExecPath = Path.Combine(defaultLibraryRoot, path2: "cicee-exec.sh");
-          return file == ciEnvPath || file == projectMetadataPath || file == ciceeExecPath
+          var ciDockerfilePath = Path.Combine(defaultProjectRoot, "ci", "Dockerfile");
+          return file == ciEnvPath || file == projectMetadataPath || file == ciceeExecPath || file == ciDockerfilePath
             ? new Result<string>(file)
             : new Result<string>(e: new FileNotFoundException(file));
         },
@@ -73,13 +74,15 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
           ),
         GetLibraryRootPath = () => defaultLibraryRoot
       };
-      var baseRequest = new ExecRequest(defaultProjectRoot, Command: "-al", Entrypoint: "ls");
+      var baseRequest = new ExecRequest(defaultProjectRoot, Command: "-al", Entrypoint: "ls", Image: null);
       var baseResult = new ExecRequestContext(
         baseRequest.ProjectRoot,
         defaultProjectMetadata,
         baseRequest.Command,
         baseRequest.Entrypoint,
-        EnvironmentInitializationScriptPath: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "ci.env")
+        EnvironmentInitializationScriptPath: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "ci.env"),
+        Dockerfile: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "Dockerfile"),
+        Image: null
       );
 
       var happyPathDependencies = baseDependencies;

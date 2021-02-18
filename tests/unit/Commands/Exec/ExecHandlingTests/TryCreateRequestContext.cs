@@ -50,7 +50,8 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         {
           var ciEnvPath = Path.Combine(defaultProjectRoot, path2: "ci", path3: "ci.env");
           var projectMetadataPath = Path.Combine(defaultProjectRoot, path2: ".project-metadata.json");
-          return file == ciEnvPath || file == projectMetadataPath
+          var ciDockerfilePath = Path.Combine(defaultProjectRoot, "ci", "Dockerfile");
+          return file == ciEnvPath || file == projectMetadataPath || file == ciDockerfilePath
             ? new Result<string>(file)
             : new Result<string>(e: new FileNotFoundException(file));
         },
@@ -62,13 +63,16 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
             : new Result<string>(e: new FileNotFoundException(file));
         }
       };
-      var baseRequest = new ExecRequest(defaultProjectRoot, Command: "-al", Entrypoint: "ls");
+      var baseRequest = new ExecRequest(defaultProjectRoot, Command: "-al", Entrypoint: "ls",
+        Image: null);
       var baseResult = new ExecRequestContext(
         baseRequest.ProjectRoot,
         defaultProjectMetadata,
         baseRequest.Command,
         baseRequest.Entrypoint,
-        EnvironmentInitializationScriptPath: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "ci.env")
+        EnvironmentInitializationScriptPath: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "ci.env"),
+        Dockerfile: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "Dockerfile"),
+        Image: null
       );
 
       var happyPathDependencies = baseDependencies;

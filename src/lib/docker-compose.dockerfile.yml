@@ -1,0 +1,7 @@
+version: "3.7"
+
+services:
+  ci-exec:
+    build:
+      context: "${CI_EXEC_CONTEXT}"
+      dockerfile: Dockerfile

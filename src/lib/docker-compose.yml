@@ -1,15 +1,11 @@
 version: "3.7"
 
-##
-# CICEE v1.1.0 environment
-#   Core CI environment definition
-##
-
 services:
 
   ci-generate-nuget-config:
+    image: cicee:latest
     build:
-      context: "${PROJECT_ROOT}/ci"
+      context: "${LIB_ROOT}"
       dockerfile: Dockerfile
     command: ci/lib/generate-nuget-config-github.sh /root/.nuget/NuGet
     working_dir: /code
@@ -27,7 +23,7 @@ services:
 
   ci-exec:
     build:
-      context: "${PROJECT_ROOT}/ci"
+      context: "${CI_EXEC_CONTEXT}"
       dockerfile: Dockerfile
     command: "${CI_COMMAND}"
     entrypoint: "${CI_ENTRYPOINT}"
