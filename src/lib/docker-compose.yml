@@ -2,29 +2,7 @@ version: "3.7"
 
 services:
 
-  ci-generate-nuget-config:
-    image: cicee:latest
-    build:
-      context: "${LIB_ROOT}"
-      dockerfile: Dockerfile
-    command: ci/lib/generate-nuget-config-github.sh /root/.nuget/NuGet
-    working_dir: /code
-    volumes:
-      - type: bind
-        source: "${PROJECT_ROOT}"
-        target: /code
-      - type: volume
-        source: nugetconfig
-        target: /root/.nuget/NuGet
-    environment:
-      # Environment variables with only a key are resolved to their values on the machine running (Docker) Compose.
-      GITHUB_OWNER:
-      GITHUB_AUTH_TOKEN:
-
   ci-exec:
-    build:
-      context: "${CI_EXEC_CONTEXT}"
-      dockerfile: Dockerfile
     command: "${CI_COMMAND}"
     entrypoint: "${CI_ENTRYPOINT}"
     working_dir: /code

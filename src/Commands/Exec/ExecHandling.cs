@@ -15,7 +15,6 @@ namespace Cicee.Commands.Exec
     private const string LibRoot = "LIB_ROOT";
     private const string CiCommand = "CI_COMMAND";
     private const string CiEntrypoint = "CI_ENTRYPOINT";
-    private const string CiExecDockerfile = "CI_EXEC_DOCKERFILE";
     private const string CiExecImage = "CI_EXEC_IMAGE";
     private const string CiInitScript = "CI_ENV_INIT";
     private const string CiceeExecScriptName = "cicee-exec.sh";
@@ -58,26 +57,49 @@ namespace Cicee.Commands.Exec
         .BindAsync(execContext => TryExecute(dependencies, execContext));
     }
 
+    private static string CreateCiDockerfilePath(ExecDependencies dependencies, ExecRequest request)
+    {
+      return Path.Combine(request.ProjectRoot, CiDirectoryName, "Dockerfile");
+    }
+
     public static Result<ExecRequestContext> TryCreateRequestContext(ExecDependencies dependencies, ExecRequest request)
     {
-      return ProjectMetadataLoader.TryLoad(
-          dependencies.EnsureDirectoryExists,
-          dependencies.EnsureFileExists,
-          dependencies.TryLoadFileString,
-          request.ProjectRoot
-        )
-        .Map(projectMetadata =>
-          {
-            var dockerfile = dependencies
-              .EnsureFileExists(Path.Combine(request.ProjectRoot, CiDirectoryName, "Dockerfile"))
-              .Match(file => (string?)file, _ => (string?)null);
-            return new ExecRequestContext(request.ProjectRoot, projectMetadata, request.Command, request.Entrypoint,
-              GetEnvironmentInitializationScriptPath(dependencies, request),
-              dockerfile,
-              request.Image
-            );
-          }
-        );
+      return
+        dependencies.EnsureDirectoryExists(request.ProjectRoot)
+          .Bind(validatedProjectRoot =>
+            ProjectMetadataLoader.TryLoad(
+                dependencies.EnsureDirectoryExists,
+                dependencies.EnsureFileExists,
+                dependencies.TryLoadFileString,
+                validatedProjectRoot
+              )
+              .Match(
+                value => new Result<ProjectMetadata>(value),
+                loadFailure =>
+                  // We failed to load metadata, but we know that the project root exists.
+                  new ProjectMetadata {Name = "unknown-project", Title = "Unknown Project", Version = "0.0.0"})
+          )
+          .Bind(projectMetadata => Require.AsResult.NotNullOrWhitespace(request.Image)
+            .BindLeft(_ => dependencies.EnsureFileExists(CreateCiDockerfilePath(dependencies, request)))
+            .MapLeft(exception =>
+              new BadRequestException(
+                $"Image argument was not provided and '{CreateCiDockerfilePath(dependencies, request)}; does not exist.",
+                exception)
+            )
+            .Map(_ => projectMetadata)
+          )
+          .Map(projectMetadata =>
+            {
+              var dockerfile = dependencies
+                .EnsureFileExists(Path.Combine(request.ProjectRoot, CiDirectoryName, "Dockerfile"))
+                .Match(file => (string?)file, _ => (string?)null);
+              return new ExecRequestContext(request.ProjectRoot, projectMetadata, request.Command, request.Entrypoint,
+                GetEnvironmentInitializationScriptPath(dependencies, request),
+                dockerfile,
+                request.Image
+              );
+            }
+          );
     }
 
     private static ExecRequestContext DisplayExecContext(
@@ -152,7 +174,6 @@ namespace Cicee.Commands.Exec
           ? NormalizeToLinuxPath(context.EnvironmentInitializationScriptPath)
           : null
       );
-      ConditionallyAdd(CiExecDockerfile, context.Dockerfile);
       ConditionallyAdd(CiExecImage, context.Image);
 
       return environment;
@@ -189,11 +210,16 @@ namespace Cicee.Commands.Exec
     {
       static Result<ExecRequestContext> RequireStartupCommand(ExecRequestContext context)
       {
-        return string.IsNullOrWhiteSpace(context.Command) &&
-               string.IsNullOrWhiteSpace(context.Entrypoint)
-          ? new Result<ExecRequestContext>(
-            new BadRequestException("At least one of command or entrypoint must be provided."))
-          : new Result<ExecRequestContext>(context);
+        // Require either a command
+        return Require.AsResult.NotNullOrWhitespace(context.Command)
+          .BindLeft(missingCommandException =>
+            // ... or an entrypoint
+            Require.AsResult.NotNullOrWhitespace(context.Entrypoint)
+          )
+          .MapLeft(exception =>
+            new BadRequestException("At least one of command or entrypoint must be provided.", exception)
+          )
+          .Map(_ => context);
       }
 
       Result<ExecRequestContext> RequireProjectRoot(ExecRequestContext contextWithStartupCommand)

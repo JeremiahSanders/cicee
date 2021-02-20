@@ -15,6 +15,14 @@ namespace Cicee
       return result.Match(binder, exception => new Result<NewSuccess>(exception));
     }
 
+    public static Result<TSuccess> BindLeft<TSuccess>(
+      this Result<TSuccess> result,
+      Func<Exception, Result<TSuccess>> binder
+    )
+    {
+      return result.Match(_ => result, binder);
+    }
+
     public static Task<Result<NewSuccess>> BindAsync<OldSuccess, NewSuccess>(
       this Result<OldSuccess> result,
       Func<OldSuccess, Task<Result<NewSuccess>>> binder
@@ -30,7 +38,7 @@ namespace Cicee
 
     public static Either<Exception, T> ToEither<T>(this Result<T> result)
     {
-      return result.Match(Prelude.Right<Exception,T>,Prelude.Left<Exception,T>);
+      return result.Match(Prelude.Right<Exception, T>, Prelude.Left<Exception, T>);
     }
   }
 }

@@ -18,14 +18,13 @@ set -o pipefail
 # CI_COMMAND - Container's Command
 # CI_ENTRYPOINT - Container's Entrypoint
 # CI_ENV_INIT - Initialization script
-# CI_EXEC_DOCKERFILE - Project CI dockerfile path.
 # CI_EXEC_IMAGE - Optional ci-exec service image. Overrides $PROJECT_ROOT/ci/Dockerfile.
 
 # shellcheck source=./ci-env-load.sh
 source "${LIB_ROOT}/ci-env-load.sh"
 
 "${LIB_ROOT}/ci-env-display.sh" &&
-    printf "\n|__\nBeginning Continuous Integration Containerized Execution...\n__\n  | Entrypoint   : %s\n  | Command      : %s\n  | Project Root : %s\n  | CICEE Library: %s\n\n" "${CI_ENTRYPOINT:-}" "${CI_COMMAND:-}" "${PROJECT_ROOT}" "${LIB_ROOT}"
+  printf "\n|__\nBeginning Continuous Integration Containerized Execution...\n__\n  | Entrypoint   : %s\n  | Command      : %s\n  | Project Root : %s\n  | CICEE Library: %s\n\n" "${CI_ENTRYPOINT:-}" "${CI_COMMAND:-}" "${PROJECT_ROOT}" "${LIB_ROOT}"
 
 declare -r DOCKERCOMPOSE_DEPENDENCIES="${PROJECT_ROOT}/docker-compose.ci.dependencies.yml"
 declare -r DOCKERCOMPOSE_CICEE="${LIB_ROOT}/docker-compose.yml"
@@ -61,15 +60,7 @@ if [[ -f "${DOCKERCOMPOSE_PROJECT}" ]]; then
 fi
 
 __arrange() {
-  __build_cicee(){
-    docker build \
-        --rm \
-        --pull \
-        --tag "cicee:latest" \
-        --file "${LIB_ROOT}/Dockerfile" \
-        "${LIB_ROOT}"
-  }
-  __build_project_ci(){
+  __build_project_ci() {
     if [[ -f "${PROJECT_ROOT}/ci/Dockerfile" ]]; then
       docker build \
         --rm \
@@ -77,18 +68,17 @@ __arrange() {
         "${PROJECT_ROOT}/ci"
     fi
   }
-  __pull_dependencies(){
+  __pull_dependencies() {
     docker-compose \
       "${COMPOSE_FILE_ARGS[@]}" \
       pull \
       --ignore-pull-failures \
       --include-deps \
       ci-exec
-    
+
   }
   # Build and tag the base, library CI environment image. Then build the project-specific environment image. Finally, pull the compose stack.
-  __build_cicee &&
-    __build_project_ci &&
+  __build_project_ci &&
     __pull_dependencies
 }
 

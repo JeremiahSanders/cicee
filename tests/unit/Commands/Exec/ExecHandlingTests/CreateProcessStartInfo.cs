@@ -14,12 +14,12 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     private static ExecRequestContext CreateExecRequestContext()
     {
       return new(
-        ProjectRoot: "/sample-project",
-        ProjectMetadata: new ProjectMetadata {CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition()},
-        Command: "ls",
-        Entrypoint: "-al",
-        EnvironmentInitializationScriptPath: "ci/ci.env",
-        Dockerfile: "ci/Dockerfile",
+        "/sample-project",
+        new ProjectMetadata {CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition()},
+        "ls",
+        "-al",
+        "ci/ci.env",
+        "ci/Dockerfile",
         Image: null
       );
     }
@@ -29,9 +29,9 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       var baseDependencies = ExecHandlingTestHelpers.CreateDependencies();
       var baseRequest = CreateExecRequestContext();
       var baseExpectedResult = new ProcessStartInfoResult(
-        FileName: "bash",
-        Arguments: "-c",
-        Environment: baseDependencies.GetEnvironmentVariables()
+        "bash",
+        "-c",
+        baseDependencies.GetEnvironmentVariables()
       );
 
       var happyPathDependencies = baseDependencies;
@@ -39,7 +39,12 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       var happyPathExpectedResult = baseExpectedResult with
       {
         Arguments =
-        $"-c \"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" CI_COMMAND=\\\"{happyPathRequest.Command}\\\" CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" CI_ENV_INIT=\\\"{happyPathRequest.EnvironmentInitializationScriptPath}\\\" CI_EXEC_DOCKERFILE=\\\"{happyPathRequest.Dockerfile}\\\" {Path.Combine(path1: happyPathDependencies.GetLibraryRootPath(), path2: "cicee-exec.sh")}\"",
+        $"-c \"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" " +
+        $"LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" " +
+        $"CI_COMMAND=\\\"{happyPathRequest.Command}\\\" " +
+        $"CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" " +
+        $"CI_ENV_INIT=\\\"{happyPathRequest.EnvironmentInitializationScriptPath}\\\" " +
+        $"{Path.Combine(happyPathDependencies.GetLibraryRootPath(), "cicee-exec.sh")}\"",
         Environment = happyPathDependencies.GetEnvironmentVariables()
       };
       var happyPathExpected = new Result<ProcessStartInfoResult>(happyPathExpectedResult);
@@ -50,7 +55,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     }
 
     [Theory]
-    [MemberData(memberName: nameof(GenerateTestCases))]
+    [MemberData(nameof(GenerateTestCases))]
     public void ReturnsExpectedProcessStartInfo(
       ExecDependencies dependencies,
       ExecRequestContext execRequestContext,
@@ -59,7 +64,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     {
       var actualResult = ExecHandling.CreateProcessStartInfo(dependencies, execRequestContext)
         .Map(result => new ProcessStartInfoResult(result.FileName, result.Arguments,
-          Environment: new Dictionary<string, string>(result.Environment)));
+          new Dictionary<string, string>(result.Environment)));
 
       expectedResult.IfSucc(expected =>
       {
@@ -70,8 +75,8 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
           Assert.Equal(
             expected.Environment,
             // Selecting only those which are expected because actual keys will contain everything from the current test execution process (when ProcessStartInfo is created).
-            actual: actual.Environment.Where(kvp => expected.Environment.Keys.Contains(kvp.Key)),
-            comparer: new KeyValuePairValueComparer<string, string>()
+            actual.Environment.Where(kvp => expected.Environment.Keys.Contains(kvp.Key)),
+            new KeyValuePairValueComparer<string, string>()
           );
         });
         actualResult.IfFail(actualException =>
@@ -83,11 +88,11 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       {
         actualResult.IfSucc(actual =>
         {
-          throw new Exception(message: "Should have failed");
+          throw new Exception("Should have failed");
         });
         actualResult.IfFail(actual =>
         {
-          Assert.Equal(expected: exception.GetType(), actual: actual.GetType());
+          Assert.Equal(exception.GetType(), actual.GetType());
           Assert.Equal(exception.Message, actual.Message);
         });
       });
