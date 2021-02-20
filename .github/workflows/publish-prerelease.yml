@@ -17,6 +17,7 @@ jobs:
     - name: Execute publish script - Publish project artifacts
       run: ci/ci-exec.sh ci/bin/publish.sh
       env:
+        DRY_RUN: true
         GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
         GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
         NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
