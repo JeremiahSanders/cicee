@@ -12,30 +12,35 @@ set -o nounset
 # or zero if all commands of the pipeline exit successfully.
 set -o pipefail
 
-# Context
+# Context (provided by CICEE)
+# --------
 # PROJECT_ROOT - Project root directory
 # LIB_ROOT - CICEE library root directory
 # CI_COMMAND - Container's Command
 # CI_ENTRYPOINT - Container's Entrypoint
 # CI_ENV_INIT - Initialization script
-# CI_EXEC_IMAGE - Optional ci-exec service image. Overrides $PROJECT_ROOT/ci/Dockerfile.
+# CI_EXEC_CONTEXT - ci-exec service build context. Defaults to $PROJECT_ROOT/ci. If directory exists and contains a Dockerfile, that is used.
+# CI_EXEC_IMAGE - Optional ci-exec service image. Overrides $CI_EXEC_CONTEXT/Dockerfile.
 
-# shellcheck source=./ci-env-load.sh
-source "${LIB_ROOT}/ci-env-load.sh"
+printf "\n|__\nBeginning Continuous Integration Containerized Execution...\n__\n"
+printf "  | Entrypoint   : %s\n" "${CI_ENTRYPOINT:-}"
+printf "  | Command      : %s\n" "${CI_COMMAND:-}"
+printf "  | Project Root : %s\n" "${PROJECT_ROOT}"
+printf "  | CICEE Library: %s\n" "${LIB_ROOT}"
+printf "  | Image        : %s\n" "${CI_EXEC_IMAGE:-Not applicable. Using Dockerfile.}"
+printf "\n\n"
 
-"${LIB_ROOT}/ci-env-display.sh" &&
-  printf "\n|__\nBeginning Continuous Integration Containerized Execution...\n__\n  | Entrypoint   : %s\n  | Command      : %s\n  | Project Root : %s\n  | CICEE Library: %s\n\n" "${CI_ENTRYPOINT:-}" "${CI_COMMAND:-}" "${PROJECT_ROOT}" "${LIB_ROOT}"
+# Source local environment, if available. Enables setting local defaults.
+CI_ENV_INIT="${CI_ENV_INIT:-${PROJECT_ROOT}/ci/ci.env}"
+if [[ -f "${CI_ENV_INIT}" ]]; then
+  # shellcheck disable=SC1090
+  source "${CI_ENV_INIT}" &&
+    printf "\nSourced '%s'.\n\n" "${CI_ENV_INIT}"
+fi
 
 declare -r DOCKERCOMPOSE_DEPENDENCIES="${PROJECT_ROOT}/docker-compose.ci.dependencies.yml"
 declare -r DOCKERCOMPOSE_CICEE="${LIB_ROOT}/docker-compose.yml"
 declare -r DOCKERCOMPOSE_PROJECT="${PROJECT_ROOT}/docker-compose.ci.project.yml"
-
-# Define the ci-exec service build context
-if [[ -f "${PROJECT_ROOT}/ci/Dockerfile" ]]; then
-  declare -rx CI_EXEC_CONTEXT="${PROJECT_ROOT}/ci"
-else
-  declare -rx CI_EXEC_CONTEXT="${LIB_ROOT}"
-fi
 
 declare -a COMPOSE_FILE_ARGS=()
 # Use project docker-compose as the primary file (by loading it first). Affects docker container name generation.

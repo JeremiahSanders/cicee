@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -17,14 +18,19 @@ namespace Cicee.Commands.Exec
     private const string CiEntrypoint = "CI_ENTRYPOINT";
     private const string CiExecImage = "CI_EXEC_IMAGE";
     private const string CiInitScript = "CI_ENV_INIT";
+
+    /// <summary>
+    ///   Build context for ci-exec service.
+    /// </summary>
+    private const string CiExecContext = "CI_EXEC_CONTEXT";
+
     private const string CiceeExecScriptName = "cicee-exec.sh";
 
     public static Result<ProcessStartInfo> CreateProcessStartInfo(
       ExecDependencies dependencies,
       ExecRequestContext execRequestContext)
     {
-      var libPath = dependencies.GetLibraryRootPath();
-      var ciceeExecPath = Path.Combine(libPath, CiceeExecScriptName);
+      var ciceeExecPath = Path.Combine(dependencies.GetLibraryRootPath(), CiceeExecScriptName);
       return dependencies.EnsureFileExists(ciceeExecPath)
         .MapLeft(
           exception => exception is FileNotFoundException
@@ -33,12 +39,13 @@ namespace Cicee.Commands.Exec
         )
         .Bind(validatedCiceeExecPath =>
         {
-          var environment = GetExecEnvironment(dependencies, execRequestContext, libPath);
-
           // TODO: See if the path can be inferred correctly, rather than hacking it into Linux assumptions.
           var ciceeExecLinuxPath = NormalizeToLinuxPath(validatedCiceeExecPath);
 
-          return ProcessHelpers.TryCreateBashProcessStartInfo(environment, ciceeExecLinuxPath);
+          return ProcessHelpers.TryCreateBashProcessStartInfo(
+            GetExecEnvironment(dependencies, execRequestContext),
+            ciceeExecLinuxPath
+          );
         });
     }
 
@@ -47,6 +54,8 @@ namespace Cicee.Commands.Exec
       ExecRequest request
     )
     {
+      dependencies.StandardOutWriteLine("-- cicee --\n");
+      dependencies.StandardOutWriteLine($"Beginning cicee exec...\n");
       dependencies.StandardOutWriteLine($"Project root: {request.ProjectRoot}");
       dependencies.StandardOutWriteLine($"Entrypoint  : {request.Entrypoint}");
       dependencies.StandardOutWriteLine($"Command     : {request.Command}");
@@ -107,21 +116,40 @@ namespace Cicee.Commands.Exec
       ExecRequestContext execRequestContext
     )
     {
-      dependencies.StandardOutWriteLine("Project metadata loaded.");
-      dependencies.StandardOutWriteLine("Environment:");
-      var environmentDisplay =
-        ProjectEnvironmentHelpers.GetEnvironmentDisplay(dependencies.GetEnvironmentVariables, execRequestContext);
-      if (environmentDisplay.Any())
+      void WriteEnvironmentVariables(IReadOnlyDictionary<string, string> environmentDisplay)
       {
-        foreach (var (key, value) in environmentDisplay)
+        var width = environmentDisplay.Keys.Max(value => value.Length) + 1;
+        foreach (var (key, value) in environmentDisplay.OrderBy(kvp => kvp.Key))
         {
-          dependencies.StandardOutWriteLine($"  {key}: {value}");
+          dependencies.StandardOutWriteLine($"  {key.PadRight(width, paddingChar: ' ')}: {value}");
         }
       }
-      else
+
+      void DisplayProjectEnvironmentValues()
       {
-        dependencies.StandardOutWriteLine("  No environment defined.");
+        var environmentDisplay =
+          ProjectEnvironmentHelpers.GetEnvironmentDisplay(dependencies.GetEnvironmentVariables, execRequestContext);
+        dependencies.StandardOutWriteLine("CI Environment:");
+        if (environmentDisplay.Any())
+        {
+          WriteEnvironmentVariables(environmentDisplay);
+        }
+        else
+        {
+          dependencies.StandardOutWriteLine("  No CI environment variables defined.");
+        }
       }
+
+      void DisplayExecEnvironmentValues()
+      {
+        var environmentDisplay = GetExecEnvironment(dependencies, execRequestContext);
+        dependencies.StandardOutWriteLine("CICEE Execution Environment:");
+        WriteEnvironmentVariables(environmentDisplay);
+      }
+
+
+      DisplayProjectEnvironmentValues();
+      DisplayExecEnvironmentValues();
 
       return execRequestContext;
     }
@@ -134,28 +162,21 @@ namespace Cicee.Commands.Exec
       return envPaths
         .Select(relativeFileName => Path.Combine(request.ProjectRoot, CiDirectoryName, relativeFileName))
         .FirstOrDefault(relativeFileName =>
-          dependencies.EnsureFileExists(relativeFileName)
-            .Match(
-              _ => true,
-              _ =>
-              {
-                dependencies.StandardOutWriteLine(
-                  $"No project environment initialization script found in '{CiDirectoryName}' directory.");
-                return false;
-              })
+          dependencies.EnsureFileExists(relativeFileName).Match(_ => true, _ => false)
         );
     }
 
     private static IReadOnlyDictionary<string, string> GetExecEnvironment(
       ExecDependencies dependencies,
-      ExecRequestContext context,
-      string libPath
+      ExecRequestContext context
     )
     {
       var environment =
         new Dictionary<string, string>
         {
-          [ProjectRoot] = NormalizeToLinuxPath(context.ProjectRoot), [LibRoot] = NormalizeToLinuxPath(libPath)
+          [CiExecContext] = NormalizeToLinuxPath(Path.Combine(context.ProjectRoot, CiDirectoryName)),
+          [ProjectRoot] = NormalizeToLinuxPath(context.ProjectRoot),
+          [LibRoot] = NormalizeToLinuxPath(dependencies.GetLibraryRootPath())
         };
 
       void ConditionallyAdd(string key, string? possibleValue)
