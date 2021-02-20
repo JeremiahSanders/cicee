@@ -39,9 +39,6 @@
     <Content Include="lib\docker-compose.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="lib\Dockerfile">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="lib\ci-env-display.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

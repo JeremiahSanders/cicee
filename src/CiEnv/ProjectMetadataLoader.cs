@@ -16,11 +16,11 @@ namespace Cicee.CiEnv
     {
       const string metadataName = ".project-metadata.json";
       return ensureDirectoryExists(projectRoot)
-        .Bind(validatedRoot => ensureFileExists(arg: Path.Combine(validatedRoot, metadataName)))
+        .Bind(validatedRoot => ensureFileExists(Path.Combine(validatedRoot, metadataName)))
         .Bind(validatedFile => tryLoadFileString(validatedFile).MapLeft(loadingFailure =>
-          new BadRequestException(message: "Failed to load project metadata.", loadingFailure)))
+          new BadRequestException("Failed to load project metadata.", loadingFailure)))
         .Bind(content => Json.TryDeserialize<ProjectMetadata>(content).MapLeft(deserializationFailure =>
-          new BadRequestException(message: "Failed to deserialize project metadata.", deserializationFailure)));
+          new BadRequestException("Failed to deserialize project metadata.", deserializationFailure)));
     }
   }
 }

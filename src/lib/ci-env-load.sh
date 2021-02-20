@@ -6,6 +6,14 @@
 # Load the project's continuous integration environment.
 ###
 
+# Fail or exit immediately if there is an error.
+set -o errexit
+# Fail if an unset variable is used.
+set -o nounset
+# Sets the exit code of a pipeline to that of the rightmost command to exit with a non-zero status,
+# or zero if all commands of the pipeline exit successfully.
+set -o pipefail
+
 # Context
 # declare
 # -r	Make names readonly. These names cannot then be assigned values by subsequent assignment statements or unset.
