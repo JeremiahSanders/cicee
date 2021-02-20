@@ -39,7 +39,9 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       var happyPathExpectedResult = baseExpectedResult with
       {
         Arguments =
-        $"-c \"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" " +
+        "-c \"" +
+        $"CI_EXEC_CONTEXT=\\\"{Path.Combine(happyPathRequest.ProjectRoot, "ci")}\\\" " +
+        $"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" " +
         $"LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" " +
         $"CI_COMMAND=\\\"{happyPathRequest.Command}\\\" " +
         $"CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" " +
