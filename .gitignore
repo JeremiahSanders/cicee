@@ -469,8 +469,8 @@ typings/
 
 # Build artifacts
 build/
-# JDSENV
-#   JDSENV library scripts
+# CICEE
+#   CICEE library scripts
 !ci/bin/
 #   .NET CI artifacts
 ci-bin/
