@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -11,7 +10,7 @@ namespace Cicee.Commands.Exec
 {
   public static class ExecHandling
   {
-    private const string CiDirectoryName = "ci";
+    private const string CiDirectoryName = Conventions.CiDirectoryName;
     private const string ProjectRoot = "PROJECT_ROOT";
     private const string LibRoot = "LIB_ROOT";
     private const string CiCommand = "CI_COMMAND";
@@ -54,8 +53,7 @@ namespace Cicee.Commands.Exec
       ExecRequest request
     )
     {
-      dependencies.StandardOutWriteLine("-- cicee --\n");
-      dependencies.StandardOutWriteLine($"Beginning cicee exec...\n");
+      dependencies.StandardOutWriteLine("Beginning exec...\n");
       dependencies.StandardOutWriteLine($"Project root: {request.ProjectRoot}");
       dependencies.StandardOutWriteLine($"Entrypoint  : {request.Entrypoint}");
       dependencies.StandardOutWriteLine($"Command     : {request.Command}");

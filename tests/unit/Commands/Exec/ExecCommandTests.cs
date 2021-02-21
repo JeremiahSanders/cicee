@@ -12,7 +12,7 @@ namespace Cicee.Tests.Unit.Commands.Exec
       {
         var expected = new CommandValues(
           Name: "exec",
-          Description: "Execute",
+          Description: "Execute a command in a containerized execution environment.",
           Options: new[]
           {
             new OptionValues(

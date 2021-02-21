@@ -29,6 +29,9 @@
     <Content Include="lib\cicee-exec.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="templates\init\Template.Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <None Remove="lib\docker-compose.yml" />
     <Content Include="lib\docker-compose.dockerfile.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -37,6 +40,22 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="lib\docker-compose.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="templates\init\Dockerfile" />
+    <Content Include="templates\init\Default.Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="templates\init\example.env" />
+    <Content Include="templates\init\example.ci.env">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="templates\init\docker-compose.ci.project.yml" />
+    <Content Include="templates\init\docker-compose.ci.project.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <None Remove="templates\init\docker-compose.ci.dependencies.yml" />
+    <Content Include="templates\init\docker-compose.ci.dependencies.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

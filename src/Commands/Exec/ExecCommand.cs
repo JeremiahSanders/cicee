@@ -31,7 +31,7 @@ namespace Cicee.Commands.Exec
 
     public static Command Create()
     {
-      var command = new Command("exec", "Execute")
+      var command = new Command("exec", "Execute a command in a containerized execution environment.")
       {
         ProjectRootOption.Create(), CommandOption(), EntrypointOption(), ImageOption()
       };
