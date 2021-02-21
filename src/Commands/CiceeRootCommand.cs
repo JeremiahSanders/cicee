@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Cicee.Commands.Exec;
+using Cicee.Commands.Init;
 
 namespace Cicee.Commands
 {
@@ -9,7 +10,8 @@ namespace Cicee.Commands
     {
       var command = new RootCommand("cicee")
       {
-        ExecCommand.Create()
+        ExecCommand.Create(),
+        InitCommand.Create(),
       };
       return command;
     }

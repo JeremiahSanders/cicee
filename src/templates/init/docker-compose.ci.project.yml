@@ -1,0 +1,17 @@
+version: "3.7"
+
+##
+# Project-specific CI environment extensions
+##
+
+services:
+
+  # cicee execution service.
+  ci-exec:
+    # depends_on:
+    #   - pg
+    # environment:
+      # Environment variables with only a key are resolved to their values on the machine running (Docker) Compose.
+      #--
+      # Project
+      #--

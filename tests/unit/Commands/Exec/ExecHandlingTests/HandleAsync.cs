@@ -102,29 +102,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     {
       var actualResult = await ExecHandling.HandleAsync(dependencies, execRequest);
 
-      expectedResult.IfSucc(expected =>
-      {
-        actualResult.IfSucc(actual =>
-        {
-          Assert.Equal(expected, actual);
-        });
-        actualResult.IfFail(actualException =>
-        {
-          throw actualException;
-        });
-      });
-      expectedResult.IfFail(exception =>
-      {
-        actualResult.IfSucc(actual =>
-        {
-          throw new Exception(message: "Should have failed");
-        });
-        actualResult.IfFail(actual =>
-        {
-          Assert.Equal(expected: exception.GetType(), actual: actual.GetType());
-          Assert.Equal(exception.Message, actual.Message);
-        });
-      });
+      Assertions.Results.Equal(expectedResult, actualResult);
     }
   }
 }
