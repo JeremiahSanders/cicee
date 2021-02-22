@@ -11,6 +11,7 @@ namespace Cicee.Commands.Exec
   public static class ExecHandling
   {
     private const string CiDirectoryName = Conventions.CiDirectoryName;
+    private const string ProjectName = "PROJECT_NAME";
     private const string ProjectRoot = "PROJECT_ROOT";
     private const string LibRoot = "LIB_ROOT";
     private const string CiCommand = "CI_COMMAND";
@@ -173,6 +174,7 @@ namespace Cicee.Commands.Exec
         new Dictionary<string, string>
         {
           [CiExecContext] = NormalizeToLinuxPath(Path.Combine(context.ProjectRoot, CiDirectoryName)),
+          [ProjectName] = context.ProjectMetadata.Name,
           [ProjectRoot] = NormalizeToLinuxPath(context.ProjectRoot),
           [LibRoot] = NormalizeToLinuxPath(dependencies.GetLibraryRootPath())
         };

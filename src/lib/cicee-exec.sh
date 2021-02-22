@@ -14,6 +14,7 @@ set -o pipefail
 
 # Context (provided by CICEE)
 # --------
+# PROJECT_NAME - Project name
 # PROJECT_ROOT - Project root directory
 # LIB_ROOT - CICEE library root directory
 # CI_COMMAND - Container's Command
@@ -102,7 +103,8 @@ __arrange() {
 }
 
 __act() {
-  docker-compose \
+  COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
+    docker-compose \
     "${COMPOSE_FILE_ARGS[@]}" \
     up \
     --abort-on-container-exit \
@@ -113,7 +115,8 @@ __act() {
 }
 
 __cleanup() {
-  docker-compose \
+  COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
+    docker-compose \
     "${COMPOSE_FILE_ARGS[@]}" \
     down \
     --volumes \

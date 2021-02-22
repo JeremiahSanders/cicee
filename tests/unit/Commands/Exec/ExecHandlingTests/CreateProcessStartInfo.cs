@@ -15,7 +15,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     {
       return new(
         "/sample-project",
-        new ProjectMetadata {CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition()},
+        new ProjectMetadata {CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition(), Name = "sample-project", Title = "Sample Project", Version = "0.7.2"},
         "ls",
         "-al",
         "ci/ci.env",
@@ -41,6 +41,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         Arguments =
         "-c \"" +
         $"CI_EXEC_CONTEXT=\\\"{Path.Combine(happyPathRequest.ProjectRoot, "ci")}\\\" " +
+        $"PROJECT_NAME=\\\"{happyPathRequest.ProjectMetadata.Name}\\\" " +
         $"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" " +
         $"LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" " +
         $"CI_COMMAND=\\\"{happyPathRequest.Command}\\\" " +

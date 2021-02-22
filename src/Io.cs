@@ -62,6 +62,14 @@ namespace Cicee
           );
       }
 
+      void EnsureDirectoryExists(){
+        var destinationDirectory = Path.GetDirectoryName(destination);
+        if (!Directory.Exists(destinationDirectory))
+        {
+          Directory.CreateDirectory(destinationDirectory!);
+        }
+      }
+
       return Prelude.Try(() =>
       {
         return Prelude.pipe(
@@ -70,6 +78,7 @@ namespace Cicee
           InterpolateValues,
           contents =>
         {
+          EnsureDirectoryExists();
           File.WriteAllText(destination, contents);
           return (source, destination);
         });
