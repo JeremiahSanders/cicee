@@ -64,8 +64,15 @@ namespace Cicee
 
       return Prelude.Try(() =>
       {
-        File.WriteAllText(destination, InterpolateValues(File.ReadAllText(source)));
-        return (source, destination);
+        return Prelude.pipe(
+          source,
+          File.ReadAllText,
+          InterpolateValues,
+          contents =>
+        {
+          File.WriteAllText(destination, contents);
+          return (source, destination);
+        });
       }).Try();
     }
   }
