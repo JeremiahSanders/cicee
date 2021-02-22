@@ -50,12 +50,12 @@
     <Content Include="templates\init\example.ci.env">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="templates\init\docker-compose.ci.project.yml" />
-    <Content Include="templates\init\docker-compose.ci.project.yml">
+    <None Remove="templates\init\docker-compose.project.yml" />
+    <Content Include="templates\init\docker-compose.project.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="templates\init\docker-compose.ci.dependencies.yml" />
-    <Content Include="templates\init\docker-compose.ci.dependencies.yml">
+    <None Remove="templates\init\docker-compose.dependencies.yml" />
+    <Content Include="templates\init\docker-compose.dependencies.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
