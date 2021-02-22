@@ -62,10 +62,26 @@ namespace Cicee
           );
       }
 
+      void EnsureDirectoryExists(){
+        var destinationDirectory = Path.GetDirectoryName(destination);
+        if (!Directory.Exists(destinationDirectory))
+        {
+          Directory.CreateDirectory(destinationDirectory!);
+        }
+      }
+
       return Prelude.Try(() =>
       {
-        File.WriteAllText(destination, InterpolateValues(File.ReadAllText(source)));
-        return (source, destination);
+        return Prelude.pipe(
+          source,
+          File.ReadAllText,
+          InterpolateValues,
+          contents =>
+        {
+          EnsureDirectoryExists();
+          File.WriteAllText(destination, contents);
+          return (source, destination);
+        });
       }).Try();
     }
   }

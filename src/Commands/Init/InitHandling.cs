@@ -72,12 +72,12 @@ namespace Cicee.Commands.Init
             dependencies.CombinePath(ciPath, "example.ci.env")
           ),
           new FileCopyRequest(
-            dependencies.CombinePath(initTemplatesPath, "docker-compose.ci.dependencies.yml"),
-            dependencies.CombinePath(validatedRequest.ProjectRoot, "docker-compose.ci.dependencies.yml")
+            dependencies.CombinePath(initTemplatesPath, "docker-compose.dependencies.yml"),
+            dependencies.CombinePath(ciPath, "docker-compose.dependencies.yml")
           ),
           new FileCopyRequest(
-            dependencies.CombinePath(initTemplatesPath, "docker-compose.ci.project.yml"),
-            dependencies.CombinePath(validatedRequest.ProjectRoot, "docker-compose.ci.project.yml")
+            dependencies.CombinePath(initTemplatesPath, "docker-compose.project.yml"),
+            dependencies.CombinePath(ciPath, "docker-compose.project.yml")
           )
         };
       }
