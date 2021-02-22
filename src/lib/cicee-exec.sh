@@ -38,18 +38,28 @@ if [[ -f "${CI_ENV_INIT}" ]]; then
     printf "\nSourced '%s'.\n\n" "${CI_ENV_INIT}"
 fi
 
-declare -r DOCKERCOMPOSE_DEPENDENCIES="${PROJECT_ROOT}/docker-compose.ci.dependencies.yml"
+declare -r DOCKERCOMPOSE_DEPENDENCIES_CI="${PROJECT_ROOT}/ci/docker-compose.dependencies.yml"
+declare -r DOCKERCOMPOSE_DEPENDENCIES_ROOT="${PROJECT_ROOT}/docker-compose.ci.dependencies.yml"
 declare -r DOCKERCOMPOSE_CICEE="${LIB_ROOT}/docker-compose.yml"
-declare -r DOCKERCOMPOSE_PROJECT="${PROJECT_ROOT}/docker-compose.ci.project.yml"
+declare -r DOCKERCOMPOSE_PROJECT_CI="${PROJECT_ROOT}/ci/docker-compose.project.yml"
+declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project.yml"
 
 declare -a COMPOSE_FILE_ARGS=()
 # Use project docker-compose as the primary file (by loading it first). Affects docker container name generation.
-if [[ -f "${DOCKERCOMPOSE_PROJECT}" ]]; then
-  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT}")
+if [[ -f "${DOCKERCOMPOSE_PROJECT_CI}" ]]; then
+  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT_CI}")
+else
+  if [[ -f "${DOCKERCOMPOSE_PROJECT_ROOT}" ]]; then
+    COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT_ROOT}")
+  fi
 fi
 # Add dependencies
-if [[ -f "${DOCKERCOMPOSE_DEPENDENCIES}" ]]; then
-  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_DEPENDENCIES}")
+if [[ -f "${DOCKERCOMPOSE_DEPENDENCIES_CI}" ]]; then
+  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_DEPENDENCIES_CI}")
+else
+  if [[ -f "${DOCKERCOMPOSE_DEPENDENCIES_ROOT}" ]]; then
+    COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_DEPENDENCIES_ROOT}")
+  fi
 fi
 # Add CICEE
 COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_CICEE}")
@@ -60,8 +70,12 @@ else
   COMPOSE_FILE_ARGS+=("--file" "${LIB_ROOT}/docker-compose.dockerfile.yml")
 fi
 # Re-add project, to load project settings last (to override all other dependencies, e.g., CICEE defaults).
-if [[ -f "${DOCKERCOMPOSE_PROJECT}" ]]; then
-  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT}")
+if [[ -f "${DOCKERCOMPOSE_PROJECT_CI}" ]]; then
+  COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT_CI}")
+else
+  if [[ -f "${DOCKERCOMPOSE_PROJECT_ROOT}" ]]; then
+    COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_PROJECT_ROOT}")
+  fi
 fi
 
 __arrange() {
