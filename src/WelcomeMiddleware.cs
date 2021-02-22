@@ -10,7 +10,7 @@ namespace Cicee
     public static Task InvokeMiddleware(InvocationContext context, Func<InvocationContext, Task> next)
     {
       context.Console.Out.Write(
-        $"\n-- cicee (v{Assembly.GetExecutingAssembly().GetName().Version?.ToString(fieldCount: 3)}) --\n\n"
+        $"\n-- cicee (v{typeof(WelcomeMiddleware).Assembly.GetName().Version?.ToString(fieldCount: 3)}) --\n\n"
       );
       return next(context);
     }
