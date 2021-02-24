@@ -30,11 +30,11 @@ namespace Cicee.Commands.Exec
       ExecDependencies dependencies,
       ExecRequestContext execRequestContext)
     {
-      var ciceeExecPath = Path.Combine(dependencies.GetLibraryRootPath(), CiceeExecScriptName);
+      var ciceeExecPath = Path.Combine(path1: dependencies.GetLibraryRootPath(), CiceeExecScriptName);
       return dependencies.EnsureFileExists(ciceeExecPath)
         .MapLeft(
           exception => exception is FileNotFoundException
-            ? new BadRequestException($"Failed to find library file: {ciceeExecPath}")
+            ? new BadRequestException(message: $"Failed to find library file: {ciceeExecPath}")
             : exception
         )
         .Bind(validatedCiceeExecPath =>
@@ -43,7 +43,7 @@ namespace Cicee.Commands.Exec
           var ciceeExecLinuxPath = NormalizeToLinuxPath(validatedCiceeExecPath);
 
           return ProcessHelpers.TryCreateBashProcessStartInfo(
-            GetExecEnvironment(dependencies, execRequestContext),
+            environment: GetExecEnvironment(dependencies, execRequestContext),
             ciceeExecLinuxPath
           );
         });
@@ -54,10 +54,10 @@ namespace Cicee.Commands.Exec
       ExecRequest request
     )
     {
-      dependencies.StandardOutWriteLine("Beginning exec...\n");
-      dependencies.StandardOutWriteLine($"Project root: {request.ProjectRoot}");
-      dependencies.StandardOutWriteLine($"Entrypoint  : {request.Entrypoint}");
-      dependencies.StandardOutWriteLine($"Command     : {request.Command}");
+      dependencies.StandardOutWriteLine(obj: "Beginning exec...\n");
+      dependencies.StandardOutWriteLine(obj: $"Project root: {request.ProjectRoot}");
+      dependencies.StandardOutWriteLine(obj: $"Entrypoint  : {request.Entrypoint}");
+      dependencies.StandardOutWriteLine(obj: $"Command     : {request.Command}");
 
       return await TryCreateRequestContext(dependencies, request)
         .Bind(execContext => ValidateContext(dependencies, execContext))
@@ -67,11 +67,16 @@ namespace Cicee.Commands.Exec
 
     private static string CreateCiDockerfilePath(ExecDependencies dependencies, ExecRequest request)
     {
-      return Path.Combine(request.ProjectRoot, CiDirectoryName, "Dockerfile");
+      return Path.Combine(request.ProjectRoot, CiDirectoryName, path3: "Dockerfile");
     }
 
     public static Result<ExecRequestContext> TryCreateRequestContext(ExecDependencies dependencies, ExecRequest request)
     {
+      string InferProjectName()
+      {
+        return Path.GetFileName(request.ProjectRoot).ToKebabCase();
+      }
+
       return
         dependencies.EnsureDirectoryExists(request.ProjectRoot)
           .Bind(validatedProjectRoot =>
@@ -85,12 +90,13 @@ namespace Cicee.Commands.Exec
                 value => new Result<ProjectMetadata>(value),
                 loadFailure =>
                   // We failed to load metadata, but we know that the project root exists.
-                  new ProjectMetadata {Name = "unknown-project", Title = "Unknown Project", Version = "0.0.0"})
+                  new ProjectMetadata {Name = InferProjectName(), Title = "Unknown Project", Version = "0.0.0"})
           )
           .Bind(projectMetadata => Require.AsResult.NotNullOrWhitespace(request.Image)
-            .BindLeft(_ => dependencies.EnsureFileExists(CreateCiDockerfilePath(dependencies, request)))
+            .BindLeft(_ => dependencies.EnsureFileExists(arg: CreateCiDockerfilePath(dependencies, request)))
             .MapLeft(exception =>
               new BadRequestException(
+                message:
                 $"Image argument was not provided and '{CreateCiDockerfilePath(dependencies, request)}; does not exist.",
                 exception)
             )
@@ -99,10 +105,10 @@ namespace Cicee.Commands.Exec
           .Map(projectMetadata =>
             {
               var dockerfile = dependencies
-                .EnsureFileExists(Path.Combine(request.ProjectRoot, CiDirectoryName, "Dockerfile"))
+                .EnsureFileExists(arg: Path.Combine(request.ProjectRoot, CiDirectoryName, path3: "Dockerfile"))
                 .Match(file => (string?)file, _ => (string?)null);
               return new ExecRequestContext(request.ProjectRoot, projectMetadata, request.Command, request.Entrypoint,
-                GetEnvironmentInitializationScriptPath(dependencies, request),
+                EnvironmentInitializationScriptPath: GetEnvironmentInitializationScriptPath(dependencies, request),
                 dockerfile,
                 request.Image
               );
@@ -120,7 +126,7 @@ namespace Cicee.Commands.Exec
         var width = environmentDisplay.Keys.Max(value => value.Length) + 1;
         foreach (var (key, value) in environmentDisplay.OrderBy(kvp => kvp.Key))
         {
-          dependencies.StandardOutWriteLine($"  {key.PadRight(width, paddingChar: ' ')}: {value}");
+          dependencies.StandardOutWriteLine(obj: $"  {key.PadRight(width, paddingChar: ' ')}: {value}");
         }
       }
 
@@ -128,21 +134,21 @@ namespace Cicee.Commands.Exec
       {
         var environmentDisplay =
           ProjectEnvironmentHelpers.GetEnvironmentDisplay(dependencies.GetEnvironmentVariables, execRequestContext);
-        dependencies.StandardOutWriteLine("CI Environment:");
+        dependencies.StandardOutWriteLine(obj: "CI Environment:");
         if (environmentDisplay.Any())
         {
           WriteEnvironmentVariables(environmentDisplay);
         }
         else
         {
-          dependencies.StandardOutWriteLine("  No CI environment variables defined.");
+          dependencies.StandardOutWriteLine(obj: "  No CI environment variables defined.");
         }
       }
 
       void DisplayExecEnvironmentValues()
       {
         var environmentDisplay = GetExecEnvironment(dependencies, execRequestContext);
-        dependencies.StandardOutWriteLine("CICEE Execution Environment:");
+        dependencies.StandardOutWriteLine(obj: "CICEE Execution Environment:");
         WriteEnvironmentVariables(environmentDisplay);
       }
 
@@ -173,10 +179,10 @@ namespace Cicee.Commands.Exec
       var environment =
         new Dictionary<string, string>
         {
-          [CiExecContext] = NormalizeToLinuxPath(Path.Combine(context.ProjectRoot, CiDirectoryName)),
+          [CiExecContext] = NormalizeToLinuxPath(path: Path.Combine(context.ProjectRoot, CiDirectoryName)),
           [ProjectName] = context.ProjectMetadata.Name,
           [ProjectRoot] = NormalizeToLinuxPath(context.ProjectRoot),
-          [LibRoot] = NormalizeToLinuxPath(dependencies.GetLibraryRootPath())
+          [LibRoot] = NormalizeToLinuxPath(path: dependencies.GetLibraryRootPath())
         };
 
       void ConditionallyAdd(string key, string? possibleValue)
@@ -191,7 +197,7 @@ namespace Cicee.Commands.Exec
       ConditionallyAdd(CiEntrypoint, context.Entrypoint);
       ConditionallyAdd(
         CiInitScript,
-        context.EnvironmentInitializationScriptPath != null
+        possibleValue: context.EnvironmentInitializationScriptPath != null
           ? NormalizeToLinuxPath(context.EnvironmentInitializationScriptPath)
           : null
       );
@@ -204,11 +210,11 @@ namespace Cicee.Commands.Exec
     {
       static string WindowsToLinuxPath(string path)
       {
-        var driveAndPath = path.Split(":\\");
+        var driveAndPath = path.Split(separator: ":\\");
         return $"/{driveAndPath[0].ToLowerInvariant()}/{driveAndPath[1].Replace(oldChar: '\\', newChar: '/')}";
       }
 
-      return path.Contains(":\\") ? WindowsToLinuxPath(path) : path;
+      return path.Contains(value: ":\\") ? WindowsToLinuxPath(path) : path;
     }
 
 
@@ -238,7 +244,7 @@ namespace Cicee.Commands.Exec
             Require.AsResult.NotNullOrWhitespace(context.Entrypoint)
           )
           .MapLeft(exception =>
-            new BadRequestException("At least one of command or entrypoint must be provided.", exception)
+            new BadRequestException(message: "At least one of command or entrypoint must be provided.", exception)
           )
           .Map(_ => context);
       }
@@ -248,7 +254,7 @@ namespace Cicee.Commands.Exec
         return dependencies.EnsureDirectoryExists(contextWithStartupCommand.ProjectRoot)
           .MapLeft(exception => exception is DirectoryNotFoundException
             ? new BadRequestException(
-              $"Project root '{contextWithStartupCommand.ProjectRoot}' cannot be found.")
+              message: $"Project root '{contextWithStartupCommand.ProjectRoot}' cannot be found.")
             : exception)
           .Map(projectRoot => contextWithStartupCommand);
       }
