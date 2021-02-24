@@ -1,16 +1,34 @@
 # Continuous Integration Containerized Execution Environment (CICEE)
 
-CICEE is an opinionated orchestrator of continuous integration processes.
+## What is CICEE?
 
-## Usage
+CICEE is an opinionated orchestrator of continuous integration processes. CICEE executes commands in a Docker container, using the files in your project repository, and provides a convention-based structure for fulfilling dependencies.
 
-### CICEE Project Structure
+* [How does CICEE work?][]
 
-CICEE expects that a project repository is structured in the following manner.
+### What does CICEE require? What are its dependencies?
 
-* _Project repository root_
-  * `ci/`
-    * `ci.env` - _Optional._ Environment initialization script. Sourced during execution workflow.
-    * `docker-compose.dependencies.yml` - _Optional._ Docker-compose services definitions providing dependencies for continuous integration environment. Examples: databases.
-    * `docker-compose.project.yml` - _Optional._ Project-specific continuous integration environment definition. Supports declaring dependencies, specifying default environment variables, etc.
-    * `Dockerfile` - _Required, unless `exec` is executed with `--image`._ - Dockerfile defining continuous integration environment.
+* `bash`
+* `docker`
+* `docker-compose` (compose file version `3.7` support required)
+* `dotnet` - .NET `5` runtime.
+
+## Why use CICEE?
+
+CICEE users' most common use cases:
+
+* Validating project code, e.g., during a pull request review, consistently on both developer workstations and continuous integration servers.
+* Assembling distributable artifacts, e.g., Docker images or NPM packages.
+* Running integration tests requiring dependencies, e.g., databases.
+* Executing code cleanup, linting, reformatting, or other common development workflows, without prior tool installation.
+
+## How do you use CICEE?
+
+* [Installation or update][]
+* [What Files and Directories Does CICEE Require?][]
+* [Using `cicee`][using-cicee]
+
+[How does CICEE work?]: docs/what/how-does-cicee-work.md
+[Installation or update]: docs/use/installation-or-update.md
+[What Files and Directories Does CICEE Require?]: docs/use/project-structure.md
+[using-cicee]: docs/use/using-cicee.md 
