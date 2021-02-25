@@ -11,11 +11,14 @@
   <PropertyGroup>
     <Authors>jds</Authors>
     <Company />
-    <Copyright>Copyright 2021 Jeremiah Sanders</Copyright>
+    <Copyright>Copyright (c) 2021 Jeremiah Sanders</Copyright>
     <Description>Continuous Integration Containerized Execution Environment</Description>
-    <PackAsTool>true</PackAsTool>
     <PackageId>cicee</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackAsTool>true</PackAsTool>
     <Product>cicee</Product>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/JeremiahSanders/cicee</RepositoryUrl>
     <Title>CICEE</Title>
     <ToolCommandName>cicee</ToolCommandName>
   </PropertyGroup>
