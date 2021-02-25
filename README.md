@@ -1,5 +1,7 @@
 # Continuous Integration Containerized Execution Environment (CICEE)
 
+[![NuGet](https://badgen.net/nuget/v/cicee/)](https://www.nuget.org/packages/cicee/)
+
 ## What is CICEE?
 
 CICEE is an opinionated orchestrator of continuous integration processes. CICEE executes commands in a Docker container, using the files in your project repository, and provides a convention-based structure for fulfilling dependencies.
