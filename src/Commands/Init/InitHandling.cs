@@ -1,10 +1,6 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
-using LanguageExt;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Init
@@ -17,6 +13,41 @@ namespace Cicee.Commands.Init
       return new(new InitRequest(projectRoot, image, overwrite));
     }
 
+    private static IReadOnlyCollection<FileCopyRequest> GetFiles(InitDependencies dependencies, InitRequest request)
+    {
+      var initTemplatesPath = dependencies.GetInitTemplatesDirectoryPath();
+      var ciPath = dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName);
+      var dockerfile = string.IsNullOrWhiteSpace(request.Image)
+        ? new FileCopyRequest(
+          dependencies.CombinePath(initTemplatesPath, "Default.Dockerfile"),
+          dependencies.CombinePath(ciPath, "Dockerfile")
+        )
+        : new FileCopyRequest(
+          dependencies.CombinePath(initTemplatesPath, "Template.Dockerfile"),
+          dependencies.CombinePath(ciPath, "Dockerfile")
+        );
+      return new[]
+      {
+        dockerfile, new FileCopyRequest(
+          dependencies.CombinePath(initTemplatesPath, "example.ci.env"),
+          dependencies.CombinePath(ciPath, "example.ci.env")
+        ),
+        new FileCopyRequest(
+          dependencies.CombinePath(initTemplatesPath, "docker-compose.dependencies.yml"),
+          dependencies.CombinePath(ciPath, "docker-compose.dependencies.yml")
+        ),
+        new FileCopyRequest(
+          dependencies.CombinePath(initTemplatesPath, "docker-compose.project.yml"),
+          dependencies.CombinePath(ciPath, "docker-compose.project.yml")
+        )
+      };
+    }
+
+    private static IReadOnlyDictionary<string, string> GetTemplateValues(InitRequest request)
+    {
+      return new Dictionary<string, string> {{"image", request.Image ?? string.Empty}};
+    }
+
     public static async Task<Result<InitRequest>> TryHandleRequest(InitDependencies dependencies, InitRequest request)
     {
       dependencies.WriteInformation("Initializing project...\n");
@@ -25,7 +56,12 @@ namespace Cicee.Commands.Init
           dependencies.WriteInformation(
             $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
         .BindAsync(async validatedRequest =>
-          (await TryWriteFiles(dependencies, validatedRequest))
+          (await FileCopyHelpers.TryWriteFiles(
+            dependencies,
+            GetFiles(dependencies, validatedRequest),
+            GetTemplateValues(request),
+            validatedRequest.OverwriteFiles
+          ))
           .TapLeft(exception =>
             dependencies.WriteInformation(
               $"Failed to write files.\nError: {exception.GetType()}\nMessage: {exception.Message}"
@@ -42,75 +78,6 @@ namespace Cicee.Commands.Init
           })
           .Map(_ => validatedRequest)
         );
-    }
-
-    private static Task<Result<IReadOnlyCollection<FileCopyResult>>> TryWriteFiles(InitDependencies dependencies,
-      InitRequest validatedRequest)
-    {
-      IReadOnlyDictionary<string, string> templateValues = new Dictionary<string, string>
-      {
-        {"image", validatedRequest.Image ?? string.Empty}
-      };
-
-      IReadOnlyCollection<FileCopyRequest> GetFiles()
-      {
-        var initTemplatesPath = dependencies.GetInitTemplatesDirectoryPath();
-        var ciPath = dependencies.CombinePath(validatedRequest.ProjectRoot, Conventions.CiDirectoryName);
-        var dockerfile = string.IsNullOrWhiteSpace(validatedRequest.Image)
-          ? new FileCopyRequest(
-            dependencies.CombinePath(initTemplatesPath, "Default.Dockerfile"),
-            dependencies.CombinePath(ciPath, "Dockerfile")
-          )
-          : new FileCopyRequest(
-            dependencies.CombinePath(initTemplatesPath, "Template.Dockerfile"),
-            dependencies.CombinePath(ciPath, "Dockerfile")
-          );
-        return new[]
-        {
-          dockerfile, new FileCopyRequest(
-            dependencies.CombinePath(initTemplatesPath, "example.ci.env"),
-            dependencies.CombinePath(ciPath, "example.ci.env")
-          ),
-          new FileCopyRequest(
-            dependencies.CombinePath(initTemplatesPath, "docker-compose.dependencies.yml"),
-            dependencies.CombinePath(ciPath, "docker-compose.dependencies.yml")
-          ),
-          new FileCopyRequest(
-            dependencies.CombinePath(initTemplatesPath, "docker-compose.project.yml"),
-            dependencies.CombinePath(ciPath, "docker-compose.project.yml")
-          )
-        };
-      }
-
-      Result<FileCopyResult> TryCopyFile(FileCopyRequest fileCopyRequest)
-      {
-        return dependencies.DoesFileExist(fileCopyRequest.SourcePath)
-          .Bind(exists =>
-            exists
-              ? dependencies.DoesFileExist(fileCopyRequest.DestinationPath)
-              : new Result<bool>(
-                new FileNotFoundException($"Failed to find template file '{fileCopyRequest.SourcePath}'.")
-              )
-          )
-          .Bind(destinationExists =>
-            !destinationExists || validatedRequest.OverwriteFiles
-              ? dependencies.CopyTemplateToPath(fileCopyRequest, templateValues)
-                .Map(savedRequest => new FileCopyResult(savedRequest, Written: true))
-              : new Result<FileCopyResult>(new FileCopyResult(fileCopyRequest, Written: false))
-          );
-      }
-
-      return GetFiles()
-        .Fold(
-          new Result<IEnumerable<FileCopyResult>>(Array.Empty<FileCopyResult>()),
-          (lastResult, request) =>
-            lastResult.Bind(fileCopyResults =>
-              TryCopyFile(request)
-                .Map(fileCopyResults.Append)
-            )
-        )
-        .Map(results => (IReadOnlyCollection<FileCopyResult>)results.ToList())
-        .AsTask();
     }
   }
 }

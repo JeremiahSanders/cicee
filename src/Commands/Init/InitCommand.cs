@@ -1,5 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
+using Cicee.Commands.Init.Template;
 
 namespace Cicee.Commands.Init
 {
@@ -13,21 +14,14 @@ namespace Cicee.Commands.Init
       ) {IsRequired = false};
     }
 
-    private static Option ForceOption()
-    {
-      return new Option<bool>(
-        new[] {"--force", "-f"},
-        "Force writing files. Overwrites files which already exist."
-      ) {IsRequired = false};
-    }
-
     public static Command Create()
     {
       var command =
         new Command("init", "Initialize project. Creates suggested cicee files.")
         {
-          ProjectRootOption.Create(), ImageOption(), ForceOption()
+          ProjectRootOption.Create(), ImageOption(), ForceOption.Create()
         };
+      command.AddCommand(TemplateCommand.Create());
       command.Handler = CommandHandler.Create<string, string?, bool>(InitEntrypoint.HandleAsync);
       return command;
     }
