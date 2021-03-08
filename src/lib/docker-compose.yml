@@ -44,6 +44,8 @@ services:
       DRY_RUN:
       GITHUB_AUTH_TOKEN:
       GITHUB_OWNER:
+      NUGET_API_KEY:
+      NUGET_SOURCE:
       RELEASE_ENVIRONMENT:
 
 volumes:
