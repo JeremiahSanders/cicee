@@ -63,7 +63,7 @@ ci-compose() {
 # Publish the project's artifact composition.
 #--
 ci-publish() {
-  _ci_DotnetNuGetPushGitHub
+  _ci_DotnetNuGetPush
 }
 
 export -f ci-compose
