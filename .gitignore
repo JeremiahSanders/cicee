@@ -480,3 +480,5 @@ NuGet.Config
 # Template files for distribution
 !/src/lib/**
 !/src/templates/**
+# Project development executables
+!bin/
