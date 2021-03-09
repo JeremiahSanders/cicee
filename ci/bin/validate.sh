@@ -23,13 +23,7 @@ __initialize() {
 }
 
 # Execute the initialization function, defined above, and ci-validate function defined in ci-workflows.sh.
-{
-  __initialize &&
-    printf "Beginning validation...\n\n" &&
-    ci-validate &&
-    printf "Validation complete!\n\n"
-} || {
-  # Notify of validation failure; attempt to return 1, ignoring errors by sending them to /dev/null, and exit 1 if return failed.
-  printf "\nValidation failed!\n" &&
-    return 1 2>/dev/null || exit 1
-}
+__initialize &&
+  printf "Beginning validation...\n\n" &&
+  ci-validate &&
+  printf "Validation complete!\n\n"
