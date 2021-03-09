@@ -67,7 +67,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${ACTIONS_SCRIPT_LOCATION}" && cd ../.. && p
 require-var() {
   for variableName in "$@"; do
     # The ! below performs 'indirect expansion'. See: https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
-    if [[ -z "${!variableName}" ]]; then
+    if [[ -z "${!variableName:-}" ]]; then
       printf "Required variable not set: %s\n\n" "${variableName}" &&
         return 1
     fi
