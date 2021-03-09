@@ -1,30 +1,35 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC2155
 
 ###
 # Build and validate the project's source.
+#
+# How to use:
+#   Customize the "ci-validate" workflow (function) defined in ci-workflows.sh.
 ###
 
-# Fail or exit immediately if there is an error.
-set -o errexit
-# Fail if an unset variable is used.
-set -o nounset
-# Sets the exit code of a pipeline to that of the rightmost command to exit with a non-zero status,
-# or zero if all commands of the pipeline exit successfully.
-set -o pipefail
+set -o errexit  # Fail or exit immediately if there is an error.
+set -o nounset  # Fail if an unset variable is used.
+set -o pipefail # Fail pipelines if any command errors, not just the last one.
 
-# Context
-PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../.. && pwd)"
+__initialize() {
+  declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
+  # Load the project's CI action and CI workflow libraries.
+  # Then execute the ci-EnvInit and ci-EnvDisplay functions, defined in ci-actions.sh, which initialize and display the environment, respectively.
+  . "${SCRIPT_LOCATION}/ci-actions.sh" &&
+    . "${SCRIPT_LOCATION}/ci-workflows.sh" &&
+    ci-EnvInit &&
+    ci-EnvDisplay
+}
 
-source "${PROJECT_ROOT}/ci/lib/ci-env-load.sh" &&
-    "${PROJECT_ROOT}/ci/lib/ci-env-display.sh" &&
-    printf "Validating %s version %s...\n\n\n" "${PROJECT_NAME}" "${PROJECT_VERSION_DIST}"
-
-#--
-# Begin project-specific build steps.
-#--
-
-"${PROJECT_ROOT}/ci/lib/dotnet-restore.sh" &&
-    "${PROJECT_ROOT}/ci/lib/dotnet-build.sh" &&
-    "${PROJECT_ROOT}/ci/lib/dotnet-test.sh" \
-        -p:GenerateTargetFrameworkAttribute=false \
-        -p:GenerateAssemblyInfo=false
+# Execute the initialization function, defined above, and ci-validate function defined in ci-workflows.sh.
+{
+  __initialize &&
+    printf "Beginning validation...\n\n" &&
+    ci-validate &&
+    printf "Validation complete!\n\n"
+} || {
+  # Notify of validation failure; attempt to return 1, ignoring errors by sending them to /dev/null, and exit 1 if return failed.
+  printf "\nValidation failed!\n" &&
+    return 1 2>/dev/null || exit 1
+}

@@ -29,5 +29,7 @@ __initialize() {
     ci-validate &&
     printf "Validation complete!\n\n"
 } || {
-  printf "Validation failed!\n" && return 1
+  # Notify of validation failure; attempt to return 1, ignoring errors by sending them to /dev/null, and exit 1 if return failed.
+  printf "\nValidation failed!\n" &&
+    return 1 2>/dev/null || exit 1
 }

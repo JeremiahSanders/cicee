@@ -12,12 +12,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout latest commit
-      uses: actions/checkout@v2
-    - name: Execute publish script - Publish project artifacts
-      run: ci/ci-exec.sh ci/bin/publish.sh
-      env:
-        DRY_RUN: true
-        GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
-        GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
-        NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+      - name: Checkout latest commit
+        uses: actions/checkout@v2
+      - name: Execute compose script - Create distributable composition, without publishing
+        run: bin/cicee-exec-compose.sh
+        env:
+          GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
+          GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
+          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}

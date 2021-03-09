@@ -15,3 +15,5 @@ services:
       #--
       # Project
       #--
+    # NOTE: Root user specified below helps address permissions errors when using the default CICEE Dockerfile.
+    user: root
