@@ -67,7 +67,7 @@ PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${ACTIONS_SCRIPT_LOCATION}" && cd ../.. && p
 require-var() {
   for variableName in "$@"; do
     # The ! below performs 'indirect expansion'. See: https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
-    if [[ -z "${!variableName}" ]]; then
+    if [[ -z "${!variableName:-}" ]]; then
       printf "Required variable not set: %s\n\n" "${variableName}" &&
         return 1
     fi
@@ -91,16 +91,19 @@ require-var() {
 #                workflow entrypoint script.
 #
 # Expected environment available to all CI actions, after ci-EnvInit is executed:
-#   BUILD_DOCS="${BUILD_ROOT}/docs" - Project distributable documentation which would accompany packaged build output.
-#   BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist" - Project packaged build output. E.g., .NET NuGet packages, zip archives, AWS CDK cloud assemblies.
-#   BUILD_ROOT - Project build output root directory.
-#   BUILD_UNPACKAGED_DIST="${BUILD_ROOT}/app" - Project unpackaged build output. E.g., processed output which might be further packaged or compressed before distribution. E.g., .NET DLLs, Java class files.
-#
+#  - Contextual -
 #   PROJECT_NAME - Project name. By convention this should be in lower kebab case. I.e., multi-word-project-name. This will be used to pattern conventional output paths, e.g., as part of a zip archive file name.
 #   PROJECT_ROOT - Project root directory.
 #   PROJECT_TITLE - Project human-readable name. Defaults to PROJECT_NAME.
 #   PROJECT_VERSION - Project distributable Major.Minor.Patch version. I.e., 2.3.1.
 #   PROJECT_VERSION_DIST - Project distributable version. Expected to be in the following format: Release versions: Major.Minor.Patch, e.g., 4.1.7. Pre-release versions: Major.Minor.Patch-sha-GitSha, e.g., 4.1.7-sha-a7328f. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet packages, and Docker tags.
+#   CURRENT_GIT_BRANCH - Current Git branch.
+#   CURRENT_GIT_HASH - Current Git hash.
+#  - Conventional Output -
+#   BUILD_DOCS="${BUILD_ROOT}/docs" - Project distributable documentation which would accompany packaged build output.
+#   BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist" - Project packaged build output. E.g., .NET NuGet packages, zip archives, AWS CDK cloud assemblies.
+#   BUILD_ROOT - Project build output root directory.
+#   BUILD_UNPACKAGED_DIST="${BUILD_ROOT}/app" - Project unpackaged build output. E.g., processed output which might be further packaged or compressed before distribution. E.g., .NET DLLs, Java class files.
 #
 # Workflow:
 #   1 - Initialize convention-based CI enviroment variables.
@@ -156,7 +159,7 @@ ci-EnvInit() {
     BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist"
     BUILD_DOCS="${BUILD_ROOT}/docs"
 
-    if [[ -n "$(which git)" ]]; then
+    if [[ -n "$(which git)" && -d "${PROJECT_ROOT}/.git" ]]; then
       # We have git installed
       CURRENT_GIT_BRANCH="$(git branch | sed -n '/\* /s///p')"
       CURRENT_GIT_HASH="$(git log --pretty=format:'%h' -n 1)"
@@ -312,9 +315,17 @@ export -f _ci_DockerLoginAwsEcr
 #   $PROJECT_ROOT  - Project root directory.
 ###
 
+__tryApplyFallbackDockerEnvironment() {
+  require-var "PROJECT_VERSION_DIST" "PROJECT_NAME"
+  DOCKER_IMAGE_TAG="${DOCKER_IMAGE_TAG:-${PROJECT_VERSION_DIST}}"
+  DOCKER_IMAGE_REPOSITORY="${DOCKER_IMAGE_REPOSITORY:-${PROJECT_NAME}}"
+  DOCKER_IMAGE="${DOCKER_IMAGE_REPOSITORY}:${DOCKER_IMAGE_TAG}"
+}
+
 # Docker build - requires environment $DOCKER_IMAGE, which should be formatted as a Docker tag.
 _ci_DockerBuild() {
-  require-var "DOCKER_IMAGE" &&
+  __tryApplyFallbackDockerEnvironment &&
+    require-var "DOCKER_IMAGE" &&
     docker build \
       --rm \
       --tag "${DOCKER_IMAGE}" \
@@ -324,7 +335,8 @@ _ci_DockerBuild() {
 
 # Docker push
 _ci_DockerPush() {
-  require-var "DOCKER_IMAGE" &&
+  __tryApplyFallbackDockerEnvironment &&
+    require-var "DOCKER_IMAGE" &&
     docker push "${DOCKER_IMAGE}"
 }
 
