@@ -9,10 +9,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout latest commit
-      uses: actions/checkout@v2
-    - name: Execute verification script - Validate source
-      run: ci/ci-exec.sh ci/bin/validate.sh
-      env:
-        GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
-        GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
+      - name: Checkout latest commit
+        uses: actions/checkout@v2
+      - name: Execute verification script - Validate source
+        run: bin/cicee-exec-validate.sh
+        env:
+          GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
+          GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}

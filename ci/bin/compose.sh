@@ -2,10 +2,10 @@
 # shellcheck disable=SC2155
 
 ###
-# Build and publish the project's artifact composition.
+# Build the project's artifact composition.
 #
 # How to use:
-#   Customize the "ci-compose" and "ci-publish" workflows (functions) defined in ci-workflows.sh.
+#   Customize the "ci-compose" workflow (function) defined in ci-workflows.sh.
 ###
 
 set -o errexit  # Fail or exit immediately if there is an error.
@@ -22,11 +22,8 @@ __initialize() {
     ci-EnvDisplay
 }
 
-# Execute the initialization function, defined above, and ci-compose and ci-publish functions, defined in ci-workflows.sh.
+# Execute the initialization function, defined above, and ci-compose function, defined in ci-workflows.sh.
 __initialize &&
-  printf "Composing build artifacts...\n\n" &&
+  printf "Beginning artifact composition...\n\n" &&
   ci-compose &&
-  printf "Composition complete.\n" &&
-  printf "Publishing composed artifacts...\n\n" &&
-  ci-publish &&
-  printf "Publishing complete.\n\n"
+  printf "Composition complete.\n\n"

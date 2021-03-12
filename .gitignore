@@ -477,3 +477,8 @@ ci-bin/
 ci-obj/
 # Local NuGet configuration
 NuGet.Config
+# Template files for distribution
+!/src/lib/**
+!/src/templates/**
+# Project development executables
+!bin/

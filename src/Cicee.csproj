@@ -11,11 +11,14 @@
   <PropertyGroup>
     <Authors>jds</Authors>
     <Company />
-    <Copyright>Copyright 2021 Jeremiah Sanders</Copyright>
+    <Copyright>Copyright (c) 2021 Jeremiah Sanders</Copyright>
     <Description>Continuous Integration Containerized Execution Environment</Description>
-    <PackAsTool>true</PackAsTool>
     <PackageId>cicee</PackageId>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackAsTool>true</PackAsTool>
     <Product>cicee</Product>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/JeremiahSanders/cicee</RepositoryUrl>
     <Title>CICEE</Title>
     <ToolCommandName>cicee</ToolCommandName>
   </PropertyGroup>
@@ -29,10 +32,6 @@
     <Content Include="lib\cicee-exec.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="templates\init\Template.Dockerfile">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <None Remove="lib\docker-compose.yml" />
     <Content Include="lib\docker-compose.dockerfile.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -42,20 +41,37 @@
     <Content Include="lib\docker-compose.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="templates\init\Dockerfile" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Content Include="templates\init\bin\ci-actions.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\init\bin\ci-workflows.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\init\Template.Dockerfile">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>  
     <Content Include="templates\init\Default.Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="templates\init\example.env" />
     <Content Include="templates\init\example.ci.env">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="templates\init\docker-compose.project.yml" />
     <Content Include="templates\init\docker-compose.project.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <None Remove="templates\init\docker-compose.dependencies.yml" />
     <Content Include="templates\init\docker-compose.dependencies.yml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\init\bin\compose.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\init\bin\publish.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\init\bin\validate.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

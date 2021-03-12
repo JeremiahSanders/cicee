@@ -13,12 +13,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout latest commit
-      uses: actions/checkout@v2
-    - name: Execute publish script - Publish project artifacts
-      run: ci/ci-exec.sh ci/bin/publish.sh
-      env:
-        GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
-        GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
-        NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
-        RELEASE_ENVIRONMENT: true
+      - name: Checkout latest commit
+        uses: actions/checkout@v2
+      - name: Execute publish script - Publish project artifacts
+        run: bin/cicee-exec-publish.sh
+        env:
+          GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
+          GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
+          NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+          RELEASE_ENVIRONMENT: true
