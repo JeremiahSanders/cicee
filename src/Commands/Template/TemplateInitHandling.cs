@@ -1,20 +1,21 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
+using Cicee.Commands.Init;
 using LanguageExt.Common;
 
-namespace Cicee.Commands.Init.Template
+namespace Cicee.Commands.Template
 {
-  public static class TemplateHandling
+  public static class TemplateInitHandling
   {
-    internal static Result<TemplateRequest> TryCreateRequest(InitDependencies dependencies, string projectRoot,
+    internal static Result<TemplateInitRequest> TryCreateRequest(InitDependencies dependencies, string projectRoot,
       bool force)
     {
-      return new(new TemplateRequest(projectRoot, force));
+      return new(new TemplateInitRequest(projectRoot, force));
     }
 
     private static IReadOnlyCollection<FileCopyRequest> GetFiles(InitDependencies dependencies,
-      TemplateRequest request)
+      TemplateInitRequest request)
     {
       var templatesPath = dependencies.CombinePath(dependencies.GetInitTemplatesDirectoryPath(), "bin");
       var ciPath = dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName);
@@ -44,13 +45,13 @@ namespace Cicee.Commands.Init.Template
       };
     }
 
-    private static IReadOnlyDictionary<string, string> GetTemplateValues(TemplateRequest request)
+    private static IReadOnlyDictionary<string, string> GetTemplateValues(TemplateInitRequest request)
     {
       return new Dictionary<string, string>();
     }
 
-    public static async Task<Result<TemplateResult>> TryHandleRequest(InitDependencies dependencies,
-      TemplateRequest request)
+    public static async Task<Result<TemplateInitResult>> TryHandleRequest(InitDependencies dependencies,
+      TemplateInitRequest request)
     {
       dependencies.WriteInformation("Initializing project...\n");
       return await Validation.ValidateRequestExecution(dependencies, request)
@@ -78,15 +79,15 @@ namespace Cicee.Commands.Init.Template
                 $"  {(result.Written ? "Copied " : "Skipped")} {result.Request.DestinationPath}");
             }
           })
-          .Map(_ => new TemplateResult(validatedRequest.ProjectRoot, validatedRequest.OverwriteFiles))
+          .Map(_ => new TemplateInitResult(validatedRequest.ProjectRoot, validatedRequest.OverwriteFiles))
           .Tap(result => DisplayNextSteps(dependencies, result))
         );
     }
 
-    private static void DisplayNextSteps(InitDependencies dependencies, TemplateResult result)
+    private static void DisplayNextSteps(InitDependencies dependencies, TemplateInitResult initResult)
     {
       var projectCiBin = dependencies.CombinePath(
-        dependencies.CombinePath(result.ProjectRoot, "ci"),
+        dependencies.CombinePath(initResult.ProjectRoot, "ci"),
         "bin"
       );
       var workflowsScriptLocation = dependencies.CombinePath(projectCiBin, "ci-workflows.sh");
@@ -112,10 +113,10 @@ The following workflow entrypoints were initialized in {projectCiBin}:
 Next steps:
   * Add execute permission to all initialized scripts.
     If using macOS or Linux:
-      Run the following from your shell (from {result.ProjectRoot}):
+      Run the following from your shell (from {initResult.ProjectRoot}):
       chmod +x ci/bin/*.sh
     If using Windows:
-      After adding the scripts to Git, run the following from Git Bash (from {result.ProjectRoot}):
+      After adding the scripts to Git, run the following from Git Bash (from {initResult.ProjectRoot}):
       git update-index --chmod=+x ci/bin/*.sh
   * Update {workflowsScriptLocation}.
     Setup the continuous integration processes the project needs.

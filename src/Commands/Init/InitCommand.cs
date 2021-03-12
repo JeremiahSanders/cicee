@@ -1,6 +1,6 @@
 using System.CommandLine;
 using System.CommandLine.Invocation;
-using Cicee.Commands.Init.Template;
+using Cicee.Commands.Template;
 
 namespace Cicee.Commands.Init
 {
@@ -21,7 +21,6 @@ namespace Cicee.Commands.Init
         {
           ProjectRootOption.Create(), ImageOption(), ForceOption.Create()
         };
-      command.AddCommand(TemplateCommand.Create());
       command.Handler = CommandHandler.Create<string, string?, bool>(InitEntrypoint.HandleAsync);
       return command;
     }
