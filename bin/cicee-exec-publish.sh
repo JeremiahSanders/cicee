@@ -9,6 +9,6 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 PROJECT_NAME="cicee" \
     PROJECT_ROOT="$(pwd)" \
     LIB_ROOT="$(pwd)/src/lib" \
-    CI_COMMAND="ci/bin/compose.sh" \
+    CI_COMMAND="ci/bin/publish.sh" \
     CI_EXEC_CONTEXT="$(pwd)/ci" \
     src/lib/cicee-exec.sh
