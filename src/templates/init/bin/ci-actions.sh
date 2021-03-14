@@ -99,6 +99,12 @@ require-var() {
 #   PROJECT_VERSION_DIST - Project distributable version. Expected to be in the following format: Release versions: Major.Minor.Patch, e.g., 4.1.7. Pre-release versions: Major.Minor.Patch-sha-GitSha, e.g., 4.1.7-sha-a7328f. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet packages, and Docker tags.
 #   CURRENT_GIT_BRANCH - Current Git branch.
 #   CURRENT_GIT_HASH - Current Git hash.
+#  - Configuration -
+#     The CIENV_VARIABLES* variables below are all derived from loading .ciEnvironment.variables JSON path from a project metadata file (if one exists) using jq.
+#   CIENV_VARIABLES - Array of project-specific CI environment variable names.
+#   CIENV_VARIABLES_PUBLIC - Array of project-specific CI environment variable names which are NOT marked secret (by their .secret JSON path property).
+#   CIENV_VARIABLES_REQUIRED - Array of project-specific CI environment variable names which are marked required (by their .required JSON path property).
+#   CIENV_VARIABLES_SECRET - Array of project-specific CI environment variable names which ARE marked secret (by their .secret JSON path property).
 #  - Conventional Output -
 #   BUILD_DOCS="${BUILD_ROOT}/docs" - Project distributable documentation which would accompany packaged build output.
 #   BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist" - Project packaged build output. E.g., .NET NuGet packages, zip archives, AWS CDK cloud assemblies.
@@ -171,7 +177,7 @@ ci-EnvInit() {
 
   __tryLoadProjectMetadata() {
     if [[ -z "$(which jq)" ]]; then
-      printf "jq not installed. Cannot load JSON project metadata.\nApplying fallback defaults.\n" &&
+      printf "jq not installed. Cannot load JSON project metadata.\n" &&
         return 0
     fi
 
@@ -181,6 +187,11 @@ ci-EnvInit() {
         PROJECT_NAME="$(jq --raw-output 'if .name== null then "" else .name end' "${PROJECT_METADATA}")"
         PROJECT_TITLE="$(jq --raw-output 'if .title== null then "" else .title end' "${PROJECT_METADATA}")"
         PROJECT_VERSION="$(jq --raw-output 'if .version== null then "" else .version end' "${PROJECT_METADATA}")"
+        # Declare arrays of defined CI environment variables.
+        CIENV_VARIABLES=($(jq -r '.ciEnvironment.variables | .[]? | .name ' "${PROJECT_METADATA}"))
+        CIENV_VARIABLES_REQUIRED=($(jq -r '.ciEnvironment.variables | .[]? | select( .required ) | .name ' "${PROJECT_METADATA}"))
+        CIENV_VARIABLES_SECRET=($(jq -r '.ciEnvironment.variables | .[]? | select( .secret ) | .name ' "${PROJECT_METADATA}"))
+        CIENV_VARIABLES_PUBLIC=($(jq -r '.ciEnvironment.variables | .[]? | select( .secret==false ) | .name ' "${PROJECT_METADATA}"))
         printf "Loaded project metadata from %s\n" "${PROJECT_METADATA}"
         return 0
       else
@@ -193,7 +204,8 @@ ci-EnvInit() {
       __loadMetadataFromFile "${PROJECT_ROOT}/ci/project-metadata.json" ||
       __loadMetadataFromFile "${PROJECT_ROOT}/ci/.project-metadata.json" ||
       __loadMetadataFromFile "${PROJECT_ROOT}/package.json" ||
-      __loadMetadataFromFile "${PROJECT_ROOT}/src/package.json"
+      __loadMetadataFromFile "${PROJECT_ROOT}/src/package.json" ||
+      return 0
   }
 
   __applyFallbackProjectEnvironmentValues() {
@@ -236,11 +248,35 @@ ci-EnvDisplay() {
   printf "    Documentation  :  %s\n" "${BUILD_DOCS}"
   printf "    Packaged       :  %s\n" "${BUILD_PACKAGED_DIST}"
   printf "    Unpackaged     :  %s\n\n" "${BUILD_UNPACKAGED_DIST}"
+
+  # Check to see if we have CI environment variables defined.
+  if [[ -n "${CIENV_VARIABLES:-}" ]]; then
+    printf "  Environment\n"
+    # Loop through the CI environment variables.
+    for variableName in "${CIENV_VARIABLES[@]}"; do
+      # If the variable is defined as "secret"...
+      if [[ "${CIENV_VARIABLES_SECRET[*]}" =~ "${variableName}" ]]; then
+        # ... and if the variable has a value...
+        if [[ -n "${!variableName:-}" ]]; then
+          # ...record the value masked.
+          local value="********"
+        else
+          # Otherwise, record it empty.
+          local value=""
+        fi
+      else
+        # Since the variable is NOT "secret", we display the value.
+        # The ! below performs 'indirect expansion'. See: https://www.gnu.org/software/bash/manual/html_node/Shell-Parameter-Expansion.html
+        local value="${!variableName:-}"
+      fi
+      printf "    %s: %s\n" "${variableName}" "${value:-}"
+    done
+  fi
 }
 
 #------------------------------------------------------------------------------
 # CI Environment Require.
-#   Validates that the CI environment is initialized.
+#   Validates that the CI environment is initialized and all required variables set.
 #--
 ci-EnvRequire() {
   require-var \
@@ -253,6 +289,11 @@ ci-EnvRequire() {
     "PROJECT_TITLE" \
     "PROJECT_VERSION_DIST" \
     "PROJECT_VERSION"
+
+  # If the project contains metadata defining CI environment variables, ensure that all required variables are set.
+  if [[ -n "${CIENV_VARIABLES_REQUIRED:-}" ]]; then
+    require-var "${CIENV_VARIABLES_REQUIRED[@]}"
+  fi
 }
 
 export -f ci-EnvDisplay

@@ -1,5 +1,15 @@
 {
-    "name": "cicee",
-    "title": "Continuous Integration Containerized Execution Environment (CICEE)",
-    "version": "0.4.0"
+  "ciEnvironment": {
+    "variables": [
+      {
+        "description": "NuGet API Key",
+        "name": "NUGET_API_KEY",
+        "required": true,
+        "secret": true
+      }
+    ]
+  },
+  "name": "cicee",
+  "title": "Continuous Integration Containerized Execution Environment (CICEE)",
+  "version": "0.4.0"
 }
