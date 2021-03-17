@@ -20,7 +20,7 @@ namespace Cicee.CiEnv
       var expectedEnvironment =
         execRequestContext.ProjectMetadata.CiEnvironment.Variables.Select(env => env.Name).ToArray();
       return new Dictionary<string, string>(
-        collection: knownEnvironment
+        knownEnvironment
           .Where(keyValuePair => expectedEnvironment.Contains(keyValuePair.Key))
           .Select(keyValuePair =>
             execRequestContext.ProjectMetadata.CiEnvironment.Variables.First(envVar => envVar.Name == keyValuePair.Key)
@@ -35,21 +35,30 @@ namespace Cicee.CiEnv
       ExecRequestContext execRequestContext
     )
     {
+      return ValidateEnvironment(getEnvironmentVariables, execRequestContext.ProjectMetadata)
+        .Map(_ => execRequestContext);
+    }
+
+    public static Result<ProjectMetadata> ValidateEnvironment(
+      Func<IReadOnlyDictionary<string, string>> getEnvironmentVariables,
+      ProjectMetadata projectMetadata
+    )
+    {
       var knownEnvironment = getEnvironmentVariables();
       string[] knownVariables = knownEnvironment.Keys.ToArray();
-      string[] missingVariables = execRequestContext.ProjectMetadata.CiEnvironment.Variables
+      string[] missingVariables = projectMetadata.CiEnvironment.Variables
         .Where(envVariable => envVariable.Required && !knownVariables.Contains(envVariable.Name))
         .Select(envVariable => envVariable.Name)
         .OrderBy(Prelude.identity)
         .ToArray();
 
       return missingVariables.Any()
-        ? new Result<ExecRequestContext>(
-          e: new BadRequestException(
-            message: $"Missing environment variables: {string.Join(separator: ", ", missingVariables)}"
+        ? new Result<ProjectMetadata>(
+          new BadRequestException(
+            $"Missing environment variables: {string.Join(", ", missingVariables)}"
           )
         )
-        : new Result<ExecRequestContext>(execRequestContext);
+        : new Result<ProjectMetadata>(projectMetadata);
     }
   }
 }

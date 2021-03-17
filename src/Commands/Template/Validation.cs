@@ -5,7 +5,7 @@ namespace Cicee.Commands.Template
 {
   public static class Validation
   {
-    public static Result<TemplateInitRequest> ValidateRequestExecution(InitDependencies dependencies, TemplateInitRequest request)
+    public static Result<TemplateInitRequest> ValidateRequestExecution(CommandDependencies dependencies, TemplateInitRequest request)
     {
       return dependencies.EnsureDirectoryExists(request.ProjectRoot).Map(_ => request);
     }

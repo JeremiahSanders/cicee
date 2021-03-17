@@ -19,7 +19,8 @@ __initialize() {
   . "${SCRIPT_LOCATION}/ci-actions.sh" &&
     . "${SCRIPT_LOCATION}/ci-workflows.sh" &&
     ci-EnvInit &&
-    ci-EnvDisplay
+    ci-EnvDisplay &&
+    ci-EnvRequire
 }
 
 # Execute the initialization function, defined above, and ci-compose function, defined in ci-workflows.sh.

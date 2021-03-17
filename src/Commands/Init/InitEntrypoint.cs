@@ -6,7 +6,7 @@ namespace Cicee.Commands.Init
   {
     public static async Task<int> HandleAsync(string projectRoot, string? image, bool force)
     {
-      var dependencies = InitDependencies.Create();
+      var dependencies = CommandDependencies.Create();
       return (await InitHandling.TryCreateRequest(dependencies, projectRoot, image, force)
           .BindAsync(request => InitHandling.TryHandleRequest(dependencies, request))
         )

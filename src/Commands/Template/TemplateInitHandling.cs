@@ -8,13 +8,13 @@ namespace Cicee.Commands.Template
 {
   public static class TemplateInitHandling
   {
-    internal static Result<TemplateInitRequest> TryCreateRequest(InitDependencies dependencies, string projectRoot,
+    internal static Result<TemplateInitRequest> TryCreateRequest(CommandDependencies dependencies, string projectRoot,
       bool force)
     {
       return new(new TemplateInitRequest(projectRoot, force));
     }
 
-    private static IReadOnlyCollection<FileCopyRequest> GetFiles(InitDependencies dependencies,
+    private static IReadOnlyCollection<FileCopyRequest> GetFiles(CommandDependencies dependencies,
       TemplateInitRequest request)
     {
       var templatesPath = dependencies.CombinePath(dependencies.GetInitTemplatesDirectoryPath(), "bin");
@@ -50,13 +50,13 @@ namespace Cicee.Commands.Template
       return new Dictionary<string, string>();
     }
 
-    public static async Task<Result<TemplateInitResult>> TryHandleRequest(InitDependencies dependencies,
+    public static async Task<Result<TemplateInitResult>> TryHandleRequest(CommandDependencies dependencies,
       TemplateInitRequest request)
     {
-      dependencies.WriteInformation("Initializing project...\n");
+      dependencies.StandardOutWriteLine("Initializing project...\n");
       return await Validation.ValidateRequestExecution(dependencies, request)
         .TapLeft(exception =>
-          dependencies.WriteInformation(
+          dependencies.StandardOutWriteLine(
             $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
         .BindAsync(async validatedRequest =>
           (await FileCopyHelpers.TryWriteFiles(
@@ -66,16 +66,16 @@ namespace Cicee.Commands.Template
             validatedRequest.OverwriteFiles
           ))
           .TapLeft(exception =>
-            dependencies.WriteInformation(
+            dependencies.StandardOutWriteLine(
               $"Failed to write files.\nError: {exception.GetType()}\nMessage: {exception.Message}"
             )
           )
           .Tap(results =>
           {
-            dependencies.WriteInformation("Initialization complete.\n\nFiles:");
+            dependencies.StandardOutWriteLine("Initialization complete.\n\nFiles:");
             foreach (var result in results)
             {
-              dependencies.WriteInformation(
+              dependencies.StandardOutWriteLine(
                 $"  {(result.Written ? "Copied " : "Skipped")} {result.Request.DestinationPath}");
             }
           })
@@ -84,7 +84,7 @@ namespace Cicee.Commands.Template
         );
     }
 
-    private static void DisplayNextSteps(InitDependencies dependencies, TemplateInitResult initResult)
+    private static void DisplayNextSteps(CommandDependencies dependencies, TemplateInitResult initResult)
     {
       var projectCiBin = dependencies.CombinePath(
         dependencies.CombinePath(initResult.ProjectRoot, "ci"),
@@ -122,7 +122,7 @@ Next steps:
     Setup the continuous integration processes the project needs.
 ";
 
-      dependencies.WriteInformation(nextSteps);
+      dependencies.StandardOutWriteLine(nextSteps);
     }
   }
 }

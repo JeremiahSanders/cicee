@@ -11,7 +11,7 @@ namespace Cicee.Commands.Init
   public static class FileCopyHelpers
   {
     public static Task<Result<IReadOnlyCollection<FileCopyResult>>> TryWriteFiles(
-      InitDependencies dependencies,
+      CommandDependencies dependencies,
       IReadOnlyCollection<FileCopyRequest> files,
       IReadOnlyDictionary<string, string> templateValues,
       bool overwriteFiles

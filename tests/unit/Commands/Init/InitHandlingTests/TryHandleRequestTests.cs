@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Cicee.Commands;
 using Cicee.Commands.Init;
 using LanguageExt.Common;
 using Xunit;
@@ -11,7 +12,7 @@ namespace Cicee.Tests.Unit.Commands.Init.InitHandlingTests
   {
     public static IEnumerable<object[]> GenerateTestCases()
     {
-      var happyPathDependencies = InitHelpers.CreateMockDependencies();
+      var happyPathDependencies = DependencyHelper.CreateMockDependencies();
       InitRequest happyPathRequest = new("/media/cdrom/project", Image: null, OverwriteFiles: true);
       var happyPathExpected = new Result<InitRequest>(happyPathRequest);
 
@@ -32,7 +33,7 @@ namespace Cicee.Tests.Unit.Commands.Init.InitHandlingTests
     [Theory]
     [MemberData(nameof(GenerateTestCases))]
     public async Task ReturnsExpectedResult(
-      InitDependencies dependencies,
+      CommandDependencies dependencies,
       InitRequest request,
       Result<InitRequest> expected
     )

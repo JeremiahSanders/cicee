@@ -7,7 +7,7 @@ namespace Cicee.Commands.Template
   {
     public static async Task<int> HandleAsync(string projectRoot, bool force)
     {
-      var dependencies = InitDependencies.Create();
+      var dependencies = CommandDependencies.Create();
       return (await TemplateInitHandling.TryCreateRequest(dependencies, projectRoot, force)
           .BindAsync(request => TemplateInitHandling.TryHandleRequest(dependencies, request))
         )
