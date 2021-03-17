@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using Cicee.CiEnv;
+using Cicee.Commands;
 using Cicee.Commands.Exec;
 using LanguageExt.Common;
 using Xunit;
@@ -12,14 +13,14 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
   {
     public static IEnumerable<object[]> GenerateTestCases()
     {
-      object[] TestCase(ExecDependencies dependencies, ExecRequest request, Result<ExecRequestContext> expected)
+      object[] TestCase(CommandDependencies dependencies, ExecRequest request, Result<ExecRequestContext> expected)
       {
         return new object[] {dependencies, request, expected};
       }
 
       var defaultProjectRoot = "/code";
       var defaultProjectName = $"name-{Guid.NewGuid():D}";
-      var defaultVersion = $"0.0.0-sha-{Guid.NewGuid().ToString(format: "N").Substring(startIndex: 0, length: 7)}";
+      var defaultVersion = $"0.0.0-sha-{Guid.NewGuid().ToString("N").Substring(startIndex: 0, length: 7)}";
       var defaultTitle = $"Title {Guid.NewGuid():D}";
       var defaultProjectMetadata =
         new ProjectMetadata
@@ -34,7 +35,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
               new ProjectEnvironmentVariable
               {
                 Name =
-                  $"VARIABLE_{Guid.NewGuid().ToString(format: "D").Replace(oldValue: "-", newValue: "_")}",
+                  $"VARIABLE_{Guid.NewGuid().ToString("D").Replace("-", "_")}",
                 DefaultValue = Randomization.Boolean() ? string.Empty : Guid.NewGuid().ToString(),
                 Description = $"Description {Guid.NewGuid():D}",
                 Required = Randomization.Boolean(),
@@ -44,34 +45,36 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
           }
         };
 
-      var baseDependencies = ExecHandlingTestHelpers.CreateDependencies() with
+      Func<string, string, string> combinePath = (path1, path2) => $"{path1}/{path2}";
+      var baseDependencies = DependencyHelper.CreateMockDependencies() with
       {
+        CombinePath = combinePath,
         EnsureFileExists = file =>
         {
-          var ciEnvPath = Path.Combine(defaultProjectRoot, path2: "ci", path3: "ci.env");
-          var projectMetadataPath = Path.Combine(defaultProjectRoot, path2: ".project-metadata.json");
-          var ciDockerfilePath = Path.Combine(defaultProjectRoot, "ci", "Dockerfile");
+          var ciEnvPath = combinePath(defaultProjectRoot, combinePath("ci", "ci.env"));
+          var projectMetadataPath = combinePath(defaultProjectRoot, ".project-metadata.json");
+          var ciDockerfilePath = combinePath(defaultProjectRoot, combinePath("ci", "Dockerfile"));
           return file == ciEnvPath || file == projectMetadataPath || file == ciDockerfilePath
             ? new Result<string>(file)
-            : new Result<string>(e: new FileNotFoundException(file));
+            : new Result<string>(new FileNotFoundException(file));
         },
         TryLoadFileString = file =>
         {
-          var projectMetadataPath = Path.Combine(defaultProjectRoot, path2: ".project-metadata.json");
+          var projectMetadataPath = combinePath(defaultProjectRoot, ".project-metadata.json");
           return file == projectMetadataPath
             ? Json.TrySerialize(defaultProjectMetadata)
-            : new Result<string>(e: new FileNotFoundException(file));
+            : new Result<string>(new FileNotFoundException(file));
         }
       };
-      var baseRequest = new ExecRequest(defaultProjectRoot, Command: "-al", Entrypoint: "ls",
+      var baseRequest = new ExecRequest(defaultProjectRoot, "-al", "ls",
         Image: null);
       var baseResult = new ExecRequestContext(
         baseRequest.ProjectRoot,
         defaultProjectMetadata,
         baseRequest.Command,
         baseRequest.Entrypoint,
-        EnvironmentInitializationScriptPath: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "ci.env"),
-        Dockerfile: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "Dockerfile"),
+        combinePath(baseRequest.ProjectRoot, combinePath("ci", "ci.env")),
+        combinePath(baseRequest.ProjectRoot, combinePath("ci", "Dockerfile")),
         Image: null
       );
 
@@ -83,9 +86,9 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     }
 
     [Theory]
-    [MemberData(memberName: nameof(GenerateTestCases))]
+    [MemberData(nameof(GenerateTestCases))]
     public void ReturnsExpectedProcessStartInfo(
-      ExecDependencies dependencies,
+      CommandDependencies dependencies,
       ExecRequest execRequest,
       Result<ExecRequestContext> expectedResult
     )
