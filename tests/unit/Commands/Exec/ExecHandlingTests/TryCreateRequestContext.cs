@@ -49,14 +49,12 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       var baseDependencies = DependencyHelper.CreateMockDependencies() with
       {
         CombinePath = combinePath,
-        EnsureFileExists = file =>
+        DoesFileExist = file =>
         {
           var ciEnvPath = combinePath(defaultProjectRoot, combinePath("ci", "ci.env"));
           var projectMetadataPath = combinePath(defaultProjectRoot, ".project-metadata.json");
           var ciDockerfilePath = combinePath(defaultProjectRoot, combinePath("ci", "Dockerfile"));
-          return file == ciEnvPath || file == projectMetadataPath || file == ciDockerfilePath
-            ? new Result<string>(file)
-            : new Result<string>(new FileNotFoundException(file));
+          return file == ciEnvPath || file == projectMetadataPath || file == ciDockerfilePath;
         },
         TryLoadFileString = file =>
         {

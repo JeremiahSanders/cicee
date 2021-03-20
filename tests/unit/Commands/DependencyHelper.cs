@@ -19,7 +19,6 @@ namespace Cicee.Tests.Unit.Commands
           CopyTemplateToPath = (request, env) => new Result<FileCopyRequest>(request),
           DoesFileExist = path => new Result<bool>(value: true),
           EnsureDirectoryExists = path => new Result<string>(path),
-          EnsureFileExists = path => new Result<string>(path),
           GetEnvironmentVariables = () => new Dictionary<string, string>(),
           GetInitTemplatesDirectoryPath = () => "/temp/cicee/init/templates",
           GetLibraryRootPath = () => "/cicee/lib",

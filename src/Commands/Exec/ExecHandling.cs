@@ -74,10 +74,6 @@ namespace Cicee.Commands.Exec
     public static Result<ExecRequestContext> TryCreateRequestContext(CommandDependencies dependencies,
       ExecRequest request)
     {
-      string InferProjectName()
-      {
-        return dependencies.GetFileName(request.ProjectRoot).ToKebabCase();
-      }
 
       return
         dependencies.EnsureDirectoryExists(request.ProjectRoot)
@@ -93,7 +89,7 @@ namespace Cicee.Commands.Exec
                 value => new Result<ProjectMetadata>(value.ProjectMetadata),
                 loadFailure =>
                   // We failed to load metadata, but we know that the project root exists.
-                  new ProjectMetadata {Name = InferProjectName(), Title = "Unknown Project", Version = "0.0.0"})
+                  ProjectMetadataLoader.InferProjectMetadata(dependencies, validatedProjectRoot))
           )
           .Bind(projectMetadata => Require.AsResult.NotNullOrWhitespace(request.Image)
             .BindLeft(_ => dependencies.EnsureFileExists(CreateCiDockerfilePath(dependencies, request)))
