@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using LanguageExt;
 using LanguageExt.Common;
 
-namespace Cicee.Commands.Init
+namespace Cicee.Commands
 {
   public static class FileCopyHelpers
   {

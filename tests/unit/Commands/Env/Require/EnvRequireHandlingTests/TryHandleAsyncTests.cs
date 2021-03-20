@@ -55,10 +55,6 @@ namespace Cicee.Tests.Unit.Commands.Env.Require.EnvRequireHandlingTests
         path => path == arrangedProjectRoot
           ? new Result<string>(path)
           : new Result<string>(new Exception("Directory not found")),
-        EnsureFileExists =
-        path => path == combinePath(arrangedProjectRoot, arrangedProjectMetadata)
-          ? new Result<string>(path)
-          : new Result<string>(new Exception("File not found")),
         TryLoadFileString = path =>
           path == combinePath(arrangedProjectRoot, arrangedProjectMetadata)
             ? Json.TrySerialize(baseArrangedMetadata)

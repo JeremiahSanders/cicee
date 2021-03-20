@@ -2,9 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Threading.Tasks;
 using Cicee.Commands.Exec;
 using Cicee.Commands.Init;
+using LanguageExt;
 using LanguageExt.Common;
 
 namespace Cicee.Commands
@@ -13,7 +15,6 @@ namespace Cicee.Commands
   public record CommandDependencies(
     Func<string, string, string> CombinePath,
     Func<string, Result<string>> EnsureDirectoryExists,
-    Func<string, Result<string>> EnsureFileExists,
     Func<IReadOnlyDictionary<string, string>> GetEnvironmentVariables,
     Action<string> StandardOutWriteLine,
     Action<string> StandardErrorWriteLine,
@@ -23,15 +24,25 @@ namespace Cicee.Commands
     Func<FileCopyRequest, IReadOnlyDictionary<string, string>, Result<FileCopyRequest>> CopyTemplateToPath,
     Func<string, Result<bool>> DoesFileExist,
     Func<string> GetInitTemplatesDirectoryPath,
-    Func<string,string> GetFileName
+    Func<string, string> GetFileName,
+    Func<(string FileName, string Content),Task<Result<(string FileName, string Content)>>> TryWriteFileStringAsync
   )
   {
+    public Result<string> EnsureFileExists(string file)
+    {
+      return DoesFileExist(file)
+        .Bind(exists =>
+          exists
+            ? new Result<string>(file)
+            : new Result<string>(new FileNotFoundException($"File '{file}' does not exist.", file))
+        );
+    }
+
     public static CommandDependencies Create()
     {
       return new(
         Io.PathCombine2,
         Io.EnsureDirectoryExists,
-        Io.EnsureFileExists,
         EnvironmentVariableHelpers.GetEnvironmentVariables,
         Console.Out.WriteLine,
         Console.Error.WriteLine,
@@ -41,7 +52,8 @@ namespace Cicee.Commands
         Io.CopyTemplateToPath,
         Io.DoesFileExist,
         Io.GetInitTemplatesDirectoryPath,
-        Io.GetFileNameForPath
+        Io.GetFileNameForPath,
+        Io.TryWriteFileStringAsync
       );
     }
   }

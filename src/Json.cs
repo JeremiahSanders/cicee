@@ -8,7 +8,10 @@ namespace Cicee
   public static class Json
   {
     private static readonly JsonSerializerOptions DefaultOptions =
-      new() {PropertyNameCaseInsensitive = true};
+      new()
+      {
+        PropertyNameCaseInsensitive = true, PropertyNamingPolicy = JsonNamingPolicy.CamelCase, WriteIndented = true
+      };
 
     public static Result<T> TryDeserialize<T>(string possibleJson)
     {
@@ -22,7 +25,7 @@ namespace Cicee
 
     public static Result<string> TrySerialize<T>(T obj)
     {
-      return Prelude.Try(() => JsonSerializer.Serialize(obj)).Try()!;
+      return Prelude.Try(() => JsonSerializer.Serialize(obj, DefaultOptions)).Try()!;
     }
   }
 }

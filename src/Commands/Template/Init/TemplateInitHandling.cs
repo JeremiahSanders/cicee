@@ -1,21 +1,14 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
-using Cicee.Commands.Init;
 using LanguageExt.Common;
 
-namespace Cicee.Commands.Template
+namespace Cicee.Commands.Template.Init
 {
   public static class TemplateInitHandling
   {
-    internal static Result<TemplateInitRequest> TryCreateRequest(CommandDependencies dependencies, string projectRoot,
-      bool force)
-    {
-      return new(new TemplateInitRequest(projectRoot, force));
-    }
-
     private static IReadOnlyCollection<FileCopyRequest> GetFiles(CommandDependencies dependencies,
-      TemplateInitRequest request)
+      TemplateInitContext request)
     {
       var templatesPath = dependencies.CombinePath(dependencies.GetInitTemplatesDirectoryPath(), "bin");
       var ciPath = dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName);
@@ -54,10 +47,11 @@ namespace Cicee.Commands.Template
       TemplateInitRequest request)
     {
       dependencies.StandardOutWriteLine("Initializing project...\n");
-      return await Validation.ValidateRequestExecution(dependencies, request)
-        .TapLeft(exception =>
-          dependencies.StandardOutWriteLine(
-            $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
+      return await (await Validation.ValidateRequestExecution(dependencies, request)
+          .TapLeft(exception =>
+            dependencies.StandardOutWriteLine(
+              $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
+          .BindAsync(context => TryWriteMetadataFile(dependencies, context)))
         .BindAsync(async validatedRequest =>
           (await FileCopyHelpers.TryWriteFiles(
             dependencies,
@@ -72,7 +66,9 @@ namespace Cicee.Commands.Template
           )
           .Tap(results =>
           {
-            dependencies.StandardOutWriteLine("Initialization complete.\n\nFiles:");
+            dependencies.StandardOutWriteLine("Initialization complete.");
+            dependencies.StandardOutWriteLine($"Project metadata updated: {validatedRequest.MetadataFile}");
+            dependencies.StandardOutWriteLine("Files:");
             foreach (var result in results)
             {
               dependencies.StandardOutWriteLine(
@@ -82,6 +78,18 @@ namespace Cicee.Commands.Template
           .Map(_ => new TemplateInitResult(validatedRequest.ProjectRoot, validatedRequest.OverwriteFiles))
           .Tap(result => DisplayNextSteps(dependencies, result))
         );
+    }
+
+    private static async Task<Result<TemplateInitContext>> TryWriteMetadataFile(CommandDependencies dependencies,
+      TemplateInitContext context)
+    {
+      return context.MetadataFile.ToLowerInvariant().Contains("package.json")
+        // Don't update package.json files.
+        ? new Result<TemplateInitContext>(context)
+        : (await Json.TrySerialize(context.ProjectMetadata)
+          .BindAsync(json => dependencies.TryWriteFileStringAsync((FileName: context.MetadataFile, Content: json)))
+        )
+        .Map(_ => context);
     }
 
     private static void DisplayNextSteps(CommandDependencies dependencies, TemplateInitResult initResult)

@@ -56,5 +56,26 @@ namespace Cicee.CiEnv
               )
           );
     }
+
+
+    public static ProjectMetadata InferProjectMetadata(CommandDependencies dependencies, string validatedProjectRoot)
+    {
+      return new()
+      {
+        Name = InferProjectName(dependencies, validatedProjectRoot),
+        Version = "0.0.0",
+        Title = InferProjectTitle(dependencies, validatedProjectRoot)
+      };
+    }
+
+    private static string InferProjectTitle(CommandDependencies dependencies, string validatedProjectRoot)
+    {
+      return dependencies.GetFileName(validatedProjectRoot);
+    }
+
+    private static string InferProjectName(CommandDependencies dependencies, string validatedProjectRoot)
+    {
+      return dependencies.GetFileName(validatedProjectRoot).ToKebabCase();
+    }
   }
 }

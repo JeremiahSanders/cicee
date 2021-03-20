@@ -2,7 +2,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Cicee.Commands.Init;
+using System.Threading.Tasks;
+using Cicee.Commands;
 using LanguageExt;
 using LanguageExt.Common;
 
@@ -109,6 +110,16 @@ namespace Cicee
             File.WriteAllText(destination, contents);
             return (source, destination);
           });
+      }).Try();
+    }
+
+    public static Task<Result<(string FileName, string Content)>> TryWriteFileStringAsync(
+      (string FileName, string Content) tuple)
+    {
+      return Prelude.TryAsync(async () =>
+      {
+        await File.WriteAllTextAsync(tuple.FileName, tuple.Content);
+        return tuple;
       }).Try();
     }
   }

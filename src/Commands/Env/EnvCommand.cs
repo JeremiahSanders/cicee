@@ -1,7 +1,5 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
 using Cicee.Commands.Env.Require;
-using Cicee.Commands.Exec;
 
 namespace Cicee.Commands.Env
 {
@@ -9,9 +7,7 @@ namespace Cicee.Commands.Env
   {
     public static Command Create()
     {
-      var command =
-        new Command("env", "Commands which interact with the current environment.") {EnvRequireCommand.Create()};
-      return command;
+      return new Command("env", "Commands which interact with the current environment.") {EnvRequireCommand.Create()};
     }
   }
 }

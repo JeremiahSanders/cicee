@@ -1,15 +1,17 @@
 {
+  "name": "cicee",
+  "description": "Runs continuous integration workloads via docker-compose, locally or on a build server.",
+  "title": "Continuous Integration Containerized Execution Environment (CICEE)",
+  "version": "0.4.0",
   "ciEnvironment": {
     "variables": [
       {
-        "description": "NuGet API Key",
         "name": "NUGET_API_KEY",
+        "description": "NuGet API Key",
         "required": true,
-        "secret": true
+        "secret": true,
+        "defaultValue": null
       }
     ]
-  },
-  "name": "cicee",
-  "title": "Continuous Integration Containerized Execution Environment (CICEE)",
-  "version": "0.4.0"
+  }
 }

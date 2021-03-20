@@ -51,15 +51,13 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       Func<string, string, string> combinePath = (path1, path2) => $"{path1}/{path2}";
       var baseDependencies = DependencyHelper.CreateMockDependencies() with
       {
-        EnsureFileExists = file =>
+        DoesFileExist = file =>
         {
           var ciEnvPath = combinePath(defaultProjectRoot, combinePath("ci", "ci.env"));
           var projectMetadataPath = combinePath(defaultProjectRoot, ".project-metadata.json");
           var ciceeExecPath = combinePath(defaultLibraryRoot, "cicee-exec.sh");
           var ciDockerfilePath = combinePath(defaultProjectRoot, combinePath("ci", "Dockerfile"));
-          return file == ciEnvPath || file == projectMetadataPath || file == ciceeExecPath || file == ciDockerfilePath
-            ? new Result<string>(file)
-            : new Result<string>(new FileNotFoundException(file));
+          return file == ciEnvPath || file == projectMetadataPath || file == ciceeExecPath || file == ciDockerfilePath;
         },
         TryLoadFileString = file =>
         {
@@ -76,16 +74,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         GetLibraryRootPath = () => defaultLibraryRoot
       };
       var baseRequest = new ExecRequest(defaultProjectRoot, "-al", "ls", Image: null);
-      var baseResult = new ExecResult(
-        baseRequest
-        // baseRequest.ProjectRoot,
-        // defaultProjectMetadata,
-        // baseRequest.Command,
-        // baseRequest.Entrypoint,
-        // EnvironmentInitializationScriptPath: combinePath(baseRequest.ProjectRoot, path2: "ci", path3: "ci.env"),
-        // Dockerfile: combinePath(baseRequest.ProjectRoot, path2: "ci", path3: "Dockerfile"),
-        // Image: null
-      );
+      var baseResult = new ExecResult(baseRequest);
 
       var happyPathDependencies = baseDependencies;
       var happyPathRequest = baseRequest;
