@@ -482,3 +482,4 @@ NuGet.Config
 !/src/templates/**
 # Project development executables
 !bin/
+ci/env.local.sh

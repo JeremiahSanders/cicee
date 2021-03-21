@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
+using Cicee.Commands;
 using Cicee.Commands.Exec;
 using LanguageExt.Common;
 using Xunit;
@@ -14,7 +15,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
   {
     public static IEnumerable<object[]> GenerateTestCases()
     {
-      object[] TestCase(ExecDependencies dependencies, ExecRequest request, Result<ExecRequestContext> expected)
+      object[] TestCase(CommandDependencies dependencies, ExecRequest request, Result<ExecResult> expected)
       {
         return new object[] {dependencies, request, expected};
       }
@@ -22,7 +23,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       var defaultLibraryRoot = "/cicee/lib";
       var defaultProjectRoot = "/code";
       var defaultProjectName = $"name-{Guid.NewGuid():D}";
-      var defaultVersion = $"0.0.0-sha-{Guid.NewGuid().ToString(format: "N").Substring(startIndex: 0, length: 7)}";
+      var defaultVersion = $"0.0.0-sha-{Guid.NewGuid().ToString("N").Substring(startIndex: 0, length: 7)}";
       var defaultTitle = $"Title {Guid.NewGuid():D}";
       var defaultProjectMetadata =
         new ProjectMetadata
@@ -37,7 +38,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
               new ProjectEnvironmentVariable
               {
                 Name =
-                  $"VARIABLE_{Guid.NewGuid().ToString(format: "D").Replace(oldValue: "-", newValue: "_")}",
+                  $"VARIABLE_{Guid.NewGuid().ToString("D").Replace("-", "_")}",
                 DefaultValue = Randomization.Boolean() ? string.Empty : Guid.NewGuid().ToString(),
                 Description = $"Description {Guid.NewGuid():D}",
                 Required = Randomization.Boolean(),
@@ -47,57 +48,47 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
           }
         };
 
-      var baseDependencies = ExecHandlingTestHelpers.CreateDependencies() with
+      Func<string, string, string> combinePath = (path1, path2) => $"{path1}/{path2}";
+      var baseDependencies = DependencyHelper.CreateMockDependencies() with
       {
-        EnsureFileExists = file =>
+        DoesFileExist = file =>
         {
-          var ciEnvPath = Path.Combine(defaultProjectRoot, path2: "ci", path3: "ci.env");
-          var projectMetadataPath = Path.Combine(defaultProjectRoot, path2: ".project-metadata.json");
-          var ciceeExecPath = Path.Combine(defaultLibraryRoot, path2: "cicee-exec.sh");
-          var ciDockerfilePath = Path.Combine(defaultProjectRoot, "ci", "Dockerfile");
-          return file == ciEnvPath || file == projectMetadataPath || file == ciceeExecPath || file == ciDockerfilePath
-            ? new Result<string>(file)
-            : new Result<string>(e: new FileNotFoundException(file));
+          var ciEnvPath = combinePath(defaultProjectRoot, combinePath("ci", "ci.env"));
+          var projectMetadataPath = combinePath(defaultProjectRoot, ".project-metadata.json");
+          var ciceeExecPath = combinePath(defaultLibraryRoot, "cicee-exec.sh");
+          var ciDockerfilePath = combinePath(defaultProjectRoot, combinePath("ci", "Dockerfile"));
+          return file == ciEnvPath || file == projectMetadataPath || file == ciceeExecPath || file == ciDockerfilePath;
         },
         TryLoadFileString = file =>
         {
-          var projectMetadataPath = Path.Combine(defaultProjectRoot, path2: ".project-metadata.json");
+          var projectMetadataPath = combinePath(defaultProjectRoot, ".project-metadata.json");
           return file == projectMetadataPath
             ? Json.TrySerialize(defaultProjectMetadata)
-            : new Result<string>(e: new FileNotFoundException(file));
+            : new Result<string>(new FileNotFoundException(file));
         },
         GetEnvironmentVariables = () =>
-          new Dictionary<string, string>(collection:
-            defaultProjectMetadata.CiEnvironment.Variables.Select(variable =>
-              new KeyValuePair<string, string>(variable.Name, value: Randomization.GuidString())
+          new Dictionary<string, string>(defaultProjectMetadata.CiEnvironment.Variables.Select(variable =>
+              new KeyValuePair<string, string>(variable.Name, Randomization.GuidString())
             )
           ),
         GetLibraryRootPath = () => defaultLibraryRoot
       };
-      var baseRequest = new ExecRequest(defaultProjectRoot, Command: "-al", Entrypoint: "ls", Image: null);
-      var baseResult = new ExecRequestContext(
-        baseRequest.ProjectRoot,
-        defaultProjectMetadata,
-        baseRequest.Command,
-        baseRequest.Entrypoint,
-        EnvironmentInitializationScriptPath: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "ci.env"),
-        Dockerfile: Path.Combine(baseRequest.ProjectRoot, path2: "ci", path3: "Dockerfile"),
-        Image: null
-      );
+      var baseRequest = new ExecRequest(defaultProjectRoot, "-al", "ls", Image: null);
+      var baseResult = new ExecResult(baseRequest);
 
       var happyPathDependencies = baseDependencies;
       var happyPathRequest = baseRequest;
-      var happyPathResult = new Result<ExecRequestContext>(baseResult);
+      var happyPathResult = new Result<ExecResult>(baseResult);
 
       return new[] {TestCase(happyPathDependencies, happyPathRequest, happyPathResult)};
     }
 
     [Theory]
-    [MemberData(memberName: nameof(GenerateTestCases))]
+    [MemberData(nameof(GenerateTestCases))]
     public async Task ReturnsExpectedResult(
-      ExecDependencies dependencies,
+      CommandDependencies dependencies,
       ExecRequest execRequest,
-      Result<ExecRequestContext> expectedResult
+      Result<ExecResult> expectedResult
     )
     {
       var actualResult = await ExecHandling.HandleAsync(dependencies, execRequest);

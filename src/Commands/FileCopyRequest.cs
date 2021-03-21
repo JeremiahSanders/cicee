@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Cicee.Commands.Init
+namespace Cicee.Commands
 {
   [ExcludeFromCodeCoverage]
   public record FileCopyRequest(string SourcePath, string DestinationPath);

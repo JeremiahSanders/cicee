@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using System.Threading.Tasks;
+using Cicee.Commands;
 using LanguageExt;
 using LanguageExt.Common;
 
@@ -28,6 +31,30 @@ namespace Cicee
             ? new Result<string>(file)
             : new Result<string>(new FileNotFoundException($"File '{file}' does not exist.", file))
         );
+    }
+
+    public static string GetLibraryRootPath()
+    {
+      var executionPath = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+      return Path.Combine(executionPath, "lib");
+    }
+
+    public static Result<FileCopyRequest> CopyTemplateToPath(FileCopyRequest copyRequest,
+      IReadOnlyDictionary<string, string> templateValues)
+    {
+      return TryCopyTemplateFile(copyRequest.SourcePath, copyRequest.DestinationPath, templateValues)
+        .Map(_ => copyRequest);
+    }
+
+    public static string GetFileNameForPath(string path)
+    {
+      return Path.GetFileName(path);
+    }
+
+    public static string GetInitTemplatesDirectoryPath()
+    {
+      var executionPath = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+      return Path.Combine(executionPath, "templates", "init");
     }
 
     public static Result<string> TryLoadFileString(string file)
@@ -62,7 +89,8 @@ namespace Cicee
           );
       }
 
-      void EnsureDirectoryExists(){
+      void EnsureDirectoryExists()
+      {
         var destinationDirectory = Path.GetDirectoryName(destination);
         if (!Directory.Exists(destinationDirectory))
         {
@@ -77,11 +105,21 @@ namespace Cicee
           File.ReadAllText,
           InterpolateValues,
           contents =>
-        {
-          EnsureDirectoryExists();
-          File.WriteAllText(destination, contents);
-          return (source, destination);
-        });
+          {
+            EnsureDirectoryExists();
+            File.WriteAllText(destination, contents);
+            return (source, destination);
+          });
+      }).Try();
+    }
+
+    public static Task<Result<(string FileName, string Content)>> TryWriteFileStringAsync(
+      (string FileName, string Content) tuple)
+    {
+      return Prelude.TryAsync(async () =>
+      {
+        await File.WriteAllTextAsync(tuple.FileName, tuple.Content);
+        return tuple;
       }).Try();
     }
   }

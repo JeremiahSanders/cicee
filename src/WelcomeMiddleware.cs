@@ -1,6 +1,6 @@
 using System;
 using System.CommandLine.Invocation;
-using System.Reflection;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Cicee
@@ -9,10 +9,19 @@ namespace Cicee
   {
     public static Task InvokeMiddleware(InvocationContext context, Func<InvocationContext, Task> next)
     {
-      context.Console.Out.Write(
-        $"\n-- cicee (v{typeof(WelcomeMiddleware).Assembly.GetName().Version?.ToString(fieldCount: 3)}) --\n\n"
-      );
+      if (!RequiresRawOutput(context))
+      {
+        context.Console.Out.Write(
+          $"\n-- cicee (v{typeof(WelcomeMiddleware).Assembly.GetName().Version?.ToString(fieldCount: 3)}) --\n\n"
+        );
+      }
+
       return next(context);
+    }
+
+    private static bool RequiresRawOutput(InvocationContext context)
+    {
+      return (context.ParseResult.Tokens.FirstOrDefault()?.Value ?? string.Empty) == "lib";
     }
   }
 }

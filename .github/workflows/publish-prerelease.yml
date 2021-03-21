@@ -17,6 +17,4 @@ jobs:
       - name: Execute compose script - Create distributable composition, without publishing
         run: bin/cicee-exec-compose.sh
         env:
-          GITHUB_OWNER: ${{secrets.GH_PACKAGES_OWNER}}
-          GITHUB_AUTH_TOKEN: ${{secrets.GH_PACKAGES_TOKEN}}
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}

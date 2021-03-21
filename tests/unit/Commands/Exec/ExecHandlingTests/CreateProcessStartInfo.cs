@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Cicee.CiEnv;
+using Cicee.Commands;
 using Cicee.Commands.Exec;
 using LanguageExt.Common;
 using Xunit;
@@ -26,7 +27,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
 
     public static IEnumerable<object[]> GenerateTestCases()
     {
-      var baseDependencies = ExecHandlingTestHelpers.CreateDependencies();
+      var baseDependencies = DependencyHelper.CreateMockDependencies();
       var baseRequest = CreateExecRequestContext();
       var baseExpectedResult = new ProcessStartInfoResult(
         "bash",
@@ -40,14 +41,14 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       {
         Arguments =
         "-c \"" +
-        $"CI_EXEC_CONTEXT=\\\"{Path.Combine(happyPathRequest.ProjectRoot, "ci")}\\\" " +
+        $"CI_EXEC_CONTEXT=\\\"{happyPathDependencies.CombinePath(happyPathRequest.ProjectRoot, "ci")}\\\" " +
         $"PROJECT_NAME=\\\"{happyPathRequest.ProjectMetadata.Name}\\\" " +
         $"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" " +
         $"LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" " +
         $"CI_COMMAND=\\\"{happyPathRequest.Command}\\\" " +
         $"CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" " +
         $"CI_ENV_INIT=\\\"{happyPathRequest.EnvironmentInitializationScriptPath}\\\" " +
-        $"{Path.Combine(happyPathDependencies.GetLibraryRootPath(), "cicee-exec.sh")}\"",
+        $"{happyPathDependencies.CombinePath(happyPathDependencies.GetLibraryRootPath(), "cicee-exec.sh")}\"",
         Environment = happyPathDependencies.GetEnvironmentVariables()
       };
       var happyPathExpected = new Result<ProcessStartInfoResult>(happyPathExpectedResult);
@@ -60,7 +61,7 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     [Theory]
     [MemberData(nameof(GenerateTestCases))]
     public void ReturnsExpectedProcessStartInfo(
-      ExecDependencies dependencies,
+      CommandDependencies dependencies,
       ExecRequestContext execRequestContext,
       Result<ProcessStartInfoResult> expectedResult
     )

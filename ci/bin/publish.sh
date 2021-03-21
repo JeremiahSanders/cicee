@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2155
+# shellcheck disable=SC1090 # ShellCheck can't follow non-constant source. Use a directive to specify location.
+# shellcheck disable=SC2155 # Declare and assign separately to avoid masking return values.
 
 ###
 # Build and publish the project's artifact composition.
@@ -14,12 +15,13 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 
 __initialize() {
   declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
-  # Load the project's CI action and CI workflow libraries.
-  # Then execute the ci-EnvInit function, defined in ci-actions.sh.
-  . "${SCRIPT_LOCATION}/ci-actions.sh" &&
-    . "${SCRIPT_LOCATION}/ci-workflows.sh" &&
-    ci-EnvInit &&
-    ci-EnvDisplay
+  # Load the CICEE CI action library and project CI workflow library.
+  # Then execute the ci-env-init, ci-env-display, and ci-env-require functions, provided by the CI action library.
+  source "$(dotnet run --project src -- lib)" &&
+    source "${SCRIPT_LOCATION}/ci-workflows.sh" &&
+    ci-env-init &&
+    ci-env-display &&
+    ci-env-require
 }
 
 # Execute the initialization function, defined above, and ci-compose and ci-publish functions, defined in ci-workflows.sh.

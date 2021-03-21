@@ -7,13 +7,13 @@ namespace Cicee.Commands.Init
 {
   public static class InitHandling
   {
-    public static Result<InitRequest> TryCreateRequest(InitDependencies dependencies, string projectRoot, string? image,
+    public static Result<InitRequest> TryCreateRequest(CommandDependencies dependencies, string projectRoot, string? image,
       bool overwrite)
     {
       return new(new InitRequest(projectRoot, image, overwrite));
     }
 
-    private static IReadOnlyCollection<FileCopyRequest> GetFiles(InitDependencies dependencies, InitRequest request)
+    private static IReadOnlyCollection<FileCopyRequest> GetFiles(CommandDependencies dependencies, InitRequest request)
     {
       var initTemplatesPath = dependencies.GetInitTemplatesDirectoryPath();
       var ciPath = dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName);
@@ -48,12 +48,12 @@ namespace Cicee.Commands.Init
       return new Dictionary<string, string> {{"image", request.Image ?? string.Empty}};
     }
 
-    public static async Task<Result<InitRequest>> TryHandleRequest(InitDependencies dependencies, InitRequest request)
+    public static async Task<Result<InitRequest>> TryHandleRequest(CommandDependencies dependencies, InitRequest request)
     {
-      dependencies.WriteInformation("Initializing project...\n");
+      dependencies.StandardOutWriteLine("Initializing project...\n");
       return await Validation.ValidateRequestExecution(dependencies, request)
         .TapLeft(exception =>
-          dependencies.WriteInformation(
+          dependencies.StandardOutWriteLine(
             $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
         .BindAsync(async validatedRequest =>
           (await FileCopyHelpers.TryWriteFiles(
@@ -63,16 +63,16 @@ namespace Cicee.Commands.Init
             validatedRequest.OverwriteFiles
           ))
           .TapLeft(exception =>
-            dependencies.WriteInformation(
+            dependencies.StandardOutWriteLine(
               $"Failed to write files.\nError: {exception.GetType()}\nMessage: {exception.Message}"
             )
           )
           .Tap(results =>
           {
-            dependencies.WriteInformation("Initialization complete.\n\nFiles:");
+            dependencies.StandardOutWriteLine("Initialization complete.\n\nFiles:");
             foreach (var result in results)
             {
-              dependencies.WriteInformation(
+              dependencies.StandardOutWriteLine(
                 $"  {(result.Written ? "Copied " : "Skipped")} {result.Request.DestinationPath}");
             }
           })

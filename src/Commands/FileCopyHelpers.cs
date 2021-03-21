@@ -6,12 +6,12 @@ using System.Threading.Tasks;
 using LanguageExt;
 using LanguageExt.Common;
 
-namespace Cicee.Commands.Init
+namespace Cicee.Commands
 {
   public static class FileCopyHelpers
   {
     public static Task<Result<IReadOnlyCollection<FileCopyResult>>> TryWriteFiles(
-      InitDependencies dependencies,
+      CommandDependencies dependencies,
       IReadOnlyCollection<FileCopyRequest> files,
       IReadOnlyDictionary<string, string> templateValues,
       bool overwriteFiles

@@ -32,6 +32,42 @@ namespace Cicee
       return result.Match(binder, exception => new Result<NewSuccess>(exception).AsTask());
     }
 
+    /// <summary>
+    ///   Executes <paramref name="action" /> within a try/catch, returning the input value.
+    /// </summary>
+    /// <param name="result"></param>
+    /// <param name="action"></param>
+    /// <typeparam name="TSuccess"></typeparam>
+    /// <returns>Returns the value in <paramref name="result" /> upon success, or the <see cref="Exception" /> upon exception.</returns>
+    public static Result<TSuccess> BindTryAction<TSuccess>(this Result<TSuccess> result, Action<TSuccess> action)
+    {
+      return result.Bind(value =>
+        Prelude.Try(() =>
+        {
+          action(value);
+          return value;
+        }).Try()
+      );
+    }
+
+    public static Result<NewSuccess> BindTry<OldSuccess, NewSuccess>(
+      this Result<OldSuccess> result,
+      Func<OldSuccess, NewSuccess> binder
+    )
+    {
+      return result.Bind(value => Prelude.Try(() => binder(value)).Try());
+    }
+
+    public static Task<Result<NewSuccess>> BindTryAsync<OldSuccess, NewSuccess>(
+      this Result<OldSuccess> result,
+      Func<OldSuccess, Task<NewSuccess>> binder
+    )
+    {
+      return result.BindAsync(value =>
+        Prelude.TryAsync(() => binder(value)).Try()
+      );
+    }
+
     public static Result<T> MapLeft<T>(this Result<T> result, Func<Exception, Exception> mapper)
     {
       return result.Match(value => result, exception => new Result<T>(mapper(exception)));

@@ -16,9 +16,19 @@ namespace Cicee.Tests.Unit
       return random.Next(maxValue: 2) % 2 == 0;
     }
 
+    public static byte Byte()
+    {
+      return Rng.Byte();
+    }
+
+    public static byte Byte(this Random random)
+    {
+      return Convert.ToByte(random.Next(minValue: 0, maxValue: 256));
+    }
+
     public static string GuidString()
     {
-      return Guid.NewGuid().ToString(format: "D");
+      return Guid.NewGuid().ToString("D");
     }
   }
 }
