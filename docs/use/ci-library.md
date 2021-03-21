@@ -2,13 +2,28 @@
 
 CICEE includes a library of shell functions which provide patterned executions of various common continuous integration actions. E.g., "dotnet build", "docker push". By sourcing this function library in a continuous integration script, project continuous integration workflows can be templated for quick intialization.
 
+```bash
+$ cicee lib --help
+lib:
+  Gets the path of the CICEE shell script library. Intended to be used as the target of 'source', i.e., 'source "$(cicee lib --shell bash)"'.
+
+Usage:
+  cicee lib [options]
+
+Options:
+  -s, --shell <bash>    Shell template.
+  -?, -h, --help        Show help and usage information
+```
+
+> Currently, Bash is the only supported shell. The `--shell` option is not required. When not provided, `--shell` defaults to `bash`.
+
 ## To Import the Continuous Integration Action Library
 
-CICEE exposes a `lib` command to output the importable library script path for supported shells. The `lib` command includes subcommands for each supported shell.
+CICEE exposes a `lib` command to output the importable library script path, for supported shells. The `lib` command provides a `--shell` (short `-a`) option to request a specific template.
 
-| Shell  | Subcommand | Example command to import library |
-| ------ | ---------- | --------------------------------- |
-| `bash` | `bash`     | `source "$(cicee lib bash)"`      |
+| Shell  | `--shell` Value | Example command to import library |
+| ------ | --------------- | --------------------------------- |
+| `bash` | `bash`          | `source "$(cicee lib)"`           |
 
 ## Using the Continuous Integration Action Library
 

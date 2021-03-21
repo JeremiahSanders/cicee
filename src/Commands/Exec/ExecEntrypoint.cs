@@ -19,7 +19,7 @@ namespace Cicee.Commands.Exec
         ))
         .TapLeft(exception =>
         {
-          dependencies.StandardErrorWriteLine($"Execution failed!\nReason: {exception.Message}");
+          dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
         })
         .ToExitCode();
     }
