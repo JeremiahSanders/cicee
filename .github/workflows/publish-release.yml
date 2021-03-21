@@ -19,4 +19,5 @@ jobs:
         run: bin/cicee-exec-publish.sh
         env:
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
+          NUGET_SOURCE: ${{secrets.NUGET_SOURCE}}
           RELEASE_ENVIRONMENT: true
