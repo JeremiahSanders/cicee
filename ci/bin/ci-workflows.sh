@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC2155
+# shellcheck disable=SC1090 # ShellCheck can't follow non-constant source. Use a directive to specify location.
+# shellcheck disable=SC2155 # Declare and assign separately to avoid masking return values.
 
 ###
 # Project CI Workflow Composition Library.
@@ -29,7 +30,7 @@ declare WORKFLOWS_SCRIPT_DIRECTORY="$(dirname "${WORKFLOWS_SCRIPT_LOCATION}")"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORKFLOWS_SCRIPT_DIRECTORY}" && cd ../.. && pwd)}"
 
 # Load the CI action library.
-source "$(dotnet run --project src -- lib bash)"
+source "$(dotnet run --project src -- lib)"
 
 ####
 #-- BEGIN Workflow Compositions

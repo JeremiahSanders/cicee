@@ -21,9 +21,7 @@ namespace Cicee
 
     private static bool RequiresRawOutput(InvocationContext context)
     {
-      var knownRequireRawOutput = new[] {new[] {"lib", "bash"}};
-      var actualTokenValues = context.ParseResult.Tokens.Select(token => token.Value).ToArray();
-      return knownRequireRawOutput.Any(requiredTokenValues => actualTokenValues.SequenceEqual(requiredTokenValues));
+      return (context.ParseResult.Tokens.FirstOrDefault()?.Value ?? string.Empty) == "lib";
     }
   }
 }
