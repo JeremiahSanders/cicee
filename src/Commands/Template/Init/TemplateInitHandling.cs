@@ -16,10 +16,6 @@ namespace Cicee.Commands.Template.Init
       return new[]
       {
         new FileCopyRequest(
-          dependencies.CombinePath(templatesPath, "ci-actions.sh"),
-          dependencies.CombinePath(ciBinPath, "ci-actions.sh")
-        ),
-        new FileCopyRequest(
           dependencies.CombinePath(templatesPath, "ci-workflows.sh"),
           dependencies.CombinePath(ciBinPath, "ci-workflows.sh")
         ),

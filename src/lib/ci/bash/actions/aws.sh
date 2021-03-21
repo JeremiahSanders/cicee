@@ -6,9 +6,9 @@
 #   Contains "action" functions which interact with Amazon Web Services CLI (aws) and CDK CLI (cdk).
 #
 # Action library functions:
-#   * _ci_CdkDeploy - Execute 'cdk deploy'.
-#   * _ci_CdkSynth - Execute 'cdk synth'.
-#   * _ci_DockerLoginAwsEcr - Authenticate with AWS ECR and use authorization to execute docker login.
+#   * ci-aws-cdk-deploy       - Execute 'cdk deploy'.
+#   * ci-aws-cdk-synth        - Execute 'cdk synth'.
+#   * ci-aws-ecr-docker-login - Authenticate with AWS ECR and use authorization to execute docker login.
 #
 # Required environment:
 #   $AWS_ACCOUNT   - AWS account ID/number.
@@ -28,7 +28,7 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 #-
 
 # Docker login to AWS ECR - requires environment $AWS_ACCOUNT and $AWS_REGION.
-_ci_DockerLoginAwsEcr() {
+ci-aws-ecr-docker-login() {
   require-var "AWS_REGION" "AWS_ACCOUNT"
   aws ecr get-login-password --region "${AWS_REGION}" |
     docker login --username AWS --password-stdin "${AWS_ACCOUNT}.dkr.ecr.${AWS_REGION}.amazonaws.com"
@@ -39,17 +39,17 @@ _ci_DockerLoginAwsEcr() {
 # -
 
 # AWS CDK deploy
-_ci_CdkDeploy() {
+ci-aws-cdk-deploy() {
   cdk deploy --app "${BUILD_PACKAGED_DIST}/cloud-assembly" "$@"
 }
 
 # AWS CDK synth
-_ci_CdkSynth() {
+ci-aws-cdk-synth() {
   cd "${PROJECT_ROOT}" &&
     cdk synth --output "${BUILD_PACKAGED_DIST}/cloud-assembly" "$@" &&
     cd -
 }
 
-export -f _ci_CdkDeploy
-export -f _ci_CdkSynth
-export -f _ci_DockerLoginAwsEcr
+export -f ci-aws-cdk-deploy
+export -f ci-aws-cdk-synth
+export -f ci-aws-ecr-docker-login

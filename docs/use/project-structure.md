@@ -19,7 +19,6 @@ CICEE includes a template for continuous integration workflows. This template in
 * _Project repository root_
   * `ci/`
     * `bin/`
-      * `ci-actions.sh` - Project library of continuous integration steps or actions. These actions are combined into workflows. Examples: pulling dependencies, building source, and running unit tests.
       * `ci-workflows.sh` - Project library of continuous integration workflows. These workflows are intended to be executed in entrypoint scripts. Examples: validate project for a pull request, create a distribution package (e.g., NuGet or NPM package) and publish it to a repository.
       * `compose.sh` - Build the project's artifact composition. Intended for use in local debugging, build validation, or when another continuous integration tool will process the build output.
       * `publish.sh` - Build and publish the project's artifact composition. Examples: creating and publishing a NuGet package, building and pushing a Docker image. Intended for use by a continuous integration build agent or similar infrastructure. Generally used upon the merge of a pre-release feature branch into development (e.g., `dev` or `devlop` branch) or a release branch (e.g., into `main` or `trunk`).

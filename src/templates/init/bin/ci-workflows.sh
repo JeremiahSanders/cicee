@@ -34,8 +34,8 @@ WORKFLOWS_SCRIPT_LOCATION="${BASH_SOURCE[0]}"
 declare WORKFLOWS_SCRIPT_DIRECTORY="$(dirname "${WORKFLOWS_SCRIPT_LOCATION}")"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORKFLOWS_SCRIPT_DIRECTORY}" && cd ../.. && pwd)}"
 
-# Load the project's CI action library.
-. "${WORKFLOWS_SCRIPT_DIRECTORY}/ci-actions.sh"
+# Load the CICEE continuous integration action library.
+source "$(cicee lib)"
 
 ####
 #-- BEGIN Workflow Compositions
@@ -52,9 +52,9 @@ ci-validate() {
 
   printf "...\nTODO: Implement ci-validate in %s ...\n\n" "${WORKFLOWS_SCRIPT_LOCATION}"
   # .NET _______
-  #  _ci_DotnetRestore &&
-  #    _ci_DotnetBuild &&
-  #    _ci_DotnetTest
+  #  ci-dotnet-restore &&
+  #    ci-dotnet-build &&
+  #    ci-dotnet-test
 
   # Node.js ____
   #  npm ci &&
@@ -71,13 +71,13 @@ ci-compose() {
 
   printf "...\nTODO: Implement ci-compose in %s ...\n\n" "${WORKFLOWS_SCRIPT_LOCATION}"
   # .NET Library ________________________________
-  # _ci_DotnetPack
+  # ci-dotnet-pack
 
   # .NET Application distributed as Docker image
-  # _ci_DotnetPublish && _ci_DockerBuild
+  # ci-dotnet-publish && ci-docker-build
 
   # AWS CDK _____________________________________
-  # _ci_CdkSynth
+  # ci-aws-cdk-synth
 }
 
 #--
@@ -89,13 +89,13 @@ ci-publish() {
 
   printf "...\nTODO: Implement ci-publish  in %s ...\n\n" "${WORKFLOWS_SCRIPT_LOCATION}"
   # Push Docker image to AWS ECR ______
-  # _ci_DockerLoginAwsEcr && _ci_DockerPush
+  # ci-aws-ecr-docker-login && ci-docker-push
 
   # Push .NET NuGet package ___________
-  # _ci_DotnetNuGetPush
+  # ci-dotnet-nuget-push
 
   # Deploy AWS CDK Cloud Assembly _____
-  # _ci_CdkDeploy
+  # ci-aws-cdk-deploy
 }
 
 export -f ci-compose

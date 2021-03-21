@@ -65,9 +65,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="templates\init\bin\ci-actions.sh">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="templates\init\bin\ci-workflows.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

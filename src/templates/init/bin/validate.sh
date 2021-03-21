@@ -14,13 +14,13 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 
 __initialize() {
   declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
-  # Load the project's CI action and CI workflow libraries.
-  # Then execute the ci-EnvInit and ci-EnvDisplay functions, defined in ci-actions.sh, which initialize and display the environment, respectively.
-  . "${SCRIPT_LOCATION}/ci-actions.sh" &&
-    . "${SCRIPT_LOCATION}/ci-workflows.sh" &&
-    ci-EnvInit &&
-    ci-EnvDisplay &&
-    ci-EnvRequire
+  # Load the CICEE continuous integration action library and project CI workflow library.
+  # Then execute the ci-env-init, ci-env-display, and ci-env-require functions, provided by the CICEE action library.
+  source "$(cicee lib)" &&
+    source "${SCRIPT_LOCATION}/ci-workflows.sh" &&
+    ci-env-init &&
+    ci-env-display &&
+    ci-env-require
 }
 
 # Execute the initialization function, defined above, and ci-validate function defined in ci-workflows.sh.
