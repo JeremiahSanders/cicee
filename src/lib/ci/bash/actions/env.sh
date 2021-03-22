@@ -56,7 +56,7 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 #   4 - Source project environment file, if available; enabling setting project defaults and overrides to convention.
 #       This file is assumed to be stored in version control and all environments (e.g., both local and build server) are assumed to have the same file.
 #       Default location: PROJECT_ROOT/ci/env.project.sh
-#       Additional paths: PROJECT_ROOT/ci/env.ci.sh, PROJECT_ROOT/ci/ci.env, PROJECT_ROOT/ci/project.sh, PROJECT_ROOT/env.project.sh, PROJECT_ROOT/ci.env, , PROJECT_ROOT/project.sh
+#       Additional paths: PROJECT_ROOT/ci/env.ci.sh, PROJECT_ROOT/ci/ci.env, PROJECT_ROOT/ci/project.sh, PROJECT_ROOT/env.project.sh, PROJECT_ROOT/ci.env, PROJECT_ROOT/project.sh
 #   5 - Source local environment file, if available; enabling setting local defaults and overrides to convention.
 #       This file is assumed to NOT BE stored in version control. No consistency between environments is assumed, though patterns and templates are recommended.
 #       Default location: PROJECT_ROOT/ci/env.local.sh
