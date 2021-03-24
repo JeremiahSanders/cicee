@@ -19,13 +19,12 @@ source "${PROJECT_ROOT}/ci/lib/ci-env-load.sh" &&
     "${PROJECT_ROOT}/ci/lib/ci-env-display.sh" &&
     printf "Cleaning %s version %s artifacts...\n\n\n" "${PROJECT_NAME}" "${PROJECT_VERSION_DIST}"
 
-#--
-# Begin project-specific cleaning steps.
-#--
-
-"${PROJECT_ROOT}/ci/lib/clean-src.sh" &&
-    "${PROJECT_ROOT}/ci/lib/clean-tests-unit.sh" &&
-    "${PROJECT_ROOT}/ci/lib/clean-tests-integration.sh" &&
-    "${PROJECT_ROOT}/ci/lib/clean-build.sh"
-
-printf "\n\nBuild artifacts cleaned.\n\n\n"
+rm -rfv \
+  "${PROJECT_ROOT}/build" \
+  "${PROJECT_ROOT}/src/bin" \
+  "${PROJECT_ROOT}/src/obj" \
+  "${PROJECT_ROOT}/tests/unit/bin" \
+  "${PROJECT_ROOT}/tests/unit/bin" \
+  "${PROJECT_ROOT}/tests/integration/bin" \
+  "${PROJECT_ROOT}/tests/integration/bin" &&
+  printf "\n\nBuild artifacts cleaned.\n\n\n"
