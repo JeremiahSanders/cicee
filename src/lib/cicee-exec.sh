@@ -19,7 +19,6 @@ set -o pipefail
 # LIB_ROOT - CICEE library root directory
 # CI_COMMAND - Container's Command
 # CI_ENTRYPOINT - Container's Entrypoint
-# CI_ENV_INIT - Initialization script
 # CI_EXEC_CONTEXT - ci-exec service build context. Defaults to $PROJECT_ROOT/ci. If directory exists and contains a Dockerfile, that is used.
 # CI_EXEC_IMAGE - Optional ci-exec service image. Overrides $CI_EXEC_CONTEXT/Dockerfile.
 
@@ -31,13 +30,9 @@ printf "  | CICEE Library: %s\n" "${LIB_ROOT}"
 printf "  | Image        : %s\n" "${CI_EXEC_IMAGE:-Not applicable. Using Dockerfile.}"
 printf "\n\n"
 
-# Source local environment, if available. Enables setting local defaults.
-CI_ENV_INIT="${CI_ENV_INIT:-${PROJECT_ROOT}/ci/ci.env}"
-if [[ -f "${CI_ENV_INIT}" ]]; then
-  # shellcheck disable=SC1090
-  source "${CI_ENV_INIT}" &&
-    printf "\nSourced '%s'.\n\n" "${CI_ENV_INIT}"
-fi
+# Load CI library and initialize the CI environment.
+#   Initializing a CI environment enables project- and local-environment initialization scripts.
+source "${LIB_ROOT}/ci/bash/ci.sh" && ci-env-init
 
 declare -r DOCKERCOMPOSE_DEPENDENCIES_CI="${PROJECT_ROOT}/ci/docker-compose.dependencies.yml"
 declare -r DOCKERCOMPOSE_DEPENDENCIES_ROOT="${PROJECT_ROOT}/docker-compose.ci.dependencies.yml"
@@ -89,7 +84,10 @@ __arrange() {
     fi
   }
   __pull_dependencies() {
-    docker-compose \
+    # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
+    CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
+      CI_COMMAND="${CI_COMMAND:-}" \
+      docker-compose \
       "${COMPOSE_FILE_ARGS[@]}" \
       pull \
       --ignore-pull-failures \
@@ -103,7 +101,10 @@ __arrange() {
 }
 
 __act() {
-  COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
+  # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
+  CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
+    CI_COMMAND="${CI_COMMAND:-}" \
+    COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
     docker-compose \
     "${COMPOSE_FILE_ARGS[@]}" \
     up \
@@ -115,7 +116,10 @@ __act() {
 }
 
 __cleanup() {
-  COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
+  # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
+  CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
+    CI_COMMAND="${CI_COMMAND:-}" \
+    COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
     docker-compose \
     "${COMPOSE_FILE_ARGS[@]}" \
     down \
