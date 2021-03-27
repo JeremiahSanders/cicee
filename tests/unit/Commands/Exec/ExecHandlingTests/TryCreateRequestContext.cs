@@ -51,10 +51,9 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         CombinePath = combinePath,
         DoesFileExist = file =>
         {
-          var ciEnvPath = combinePath(defaultProjectRoot, combinePath("ci", "ci.env"));
           var projectMetadataPath = combinePath(defaultProjectRoot, ".project-metadata.json");
           var ciDockerfilePath = combinePath(defaultProjectRoot, combinePath("ci", "Dockerfile"));
-          return file == ciEnvPath || file == projectMetadataPath || file == ciDockerfilePath;
+          return file == projectMetadataPath || file == ciDockerfilePath;
         },
         TryLoadFileString = file =>
         {
@@ -71,7 +70,6 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         defaultProjectMetadata,
         baseRequest.Command,
         baseRequest.Entrypoint,
-        combinePath(baseRequest.ProjectRoot, combinePath("ci", "ci.env")),
         combinePath(baseRequest.ProjectRoot, combinePath("ci", "Dockerfile")),
         Image: null
       );

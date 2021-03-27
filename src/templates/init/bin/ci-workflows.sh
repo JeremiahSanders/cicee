@@ -29,16 +29,20 @@ if [[ -n "${WORKFLOWS_SCRIPT_LOCATION:-}" ]]; then
 fi
 
 # Context
-
 WORKFLOWS_SCRIPT_LOCATION="${BASH_SOURCE[0]}"
 declare WORKFLOWS_SCRIPT_DIRECTORY="$(dirname "${WORKFLOWS_SCRIPT_LOCATION}")"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORKFLOWS_SCRIPT_DIRECTORY}" && cd ../.. && pwd)}"
 
-# Load the CICEE continuous integration action library.
-source "$(cicee lib)"
+# Load the CICEE continuous integration action library (by 'cicee lib' or the specific location CICEE mounts it to).
+if [[ -n "$(command -v cicee)" ]]; then
+  source "$(cicee lib)"
+else
+  # CICEE mounts the Bash CI action library at /opt/ci-lib/bash/ci.sh.
+  source "/opt/ci-lib/bash/ci.sh"
+fi
 
 ####
-#-- BEGIN Workflow Compositions
+# BEGIN Workflow Compositions
 #     These commands are executed by CI entrypoint scripts, e.g., publish.sh.
 #     By convention, each CI workflow function begins with "ci-".
 ####
@@ -103,5 +107,5 @@ export -f ci-publish
 export -f ci-validate
 
 ####
-#-- END Workflow Compositions
+# END Workflow Compositions
 ####

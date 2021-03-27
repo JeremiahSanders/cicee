@@ -19,7 +19,6 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         new ProjectMetadata {CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition(), Name = "sample-project", Title = "Sample Project", Version = "0.7.2"},
         "ls",
         "-al",
-        "ci/ci.env",
         "ci/Dockerfile",
         Image: null
       );
@@ -47,7 +46,6 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
         $"LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" " +
         $"CI_COMMAND=\\\"{happyPathRequest.Command}\\\" " +
         $"CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" " +
-        $"CI_ENV_INIT=\\\"{happyPathRequest.EnvironmentInitializationScriptPath}\\\" " +
         $"{happyPathDependencies.CombinePath(happyPathDependencies.GetLibraryRootPath(), "cicee-exec.sh")}\"",
         Environment = happyPathDependencies.GetEnvironmentVariables()
       };

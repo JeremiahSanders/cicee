@@ -1,7 +1,6 @@
 version: "3.7"
 
 services:
-
   ci-exec:
     command: "${CI_COMMAND}"
     entrypoint: "${CI_ENTRYPOINT}"
@@ -30,10 +29,15 @@ services:
       - type: volume
         source: nugetsourcecache
         target: /root/.local/share/NuGet
+      # CI library
+      - type: bind
+        source: "${LIB_ROOT}/ci"
+        target: /opt/ci-lib
+        read_only: true
       # Short syntax mount ( [SOURCE:]TARGET[:MODE] ) creates host directory if it does not exist
       # https://docs.docker.com/compose/compose-file/compose-file-v3/#long-syntax-3
       # AWS CLI configuration
-      -  "${HOME}/.aws:/root/.aws"
+      - "${HOME}/.aws:/root/.aws"
     environment:
       # Environment variables with only a key are resolved to their values on the machine running (Docker) Compose.
       AWS_ACCESS_KEY_ID:

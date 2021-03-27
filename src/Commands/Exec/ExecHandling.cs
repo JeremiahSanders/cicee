@@ -17,7 +17,6 @@ namespace Cicee.Commands.Exec
     private const string CiCommand = "CI_COMMAND";
     private const string CiEntrypoint = "CI_ENTRYPOINT";
     private const string CiExecImage = "CI_EXEC_IMAGE";
-    private const string CiInitScript = "CI_ENV_INIT";
 
     /// <summary>
     ///   Build context for ci-exec service.
@@ -74,7 +73,6 @@ namespace Cicee.Commands.Exec
     public static Result<ExecRequestContext> TryCreateRequestContext(CommandDependencies dependencies,
       ExecRequest request)
     {
-
       return
         dependencies.EnsureDirectoryExists(request.ProjectRoot)
           .Bind(validatedProjectRoot =>
@@ -107,7 +105,6 @@ namespace Cicee.Commands.Exec
                   dependencies.CombinePath(CiDirectoryName, "Dockerfile")))
                 .Match(file => (string?)file, _ => (string?)null);
               return new ExecRequestContext(request.ProjectRoot, projectMetadata, request.Command, request.Entrypoint,
-                GetEnvironmentInitializationScriptPath(dependencies, request),
                 dockerfile,
                 request.Image
               );
@@ -158,19 +155,6 @@ namespace Cicee.Commands.Exec
       return execRequestContext;
     }
 
-    private static string? GetEnvironmentInitializationScriptPath(CommandDependencies dependencies, ExecRequest request)
-    {
-      // TODO: Extract these env paths into default value within application configuration.
-      var envPaths = new[] {".env", "ci.env", "env.sh", "project.sh"};
-
-      return envPaths
-        .Select(relativeFileName =>
-          dependencies.CombinePath(request.ProjectRoot, dependencies.CombinePath(CiDirectoryName, relativeFileName)))
-        .FirstOrDefault(relativeFileName =>
-          dependencies.EnsureFileExists(relativeFileName).Match(_ => true, _ => false)
-        );
-    }
-
     private static IReadOnlyDictionary<string, string> GetExecEnvironment(
       CommandDependencies dependencies,
       ExecRequestContext context
@@ -195,12 +179,6 @@ namespace Cicee.Commands.Exec
 
       ConditionallyAdd(CiCommand, context.Command);
       ConditionallyAdd(CiEntrypoint, context.Entrypoint);
-      ConditionallyAdd(
-        CiInitScript,
-        context.EnvironmentInitializationScriptPath != null
-          ? NormalizeToLinuxPath(context.EnvironmentInitializationScriptPath)
-          : null
-      );
       ConditionallyAdd(CiExecImage, context.Image);
 
       return environment;
