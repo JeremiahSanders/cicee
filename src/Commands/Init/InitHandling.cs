@@ -7,7 +7,8 @@ namespace Cicee.Commands.Init
 {
   public static class InitHandling
   {
-    public static Result<InitRequest> TryCreateRequest(CommandDependencies dependencies, string projectRoot, string? image,
+    public static Result<InitRequest> TryCreateRequest(CommandDependencies dependencies, string projectRoot,
+      string? image,
       bool overwrite)
     {
       return new(new InitRequest(projectRoot, image, overwrite));
@@ -28,10 +29,6 @@ namespace Cicee.Commands.Init
         );
       return new[]
       {
-        dockerfile, new FileCopyRequest(
-          dependencies.CombinePath(initTemplatesPath, "example.ci.env"),
-          dependencies.CombinePath(ciPath, "example.ci.env")
-        ),
         new FileCopyRequest(
           dependencies.CombinePath(initTemplatesPath, "docker-compose.dependencies.yml"),
           dependencies.CombinePath(ciPath, "docker-compose.dependencies.yml")
@@ -48,7 +45,8 @@ namespace Cicee.Commands.Init
       return new Dictionary<string, string> {{"image", request.Image ?? string.Empty}};
     }
 
-    public static async Task<Result<InitRequest>> TryHandleRequest(CommandDependencies dependencies, InitRequest request)
+    public static async Task<Result<InitRequest>> TryHandleRequest(CommandDependencies dependencies,
+      InitRequest request)
     {
       dependencies.StandardOutWriteLine("Initializing project...\n");
       return await Validation.ValidateRequestExecution(dependencies, request)

@@ -74,9 +74,6 @@
     <Content Include="templates\init\Default.Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <Content Include="templates\init\example.ci.env">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="templates\init\docker-compose.project.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
