@@ -3,7 +3,7 @@
 To initialize a project repository with continuous integration workflow scripts.
 
 ```bash
-$ dotnet run --project src -- template init --help
+$ cicee template init --help
 init:
   Initialize project CI scripts.
 

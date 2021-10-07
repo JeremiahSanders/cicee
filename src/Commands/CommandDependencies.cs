@@ -25,7 +25,8 @@ namespace Cicee.Commands
     Func<string, Result<bool>> DoesFileExist,
     Func<string> GetInitTemplatesDirectoryPath,
     Func<string, string> GetFileName,
-    Func<(string FileName, string Content),Task<Result<(string FileName, string Content)>>> TryWriteFileStringAsync
+    Func<(string FileName, string Content), Task<Result<(string FileName, string Content)>>> TryWriteFileStringAsync,
+    Func<DirectoryCopyRequest, Task<Result<DirectoryCopyResult>>> TryCopyDirectoryAsync
   )
   {
     public Result<string> EnsureFileExists(string file)
@@ -53,7 +54,8 @@ namespace Cicee.Commands
         Io.DoesFileExist,
         Io.GetInitTemplatesDirectoryPath,
         Io.GetFileNameForPath,
-        Io.TryWriteFileStringAsync
+        Io.TryWriteFileStringAsync,
+        Io.TryCopyDirectoryAsync
       );
     }
   }

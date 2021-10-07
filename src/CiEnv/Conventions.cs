@@ -4,5 +4,6 @@ namespace Cicee.CiEnv
   {
     public const string CiDirectoryName = "ci";
     public const string CiBinDirectoryName = "bin";
+    public const string CiLibDirectoryName = "lib";
   }
 }
