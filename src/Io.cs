@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -89,7 +90,7 @@ namespace Cicee
           );
       }
 
-      void EnsureDirectoryExists()
+      void CreateDirectoryIfNotExists()
       {
         var destinationDirectory = Path.GetDirectoryName(destination);
         if (!Directory.Exists(destinationDirectory))
@@ -106,7 +107,7 @@ namespace Cicee
           InterpolateValues,
           contents =>
           {
-            EnsureDirectoryExists();
+            CreateDirectoryIfNotExists();
             File.WriteAllText(destination, contents);
             return (source, destination);
           });
@@ -121,6 +122,68 @@ namespace Cicee
         await File.WriteAllTextAsync(tuple.FileName, tuple.Content);
         return tuple;
       }).Try();
+    }
+
+    public static Task<Result<DirectoryCopyResult>> TryCopyDirectoryAsync(DirectoryCopyRequest request)
+    {
+      var (sourceDirectory, destinationDirectory, overwrite) = request;
+
+      Task<DirectoryCopyResult> CopyDirectoryAsync()
+      {
+        if (!Directory.Exists(sourceDirectory))
+        {
+          throw new DirectoryNotFoundException($"Source directory not found. Source: {sourceDirectory}");
+        }
+
+        List<(string SourceDirectory, string TargetDirectory)> createdDirectories = new();
+        List<(string SourceFile, string TargetFile)> copiedFiles = new();
+        List<(string SourceDirectory, string TargetDirectory)> skippedDirectoryCreation = new();
+        List<(string SourceFile, string TargetFile)> skippedSourceFiles = new();
+
+        foreach (string subdirectory in Directory.GetDirectories(sourceDirectory, "*", SearchOption.AllDirectories))
+        {
+          // NOTE: Path.Join used because we must append an arbitrary depth of path components, rather than a single additional component.
+          var target = Path.Join(destinationDirectory, subdirectory.Substring(sourceDirectory.Length));
+
+          if (Directory.Exists(target))
+          {
+            skippedDirectoryCreation.Add((subdirectory, target));
+          }
+          else
+          {
+            Directory.CreateDirectory(target);
+            createdDirectories.Add((subdirectory, target));
+          }
+        }
+
+        foreach (string sourceFilePath in Directory.GetFiles(sourceDirectory, "*.*", SearchOption.AllDirectories))
+        {
+          // NOTE: Path.Join used because we must append an arbitrary depth of path components, rather than a single additional component.
+          var targetFilePath = Path.Join(destinationDirectory, sourceFilePath.Substring(sourceDirectory.Length));
+
+          if (overwrite || !File.Exists(targetFilePath))
+          {
+            File.Copy(sourceFilePath, targetFilePath, overwrite);
+            copiedFiles.Add((sourceFilePath, targetFilePath));
+          }
+          else
+          {
+            skippedSourceFiles.Add((sourceFilePath, targetFilePath));
+          }
+        }
+
+        return new DirectoryCopyResult(
+          sourceDirectory,
+          destinationDirectory,
+          overwrite,
+          createdDirectories,
+          copiedFiles,
+          skippedDirectoryCreation,
+          skippedSourceFiles
+        ).AsTask();
+      }
+
+      return Prelude.TryAsync(CopyDirectoryAsync).Try();
     }
   }
 }

@@ -29,6 +29,7 @@ namespace Cicee.Commands.Init
         );
       return new[]
       {
+        dockerfile,
         new FileCopyRequest(
           dependencies.CombinePath(initTemplatesPath, "docker-compose.dependencies.yml"),
           dependencies.CombinePath(ciPath, "docker-compose.dependencies.yml")
@@ -42,7 +43,7 @@ namespace Cicee.Commands.Init
 
     private static IReadOnlyDictionary<string, string> GetTemplateValues(InitRequest request)
     {
-      return new Dictionary<string, string> {{"image", request.Image ?? string.Empty}};
+      return new Dictionary<string, string> { { "image", request.Image ?? string.Empty } };
     }
 
     public static async Task<Result<InitRequest>> TryHandleRequest(CommandDependencies dependencies,
