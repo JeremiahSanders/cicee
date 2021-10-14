@@ -83,6 +83,8 @@ cicee exec --entrypoint ci/bin/validate.sh
 * [Set up CI workflow for .NET project][]
   * [NuGet Library / .NET Tool][]
   * [ASP.NET Docker Image / Self-contained Command Line Tool Docker Image][]
+* Set up CI workflow for Node.js project
+  * [AWS CDK application hosting `create-react-app` SPA][create-react-app-aws-cdk]
 
 ## What is CICEE?
 
@@ -117,6 +119,7 @@ CICEE users' most common use cases:
 [cicee-init]: docs/use/initialize.md
 [cicee-template-init]: docs/use/template-init.md
 [cicee-template-lib]: docs/use/template-lib.md
+[create-react-app-aws-cdk]: docs/recipes/nodejs/create-react-app-aws-cdk.md
 [How does CICEE work?]: docs/what/how-does-cicee-work.md
 [Installation or update]: docs/use/installation-or-update.md
 [NuGet Library / .NET Tool]: ./docs/recipes/dotnet/nuget-library.md
