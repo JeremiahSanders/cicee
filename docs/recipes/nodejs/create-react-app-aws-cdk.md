@@ -103,7 +103,7 @@ ci-compose() {
     # The zip command below uses the following options:
     #   -T Test zip file integrity.
     #   -r Recurse into directories.
-    if ! [[ -d "${BUILD_PACKAGED_DIST}/compressed" ]]; then
+    if [[ ! -d "${BUILD_PACKAGED_DIST}/compressed" ]]; then
       mkdir "${BUILD_PACKAGED_DIST}/compressed"
     fi
     cd "${BUILD_PACKAGED_DIST}" &&

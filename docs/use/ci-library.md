@@ -128,8 +128,8 @@ _Contextual_
 * `PROJECT_NAME` - Project name. By convention this should be in lower kebab case. I.e., multi-word-project-name. This will be used to pattern conventional output ths, e.g., as part of a zip archive file name.
 * `PROJECT_ROOT` - Project root directory.
 * `PROJECT_TITLE` - Project human-readable name. Defaults to PROJECT_NAME.
-* `PROJECT_VERSION` - Project distributable Major.Minor.Patch version. I.e., 2.3.1.
-* `PROJECT_VERSION_DIST` - Project distributable version. Expected to be in the following format: Release versions: Major.Minor.Patch, e.g., 4.1.7. Pre-release rsions: Major.Minor.Patch-sha-GitSha, e.g., 4.1.7-sha-a7328f. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet ckages, and Docker tags.
+* `PROJECT_VERSION` - Project distributable Major.Minor.Patch semantic version. I.e., 2.3.1.
+* `PROJECT_VERSION_DIST` - Project distributable version. Expected to be in the following format: Release versions: Major.Minor.Patch, e.g., 4.1.7. Pre-release versions: Major.Minor.Patch-sha-GitSha, e.g., 4.1.7-sha-a7328f. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet packages, and Docker tags.
 * `CURRENT_GIT_BRANCH` - Current Git branch.
 * `CURRENT_GIT_HASH` - Current Git hash.
 
@@ -147,7 +147,7 @@ _Conventional Output_
 * `BUILD_DOCS="${BUILD_ROOT}/docs"` - Project distributable documentation which would accompany packaged build output.
 * `BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist"` - Project packaged build output. E.g., .NET NuGet packages, zip archives, AWS CDK cloud assemblies.
 * `BUILD_ROOT` - Project build output root directory.
-* `BUILD_UNPACKAGED_DIST="${BUILD_ROOT}/app"` - Project unpackaged build output. E.g., processed output which might be further packaged or compressed before stribution. E.g., .NET DLLs, Java class files.
+* `BUILD_UNPACKAGED_DIST="${BUILD_ROOT}/app"` - Project unpackaged build output. E.g., processed output which might be further packaged or compressed before distribution. E.g., .NET DLLs, Java class files.
 
 #### Initialization Workflow
 
