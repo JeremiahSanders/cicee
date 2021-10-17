@@ -7,7 +7,6 @@ CICEE expects that a project repository is structured in the following manner.
 * _Project repository root_
   * `ci/`
     * `bin/` - _Optional._ Conventional location of executable scripts intended to be run in a continuous integration environment. Examples: compile source script, run automated tests script, publish to repository script.
-    * `ci.env` - _Optional._ Environment initialization script. Sourced during execution workflow.
     * `docker-compose.dependencies.yml` - _Optional._ Docker-compose services definitions providing dependencies for continuous integration environment. Examples: databases.
     * `docker-compose.project.yml` - _Optional._ Project-specific continuous integration environment definition. Supports declaring dependencies, specifying default environment variables, etc.
     * `Dockerfile` - _Required, unless `exec` is executed with `--image`._ - Dockerfile defining continuous integration environment.
@@ -19,10 +18,12 @@ CICEE includes a template for continuous integration workflows. This template in
 * _Project repository root_
   * `ci/`
     * `bin/`
-      * `ci-workflows.sh` - Project library of continuous integration workflows. These workflows are intended to be executed in entrypoint scripts. Examples: validate project for a pull request, create a distribution package (e.g., NuGet or NPM package) and publish it to a repository.
+      * `ci-workflows.sh` - Project-specific library of continuous integration workflows (implemented as shell functions). These workflows are intended to be executed in entrypoint scripts. Examples: validate project for a pull request, create a distribution package (e.g., NuGet or NPM package), and publish the package to a repository.
       * `compose.sh` - Build the project's artifact composition. Intended for use in local debugging, build validation, or when another continuous integration tool will process the build output.
       * `publish.sh` - Build and publish the project's artifact composition. Examples: creating and publishing a NuGet package, building and pushing a Docker image. Intended for use by a continuous integration build agent or similar infrastructure. Generally used upon the merge of a pre-release feature branch into development (e.g., `dev` or `devlop` branch) or a release branch (e.g., into `main` or `trunk`).
       * `validate.sh` - Build and validate the project's source. Intended for use during the validation of a pull request.
+    * `env.local.sh` - _Optional._ Local environment initialization script. Expected to be **ignored** by source control. Sourced by workflow entrypoint scripts during execution.
+    * `env.project.sh` - _Optional._ Team/shared environment initialization script. Expected to be _stored_ in source control. Sourced by workflow entrypoint scripts during execution.
   * `project-metadata.json` (or `package.json`) - _Not initialized by CICEE._ Defines metadata about the project. E.g., name, release version, and CI environment expectations. (NOTE: `project-metadata.json` is the canonical file containing this metadata. However, NPM's `package.json` will be read if `project-metadata.json` is unavailable.)
 
 ### Project Metadata

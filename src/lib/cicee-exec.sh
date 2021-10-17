@@ -22,6 +22,16 @@ set -o pipefail
 # CI_EXEC_CONTEXT - ci-exec service build context. Defaults to $PROJECT_ROOT/ci. If directory exists and contains a Dockerfile, that is used.
 # CI_EXEC_IMAGE - Optional ci-exec service image. Overrides $CI_EXEC_CONTEXT/Dockerfile.
 
+# Declare fallback context values, supporting execution outside CICEE (using library scripts).
+#   Default project root to present working directory.
+PROJECT_ROOT="${PROJECT_ROOT:-$(pwd)}"
+#   Default project name to project root directory name.
+PROJECT_NAME="${PROJECT_NAME:-$(basename ${PROJECT_ROOT})}"
+#   Default CI library root to: $PROJECT_ROOT/ci/lib
+LIB_ROOT="${LIB_ROOT:-${PROJECT_ROOT}/ci/lib}"
+#   Default ci-exec service build context to $PROJECT_ROOT/ci.
+CI_EXEC_CONTEXT="${CI_EXEC_CONTEXT:-${PROJECT_ROOT}/ci}"
+
 printf "\n|__\nBeginning Continuous Integration Containerized Execution...\n__\n"
 printf "  | Entrypoint   : %s\n" "${CI_ENTRYPOINT:-}"
 printf "  | Command      : %s\n" "${CI_COMMAND:-}"
@@ -85,7 +95,9 @@ __arrange() {
   }
   __pull_dependencies() {
     # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
-    CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
+    LIB_ROOT="${LIB_ROOT:-}" \
+      CI_EXEC_CONTEXT="${CI_EXEC_CONTEXT:-}" \
+      CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
       CI_COMMAND="${CI_COMMAND:-}" \
       docker-compose \
       "${COMPOSE_FILE_ARGS[@]}" \
@@ -102,7 +114,9 @@ __arrange() {
 
 __act() {
   # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
-  CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
+  LIB_ROOT="${LIB_ROOT:-}" \
+    CI_EXEC_CONTEXT="${CI_EXEC_CONTEXT:-}" \
+    CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
     CI_COMMAND="${CI_COMMAND:-}" \
     COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
     docker-compose \
@@ -117,7 +131,9 @@ __act() {
 
 __cleanup() {
   # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
-  CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
+  LIB_ROOT="${LIB_ROOT:-}" \
+    CI_EXEC_CONTEXT="${CI_EXEC_CONTEXT:-}" \
+    CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
     CI_COMMAND="${CI_COMMAND:-}" \
     COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
     docker-compose \
