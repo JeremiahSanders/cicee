@@ -1,0 +1,49 @@
+# Compose Workflow for .NET Executables
+
+## High-level CI Workflow Composition
+
+The `compose` workflow needs to:
+
+* Compile the distributable executable using `dotnet publish`.
+
+## Bash CI Workflow Compositions
+
+> Build output:
+>
+> * _Project root_`/build/app/` - Output of `dotnet publish`.
+
+### Using [Shell Library][shell library] Actions
+
+> The CI [shell library][] assumes that the project is structured:
+>
+> * _Project root_`/` - Project root directory.
+>   * `*.sln` - .NET solution file (e.g., `MyAwesomeProject.sln`).
+>   * `src/` - Directory containing the primary .NET project (e.g., `.csproj`, `.fsproj`).
+
+```bash
+#--
+# Compose the project's artifacts, e.g., compiled binaries, Docker images.
+#--
+ci-compose() {
+  ci-dotnet-publish
+}
+```
+
+### Using [Shell Library][shell library] Environment Variables
+
+> This example is functionally equivalent to the "shell library actions" version above.
+
+```bash
+#--
+# Compose the project's artifacts, e.g., compiled binaries, Docker images.
+#--
+ci-compose() {
+  dotnet publish "${PROJECT_ROOT}/src" \
+    --configuration Release \
+    --output "${BUILD_UNPACKAGED_DIST}" \
+    -p:DocumentationFile="${PROJECT_ROOT}/build/docs/${PROJECT_NAME}-${PROJECT_VERSION_DIST}.xml" \
+    -p:Version="${PROJECT_VERSION_DIST}"
+}
+```
+
+[shell library]: ../../use/ci-library.md
