@@ -182,10 +182,22 @@ function ci-env-init() {
         PROJECT_TITLE="$(jq --raw-output 'if .title == null then "" else .title end' "${PROJECT_METADATA}")"
         PROJECT_VERSION="$(jq --raw-output 'if .version == null then "" else .version end' "${PROJECT_METADATA}")"
         # Declare arrays of defined CI environment variables.
-        CIENV_VARIABLES=($(jq -r '.ciEnvironment.variables | .[]? | .name ' "${PROJECT_METADATA}"))
-        CIENV_VARIABLES_REQUIRED=($(jq -r '.ciEnvironment.variables | .[]? | select( .required ) | .name ' "${PROJECT_METADATA}"))
-        CIENV_VARIABLES_SECRET=($(jq -r '.ciEnvironment.variables | .[]? | select( .secret ) | .name ' "${PROJECT_METADATA}"))
-        CIENV_VARIABLES_PUBLIC=($(jq -r '.ciEnvironment.variables | .[]? | select( .secret==false ) | .name ' "${PROJECT_METADATA}"))
+        #   NOTE: The pattern below declares temporary, string variables for the `jq` result.
+        #   The `jq` queries create JSON arrays from the .name properties of .ciEnvironment.variables, which are then piped to jq's `@sh` formatter.
+        #   The `@sh` formatter flattens and space-separates the array elements. However, it wraps each environment variable name in single-quotes (').
+        #   If those values are directly interpolated into a Bash array (done by surrounding the space-separated values within parentheses), then
+        #   the values cannot be indirectly expanded. Doing so will result in "bad substitution" errors in Windows using Git's Bash, or "unbound variable"
+        #   errors in some Linux environments. That impacts ci-env-display.
+        #   To work around this, we capture the entire result as a single string and then, when we declare the Bash array, we use Bash substring
+        #   replacement (see https://tldp.org/LDP/abs/html/string-manipulation.html) to remove the single-quotes.
+        local __elements_CIENV_VARIABLES="$(jq -r '[ .ciEnvironment.variables | .[]? | .name ] | @sh' "${PROJECT_METADATA}")"
+        local __elements_CIENV_VARIABLES_REQUIRED="$(jq -r '[ .ciEnvironment.variables | .[]? | select( .required ) | .name ] | @sh' "${PROJECT_METADATA}")"
+        local __elements_CIENV_VARIABLES_SECRET="$(jq -r '[ .ciEnvironment.variables | .[]? | select( .secret ) | .name ] | @sh' "${PROJECT_METADATA}")"
+        local __elements_CIENV_VARIABLES_PUBLIC="$(jq -r '[ .ciEnvironment.variables | .[]? | select( .secret==false ) | .name ] | @sh' "${PROJECT_METADATA}")"
+        CIENV_VARIABLES=( ${__elements_CIENV_VARIABLES//\'})
+        CIENV_VARIABLES_REQUIRED=( ${__elements_CIENV_VARIABLES_REQUIRED//\'} )
+        CIENV_VARIABLES_SECRET=( ${__elements_CIENV_VARIABLES_SECRET//\'} )
+        CIENV_VARIABLES_PUBLIC=( ${__elements_CIENV_VARIABLES_PUBLIC//\'} )
 
         printf "Loaded project metadata from %s\n" "${PROJECT_METADATA}"
 
