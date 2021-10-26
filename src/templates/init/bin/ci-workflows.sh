@@ -33,12 +33,14 @@ WORKFLOWS_SCRIPT_LOCATION="${BASH_SOURCE[0]}"
 declare WORKFLOWS_SCRIPT_DIRECTORY="$(dirname "${WORKFLOWS_SCRIPT_LOCATION}")"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORKFLOWS_SCRIPT_DIRECTORY}" && cd ../.. && pwd)}"
 
-# Load the CICEE continuous integration action library (by 'cicee lib' or the specific location CICEE mounts it to).
-if [[ -n "$(command -v cicee)" ]]; then
-  source "$(cicee lib)"
+# Load the CICEE continuous integration action library (local copy, by 'cicee lib', or by the specific location CICEE mounts it to).
+if [[ -d "${PROJECT_ROOT}/ci/lib/ci/bash" ]]; then
+  source "${PROJECT_ROOT}/ci/lib/ci/bash/ci.sh" && printf "Loaded local CI lib: ${PROJECT_ROOT}/ci/lib\n"
+elif [[ -n "$(command -v cicee)" ]]; then
+  source "$(cicee lib)" && printf "Loaded CICEE's CI lib.\n"
 else
   # CICEE mounts the Bash CI action library at /opt/ci-lib/bash/ci.sh.
-  source "/opt/ci-lib/bash/ci.sh"
+  source "/opt/ci-lib/bash/ci.sh" && printf "Loaded CICEE's mounted CI lib.\n"
 fi
 
 ####
