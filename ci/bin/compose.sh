@@ -17,7 +17,7 @@ __initialize() {
   declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
   # Load the CICEE CI action library and project CI workflow library.
   # Then execute the ci-env-init, ci-env-display, and ci-env-require functions, provided by the CI action library.
-  source "$(dotnet run --project src -- lib)" &&
+  source "$(dotnet run --project src --framework net6.0 -- lib)" &&
     source "${SCRIPT_LOCATION}/ci-workflows.sh" &&
     ci-env-init &&
     ci-env-display &&
