@@ -30,7 +30,7 @@ declare WORKFLOWS_SCRIPT_DIRECTORY="$(dirname "${WORKFLOWS_SCRIPT_LOCATION}")"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORKFLOWS_SCRIPT_DIRECTORY}" && cd ../.. && pwd)}"
 
 # Load the CI action library.
-source "$(dotnet run --project src -- lib)"
+source "$(dotnet run --project src --framework net6.0 -- lib)"
 
 ####
 #-- BEGIN Workflow Compositions
@@ -51,7 +51,7 @@ ci-validate() {
 # Compose the project's artifacts, e.g., compiled binaries, Docker images.
 #--
 ci-compose() {
-  ci-dotnet-publish && ci-dotnet-pack
+  ci-dotnet-publish --framework net6.0 && ci-dotnet-pack
 }
 
 #--
