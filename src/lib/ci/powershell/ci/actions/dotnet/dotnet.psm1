@@ -6,13 +6,13 @@
 #   Unless specified otherwise, all functions target the PROJECT_ROOT and assume a .NET solution exists there.
 #
 # Exported library functions:
-#   * ci-dotnet-build - Execute 'dotnet build'.
-#   * ci-dotnet-clean - Execute 'dotnet clean'.
-#   * ci-dotnet-nuget-push - Execute 'dotnet nuget push'.
-#   * ci-dotnet-pack - Execute 'dotnet pack'.
-#   * ci-dotnet-publish - Execute 'dotnet publish'.
-#   * ci-dotnet-restore - Execute 'dotnet restore'.
-#   * ci-dotnet-test - Execute 'dotnet test'.
+#   * Invoke-CiDotnetBuild     - Execute 'dotnet build'.
+#   * Invoke-CiDotnetClean     - Execute 'dotnet clean'.
+#   * Invoke-CiDotnetNugetPush - Execute 'dotnet nuget push'.
+#   * Invoke-CiDotnetPack      - Execute 'dotnet pack'.
+#   * Invoke-CiDotnetPublish   - Execute 'dotnet publish'.
+#   * Invoke-CiDotnetRestore   - Execute 'dotnet restore'.
+#   * Invoke-CiDotnetTest      - Execute 'dotnet test'.
 #
 # Conditionally-required Environment:
 #   $NUGET_API_KEY - NuGet source API key. Required for pushing NuGet packages.
@@ -87,3 +87,11 @@ function Invoke-CiDotnetNugetPush {
         Write-Output "Pushed '${packagePath}'"
     }
 }
+
+Export-ModuleMember -Function Invoke-CiDotnetBuild
+Export-ModuleMember -Function Invoke-CiDotnetClean
+Export-ModuleMember -Function Invoke-CiDotnetPublish
+Export-ModuleMember -Function Invoke-CiDotnetRestore
+Export-ModuleMember -Function Invoke-CiDotnetTest
+Export-ModuleMember -Function Invoke-CiDotnetPack
+Export-ModuleMember -Function Invoke-CiDotnetNugetPush

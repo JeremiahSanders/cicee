@@ -375,3 +375,8 @@ function Reset-CiEnv {
     $Env:PROJECT_VERSION_DIST = $null
     Write-Output "Successfully reset standard CICEE CI environment variables."
 }
+
+Export-ModuleMember -Function Assert-CiEnv
+Export-ModuleMember -Function Initialize-CiEnv
+Export-ModuleMember -Function Reset-CiEnv
+Export-ModuleMember -Function Show-CiEnv

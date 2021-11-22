@@ -16,3 +16,5 @@ function Assert-EnvironmentVariables {
         throw $failureDisplay
     }
 }
+
+Export-ModuleMember -Function Assert-EnvironmentVariables
