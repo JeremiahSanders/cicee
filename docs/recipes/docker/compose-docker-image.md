@@ -19,8 +19,7 @@ The `compose` workflow needs to:
 # Compose the project's artifacts, e.g., compiled binaries, Docker images.
 #--
 ci-compose() {
-  ci-dotnet-publish &&
-    ci-docker-build
+  ci-docker-build
 }
 ```
 
