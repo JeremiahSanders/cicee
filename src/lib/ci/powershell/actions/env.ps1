@@ -5,10 +5,10 @@
 #   These actions are intended to support other actions and be components of workflows.
 #
 # Exported library functions:
-#   * ci-env-display - Display initialized CI environment.
-#   * ci-env-init    - Initialize CI environment. *ALL OTHER ACTIONS ASSUME THIS ENVIRONMENT.*
-#   * ci-env-require - Validates that the CI environment is initialized.
-#   * ci-env-reset   - Unsets predenfined environment variables set by ci-env-init. Does not reset project or local variables.
+#   * Assert-CiEnv     - Validates that the CI environment is initialized.
+#   * Initialize-CiEnv - Initialize CI environment. *ALL OTHER ACTIONS ASSUME THIS ENVIRONMENT.*
+#   * Reset-CiEnv      - Unsets predenfined environment variables set by Initialize-CiEnv. Does not reset project or local variables.
+#   * Show-CiEnv       - Display initialized CI environment.
 ####
 
 $scriptPath = $MyInvocation.MyCommand.Path
@@ -22,7 +22,7 @@ Write-Output "Executing: ${scriptPath}"
 #   Design note: This function's name follows the CI workflow pattern because it is expected to be executed in a
 #                workflow entrypoint script.
 #
-# Expected environment available to all CI actions, after ci-env-init is executed:
+# Expected environment available to all CI actions, after Initialize-CiEnv is executed:
 #  - Contextual -
 #   PROJECT_NAME - Project name. By convention this should be in lower kebab case. I.e., multi-word-project-name. This will be used to pattern conventional output paths, e.g., as part of a zip archive file name.
 #   PROJECT_ROOT - Project root directory.
@@ -32,12 +32,6 @@ Write-Output "Executing: ${scriptPath}"
 #   PROJECT_VERSION_DIST - Project distributable version. Expected to be in the following format: Release versions: Major.Minor.Patch, e.g., 4.1.7. Pre-release versions: Major.Minor.Patch-sha-GitSha, e.g., 4.1.7-sha-a7328f. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet packages, and Docker tags.
 #   CURRENT_GIT_BRANCH - Current Git branch.
 #   CURRENT_GIT_HASH - Current Git hash.
-#  - Configuration -
-#     The CIENV_VARIABLES* variables below are all derived from loading .ciEnvironment.variables JSON path from a project metadata file (if one exists) using jq.
-#   CIENV_VARIABLES - Array of project-specific CI environment variable names.
-#   CIENV_VARIABLES_PUBLIC - Array of project-specific CI environment variable names which are NOT marked secret (by their .secret JSON path property).
-#   CIENV_VARIABLES_REQUIRED - Array of project-specific CI environment variable names which are marked required (by their .required JSON path property).
-#   CIENV_VARIABLES_SECRET - Array of project-specific CI environment variable names which ARE marked secret (by their .secret JSON path property).
 #  - Conventional Output -
 #   BUILD_DOCS="${BUILD_ROOT}/docs" - Project distributable documentation which would accompany packaged build output.
 #   BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist" - Project packaged build output. E.g., .NET NuGet packages, zip archives, AWS CDK cloud assemblies.
@@ -54,12 +48,12 @@ Write-Output "Executing: ${scriptPath}"
 #       PROJECT_VERSION_DIST defaults to PROJECT_VERSION if RELEASE_ENVIRONMENT=true in the environment, or PROJECT_VERSION-sha-CURRENT_GIT_HASH if not.
 #   4 - Source project environment file, if available; enabling setting project defaults and overrides to convention.
 #       This file is assumed to be stored in version control and all environments (e.g., both local and build server) are assumed to have the same file.
-#       Default location: PROJECT_ROOT/ci/env.project.sh
-#       Additional paths: PROJECT_ROOT/ci/env.ci.sh, PROJECT_ROOT/ci/ci.env, PROJECT_ROOT/ci/project.sh, PROJECT_ROOT/env.project.sh, PROJECT_ROOT/ci.env, PROJECT_ROOT/project.sh
+#       Default location: PROJECT_ROOT/ci/env.project.ps1
+#       Additional paths: PROJECT_ROOT/ci/env.ci.ps1, PROJECT_ROOT/ci/project.ps1, PROJECT_ROOT/env.project.ps1, PROJECT_ROOT/project.ps1
 #   5 - Source local environment file, if available; enabling setting local defaults and overrides to convention.
 #       This file is assumed to NOT BE stored in version control. No consistency between environments is assumed, though patterns and templates are recommended.
-#       Default location: PROJECT_ROOT/ci/env.local.sh
-#       Additional paths: PROJECT_ROOT/ci/env.sh, PROJECT_ROOT/ci/.env, PROJECT_ROOT/env.local.sh, PROJECT_ROOT/env.sh, PROJECT_ROOT/.env
+#       Default location: PROJECT_ROOT/ci/env.local.ps1
+#       Additional paths: PROJECT_ROOT/ci/env.ps1, PROJECT_ROOT/env.local.ps1, PROJECT_ROOT/env.ps1
 ##
 function Initialize-CiEnv {
     param (
@@ -96,10 +90,8 @@ function Initialize-CiEnv {
         # Final return 0 ensures we return success, even if no environment files were loaded.
         $projectEnvironmentLocations = "${Env:PROJECT_ROOT}/ci/env.project.ps1" , `
             "${Env:PROJECT_ROOT}/ci/env.ci.ps1" , `
-            "${Env:PROJECT_ROOT}/ci/ci.env" , `
             "${Env:PROJECT_ROOT}/ci/project.ps1" , `
             "${Env:PROJECT_ROOT}/env.project.ps1", `
-            "${Env:PROJECT_ROOT}/ci.env" , `
             "${Env:PROJECT_ROOT}/project.ps1" 
         foreach ($possibleLocation in $projectEnvironmentLocations) {
             if (Test-Path $possibleLocation) {
@@ -132,10 +124,8 @@ function Initialize-CiEnv {
         # Try to source several common local environment file locations, preferring those in the ci directory.
         $localEnvironmentLocations = "${Env:PROJECT_ROOT}/ci/env.local.ps1" , `
             "${Env:PROJECT_ROOT}/ci/env.ps1" , `
-            "${Env:PROJECT_ROOT}/ci/.env" , `
             "${Env:PROJECT_ROOT}/env.local.ps1" , `
-            "${Env:PROJECT_ROOT}/env.ps1" , `
-            "${Env:PROJECT_ROOT}/.env"
+            "${Env:PROJECT_ROOT}/env.ps1"
         foreach ($possibleLocation in $localEnvironmentLocations) {
             if (Test-Path $possibleLocation) {
                 try {
