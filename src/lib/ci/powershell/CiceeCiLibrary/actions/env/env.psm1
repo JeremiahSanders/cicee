@@ -107,7 +107,7 @@ function Initialize-CiEnv {
             }
         }
 
-        Write-Output "No project environment initialization script found.\n  Recommended location: ${Env:PROJECT_ROOT}/ci/env.project.ps1"
+        Write-Output "No project environment initialization script found.`n  Recommended location: ${Env:PROJECT_ROOT}/ci/env.project.ps1"
     }
 
     #----
@@ -140,7 +140,7 @@ function Initialize-CiEnv {
             }
         }
         
-        Write-Output "No local environment initialization script found.\n  Recommended location: ${Env:PROJECT_ROOT}/ci/env.local.ps1"
+        Write-Output "No local environment initialization script found.`n  Recommended location: ${Env:PROJECT_ROOT}/ci/env.local.ps1"
     }
     
     #----
@@ -157,7 +157,9 @@ function Initialize-CiEnv {
 
         if ( $null -ne $(Get-Command git) -and $(Test-Path "${Env:PROJECT_ROOT}/.git") -eq $true ) {
             # We have git installed
-            $Env:CURRENT_GIT_BRANCH = "$(git branch | sed -n '/\* /s///p')"
+            $Env:CURRENT_GIT_BRANCH = $($(git branch).Split('`n') `
+                | Where-Object -FilterScript { $_.Contains("*") } `
+                | ForEach-Object { $_.Replace("*", "").Trim() })
             $Env:CURRENT_GIT_HASH = "$(git log --pretty=format:'%h' -n 1)"
         }
         else {
@@ -295,7 +297,7 @@ function Show-CiEnv {
     }
     else {
         # Loop through the CI environment variables.
-        Write-Output "Environment"
+        Write-Output "Variables"
         Foreach ($envVar in (($ciEnvironmentVariables) | Sort-Object -Property name)) {
             # If the variable is defined as "secret"...
             if (${envVar}.secret -eq $true) {
