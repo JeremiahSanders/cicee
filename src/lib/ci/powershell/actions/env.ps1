@@ -84,7 +84,7 @@ function Initialize-CiEnv {
     #----
     # Tries to source a project environment file.
     #----
-    function __loadProjectEnvironment() {
+    function __loadProjectEnvironment {
         # Infer the project environment has been sourced based upon PROJECT_ENV_FILE being non-empty.
         if (-not [string]::IsNullOrWhiteSpace($Env:PROJECT_ENV_FILE)) {
             # Environment was already sourced.
@@ -121,7 +121,7 @@ function Initialize-CiEnv {
     #----
     # Tries to source a local environment file.
     #----
-    function __loadLocalEnvironment() {
+    function __loadLocalEnvironment {
         # Infer the project environment has been sourced based upon LOCAL_ENV_FILE being non-empty.
         if (-not [string]::IsNullOrWhiteSpace($Env:LOCAL_ENV_FILE )) {
             # Environment was already sourced.
@@ -156,7 +156,7 @@ function Initialize-CiEnv {
     #----
     # Initializes environment variables which are derived from other values.
     #----
-    function __initializeDerivedEnvironment() {
+    function __initializeDerivedEnvironment {
         $Env:PROJECT_ROOT = $ProjectRoot
 
         # Build output paths -- supports consistent output expectations.
@@ -179,9 +179,9 @@ function Initialize-CiEnv {
     #----
     # Try to load project metadata file.
     #----
-    function __tryLoadProjectMetadata() {
+    function __tryLoadProjectMetadata {
   
-        function __loadMetadataFromFile() {
+        function __loadMetadataFromFile {
             [CmdletBinding()]
             param (
                 [Parameter()]
@@ -270,7 +270,7 @@ function Initialize-CiEnv {
 # CI Environment Display.
 #   Displays the current CI environment metadata and build output structure.
 ##
-function Show-CiEnv() {
+function Show-CiEnv {
     Write-Output "`n-- CI Environment -"
     Write-Output "Project            :  ${Env:PROJECT_NAME}"
     Write-Output "  Title            :  ${Env:PROJECT_TITLE}"
@@ -289,7 +289,8 @@ function Show-CiEnv() {
 
     if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable("PROJECT_METADATA"))) {
         return
-    }else {
+    }
+    else {
         if (-not $(Test-Path -Path $Env:PROJECT_METADATA)) {
             Write-Error "Failed to load project metadata from: ${Env:PROJECT_METADATA}"
             return
@@ -339,7 +340,7 @@ function Show-CiEnv() {
 # CI Environment Require.
 #   Validates that the CI environment is initialized and all required variables set.
 ##
-function Assert-CiEnv() {
+function Assert-CiEnv {
     Assert-EnvironmentVariables `
         "BUILD_DOCS", `
         "BUILD_PACKAGED_DIST", `
@@ -367,7 +368,7 @@ function Assert-CiEnv() {
 # CI Environment Reset.
 #   Removes standard environment initialization variables.
 ##
-function Reset-CiEnv() {
+function Reset-CiEnv {
     $Env:BUILD_DOCS = $null
     $Env:BUILD_PACKAGED_DIST = $null
     $Env:BUILD_ROOT = $null
@@ -383,4 +384,4 @@ function Reset-CiEnv() {
     $Env:PROJECT_VERSION = $null
     $Env:PROJECT_VERSION_DIST = $null
     Write-Output "Successfully reset standard CICEE CI environment variables."
-  }
+}
