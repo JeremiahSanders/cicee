@@ -11,9 +11,6 @@
 #   * Show-CiEnv       - Display initialized CI environment.
 ####
 
-$scriptPath = $MyInvocation.MyCommand.Path
-Write-Output "Executing: ${scriptPath}"
-
 ##
 # CI Environment Initialization.
 #   All CI actions implicitly require this function to be executed. Its purpose is to provide a consistent execution

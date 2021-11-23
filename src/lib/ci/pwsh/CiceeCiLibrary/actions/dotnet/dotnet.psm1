@@ -19,9 +19,6 @@
 #   $NUGET_SOURCE  - NuGet source, e.g., https://api.nuget.org/v3/index.json . Required for pushing NuGet packages.
 ####
 
-$scriptPath = $MyInvocation.MyCommand.Path
-Write-Output "Executing: ${scriptPath}"
-
 # .NET build
 function Invoke-CiDotnetBuild {
     # Use of ${args} below uses the automatic variable provided by powershell. See `$args` in `$ get-help about_Automatic_Variables`.
