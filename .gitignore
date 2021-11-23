@@ -483,3 +483,4 @@ NuGet.Config
 # Project development executables
 !bin/
 ci/env.local.sh
+ci/env.local.ps1
