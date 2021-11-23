@@ -1,10 +1,10 @@
 #!/usr/bin/env pwsh
 
 ###
-# Build the project's artifact composition.
+# Build and publish the project's artifact composition.
 #
 # How to use:
-#   Customize the `Invoke-CiCompose` workflow (function) defined in `ci-workflows.ps1`.
+#   Customize the `Invoke-CiCompose` and `Invoke-CiPublish` workflows (functions) defined in `ci-workflows.ps1`.
 ###
 
 # Context
@@ -21,6 +21,7 @@ $ciceeCiPowershellModulePath = $(dotnet run --project "$(Join-Path $projectRoot 
 # 4 - Display the CI environment, for logging.
 # 5 - Assert that the CI environment is configured. (To fail early in cases of misconfiguration.)
 # 6 - Execute `Invoke-CiCompose`, defined in `ci-workflows.ps1`.
+# 7 - Execute `Invoke-CiPublish`, defined in `ci-workflows.ps1`.
 Import-Module "${ciceeCiPowershellModulePath}" && `
   . $(Join-Path $scriptDirectory "ci-workflows.ps1") && `
   Initialize-CiEnv && `
@@ -28,4 +29,7 @@ Import-Module "${ciceeCiPowershellModulePath}" && `
   Assert-CiEnv && `
   Write-Output "`nBeginning artifact composition...`n" && `
   Invoke-CiCompose && `
-  Write-Output "`nComposition complete!`n"
+  Write-Output "`nComposition complete!`n" && `
+  Write-Output "`nPublishing composed artifacts...`n" && `
+  Invoke-CiPublish && `
+  Write-Output "`nPublishing complete!`n"

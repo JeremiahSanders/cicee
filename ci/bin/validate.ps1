@@ -4,7 +4,7 @@
 # Build and validate the project's source.
 #
 # How to use:
-#   Customize the `Invoke-CiValidate` workflow (function) defined in ci-workflows.ps1.
+#   Customize the `Invoke-CiValidate` workflow (function) defined in `ci-workflows.ps1`.
 ###
 
 # Context
