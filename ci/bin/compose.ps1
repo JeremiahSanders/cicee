@@ -1,10 +1,10 @@
 #!/usr/bin/env pwsh
 
 ###
-# Build and validate the project's source.
+# Build the project's artifact composition.
 #
 # How to use:
-#   Customize the `Invoke-CiValidate` workflow (function) defined in ci-workflows.ps1.
+#   Customize the `Invoke-CiCompose` workflow (function) defined in ci-workflows.ps1.
 ###
 
 # Context
@@ -20,12 +20,12 @@ $ciceeCiPowershellModulePath = $(dotnet run --project "$(Join-Path $projectRoot 
 # 3 - Initialize the CI environment.
 # 4 - Display the CI environment, for logging.
 # 5 - Assert that the CI environment is configured. (To fail early in cases of misconfiguration.)
-# 6 - Execute `Invoke-CiValidate`, defined in `ci-workflows.ps1`.
+# 6 - Execute `Invoke-CiCompose`, defined in `ci-workflows.ps1`.
 Import-Module "${ciceeCiPowershellModulePath}" && `
   . $(Join-Path $scriptDirectory "ci-workflows.ps1") && `
   Initialize-CiEnv && `
   Show-CiEnv && `
   Assert-CiEnv && `
-  Write-Output "`nBeginning validation...`n" && `
-  Invoke-CiValidate && `
-  Write-Output "`nValidation complete!`n"
+  Write-Output "`nBeginning artifact composition...`n" && `
+  Invoke-CiCompose && `
+  Write-Output "`nComposition complete!`n"
