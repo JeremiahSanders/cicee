@@ -13,9 +13,15 @@ namespace Cicee.Commands.Lib
         return new(LibraryShellTemplate.Bash, LibraryPaths.BashEntrypoint(dependencies));
       }
 
+      LibContext CreatePowerShellLibContext()
+      {
+        return new(LibraryShellTemplate.PowerShell, LibraryPaths.PowerShellModule(dependencies));
+      }
+
       return request.Shell.ToLowerInvariant().Trim() switch
       {
         "bash" => new Result<LibContext>(CreateBashLibContext()).AsTask(),
+        "pwsh" => new Result<LibContext>(CreatePowerShellLibContext()).AsTask(),
         "" => new Result<LibContext>(CreateBashLibContext()).AsTask(),
         _ => new Result<LibContext>(new BadRequestException("Unsupported shell."))
           .AsTask()
