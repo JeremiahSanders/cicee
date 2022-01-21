@@ -14,6 +14,7 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 
 __initialize() {
   declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
+  declare PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_LOCATION}/../.." && pwd)}"
   # Load the CICEE continuous integration action library (local copy, by 'cicee lib', or by the specific location CICEE mounts it to).
   if [[ -d "${PROJECT_ROOT}/ci/lib/ci/bash" ]]; then
     source "${PROJECT_ROOT}/ci/lib/ci/bash/ci.sh" && printf "Loaded local CI lib: ${PROJECT_ROOT}/ci/lib\n"
