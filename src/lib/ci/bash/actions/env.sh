@@ -194,10 +194,10 @@ function ci-env-init() {
         local __elements_CIENV_VARIABLES_REQUIRED="$(jq -r '[ .ciEnvironment.variables | .[]? | select( .required ) | .name ] | @sh' "${PROJECT_METADATA}")"
         local __elements_CIENV_VARIABLES_SECRET="$(jq -r '[ .ciEnvironment.variables | .[]? | select( .secret ) | .name ] | @sh' "${PROJECT_METADATA}")"
         local __elements_CIENV_VARIABLES_PUBLIC="$(jq -r '[ .ciEnvironment.variables | .[]? | select( .secret==false ) | .name ] | @sh' "${PROJECT_METADATA}")"
-        CIENV_VARIABLES=( ${__elements_CIENV_VARIABLES//\'})
-        CIENV_VARIABLES_REQUIRED=( ${__elements_CIENV_VARIABLES_REQUIRED//\'} )
-        CIENV_VARIABLES_SECRET=( ${__elements_CIENV_VARIABLES_SECRET//\'} )
-        CIENV_VARIABLES_PUBLIC=( ${__elements_CIENV_VARIABLES_PUBLIC//\'} )
+        CIENV_VARIABLES=(${__elements_CIENV_VARIABLES//\'/})
+        CIENV_VARIABLES_REQUIRED=(${__elements_CIENV_VARIABLES_REQUIRED//\'/})
+        CIENV_VARIABLES_SECRET=(${__elements_CIENV_VARIABLES_SECRET//\'/})
+        CIENV_VARIABLES_PUBLIC=(${__elements_CIENV_VARIABLES_PUBLIC//\'/})
 
         printf "Loaded project metadata from %s\n" "${PROJECT_METADATA}"
 
@@ -234,7 +234,21 @@ function ci-env-init() {
     if [[ "${RELEASE_ENVIRONMENT:-false}" = true ]]; then
       PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}}"
     else
-      PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}-sha-${CURRENT_GIT_HASH}}"
+      local BUILD_DATE_TIME="$(TZ="utc" date "+%Y%m%d-%H%M%S")"
+      if [[ "${PROJECT_VERSION}" =~ ^([0-9])(\.[0-9])(\.[0-9])$ ]]; then
+        # The version is in Major.Minor.Patch format.
+        # Calculate next release version. Assume next version is a minor (so we'll use 0 instead of current patch version).
+        IFS='.' read -ra PROJECT_VERSION_SEGMENTS <<<"${PROJECT_VERSION}"
+        local MAJOR="${PROJECT_VERSION_SEGMENTS[0]}"
+        local MINOR="${PROJECT_VERSION_SEGMENTS[1]}"
+        local PATCH="0"
+        # The $(()) converts ${MINOR} to a number.
+        local BUMPED_MINOR=$((${MINOR} + 1))
+        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${MAJOR}.${BUMPED_MINOR}.${PATCH}-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
+      else
+        # The version is not in Major.Minor.Patch format.
+        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
+      fi
     fi
 
     export PROJECT_NAME
