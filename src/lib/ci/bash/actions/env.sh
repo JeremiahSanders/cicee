@@ -235,7 +235,7 @@ function ci-env-init() {
       PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}}"
     else
       local BUILD_DATE_TIME="$(TZ="utc" date "+%Y%m%d-%H%M%S")"
-      if [[ "${PROJECT_VERSION}" =~ ^([0-9])(\.[0-9])(\.[0-9])$ ]]; then
+      if [[ "${PROJECT_VERSION}" =~ ^[0-9]*\.[0-9]*\.[0-9]*$ ]]; then
         # The version is in Major.Minor.Patch format.
         # Calculate next release version. Assume next version is a minor (so we'll use 0 instead of current patch version).
         IFS='.' read -ra PROJECT_VERSION_SEGMENTS <<<"${PROJECT_VERSION}"
