@@ -43,7 +43,8 @@ source "$(dotnet run --project src --framework net6.0 -- lib)"
 #--
 ci-validate() {
   ci-dotnet-restore &&
-    ci-dotnet-build &&
+    ci-dotnet-build \
+      -p:GenerateDocumentationFile=true &&
     ci-dotnet-test
 }
 
@@ -51,7 +52,11 @@ ci-validate() {
 # Compose the project's artifacts, e.g., compiled binaries, Docker images.
 #--
 ci-compose() {
-  ci-dotnet-publish --framework net6.0 && ci-dotnet-pack
+  ci-dotnet-restore &&
+    ci-dotnet-publish \
+      --framework net6.0 \
+      -p:GenerateDocumentationFile=true &&
+    ci-dotnet-pack -p:GenerateDocumentationFile=true
 }
 
 #--
