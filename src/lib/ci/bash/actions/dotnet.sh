@@ -42,7 +42,7 @@ ci-dotnet-publish() {
   dotnet publish "${PROJECT_ROOT}/src" \
     --configuration Release \
     --output "${BUILD_UNPACKAGED_DIST}" \
-    -p:DocumentationFile="${PROJECT_ROOT}/build/docs/${PROJECT_NAME}-${PROJECT_VERSION_DIST}.xml" \
+    -p:GenerateDocumentationFile=true \
     -p:Version="${PROJECT_VERSION_DIST}" \
     "$@"
 }
@@ -66,7 +66,7 @@ ci-dotnet-pack() {
   dotnet pack "${PROJECT_ROOT}/src" \
     --configuration Release \
     --output "${BUILD_PACKAGED_DIST}/nuget/" \
-    -p:DocumentationFile="${BUILD_DOCS}/${PROJECT_NAME}-${PROJECT_VERSION_DIST}.xml" \
+    -p:GenerateDocumentationFile=true \
     -p:PackageVersion="${PROJECT_VERSION_DIST}" \
     -p:Version="${PROJECT_VERSION_DIST}" \
     "$@"
