@@ -1,16 +1,20 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
 
-namespace Cicee.Commands.Template.Init
+namespace Cicee.Commands.Template.Init;
+
+public static class TemplateInitCommand
 {
-  public static class TemplateInitCommand
+  public static Command Create()
   {
-    public static Command Create()
-    {
-      var command =
-        new Command("init", "Initialize project CI scripts.") {ProjectRootOption.Create(), ForceOption.Create()};
-      command.Handler = CommandHandler.Create<string, bool, string?, string?, string?, string?, string?>(TemplateInitEntrypoint.HandleAsync);
-      return command;
-    }
+    var projectRoot = ProjectRootOption.Create();
+    var force = ForceOption.Create();
+    var command =
+      new Command("init", "Initialize project CI scripts.") { projectRoot, force };
+    command.SetHandler<string, bool>(
+      TemplateInitEntrypoint.HandleAsync,
+      projectRoot,
+      force
+    );
+    return command;
   }
 }

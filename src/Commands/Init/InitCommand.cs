@@ -1,28 +1,25 @@
 using System.CommandLine;
-using System.CommandLine.Invocation;
-using Cicee.Commands.Template;
 
-namespace Cicee.Commands.Init
+namespace Cicee.Commands.Init;
+
+public static class InitCommand
 {
-  public static class InitCommand
+  private static Option<string?> ImageOption()
   {
-    private static Option ImageOption()
-    {
-      return new Option<string?>(
-        new[] {"--image", "-i"},
-        "Base CI image for $PROJECT_ROOT/ci/Dockerfile."
-      ) {IsRequired = false};
-    }
+    return new Option<string?>(
+      new[] { "--image", "-i" },
+      "Base CI image for $PROJECT_ROOT/ci/Dockerfile."
+    ) { IsRequired = false };
+  }
 
-    public static Command Create()
-    {
-      var command =
-        new Command("init", "Initialize project. Creates suggested cicee files.")
-        {
-          ProjectRootOption.Create(), ImageOption(), ForceOption.Create()
-        };
-      command.Handler = CommandHandler.Create<string, string?, bool>(InitEntrypoint.HandleAsync);
-      return command;
-    }
+  public static Command Create()
+  {
+    var projectRoot = ProjectRootOption.Create();
+    var image = ImageOption();
+    var force = ForceOption.Create();
+    var command =
+      new Command("init", "Initialize project. Creates suggested cicee files.") { projectRoot, image, force };
+    command.SetHandler<string, string?, bool>(InitEntrypoint.HandleAsync, projectRoot, image, force);
+    return command;
   }
 }
