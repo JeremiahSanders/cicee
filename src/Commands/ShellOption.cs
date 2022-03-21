@@ -1,14 +1,21 @@
+using System.Collections.Generic;
 using System.CommandLine;
 
-namespace Cicee.Commands
+namespace Cicee.Commands;
+
+public static class ShellOption
 {
-  public static class ShellOption
+  private static readonly string[] SupportedShells = { "bash" };
+  public static IReadOnlyList<string> Shells => SupportedShells;
+
+  public static Option<string> Create()
   {
-    public static Option Create()
-    {
-      var option = new Option<string>(new[] { "--shell", "-s" }, "Shell template.") { IsRequired = false };
-      option.AddSuggestions("bash");
-      return option;
-    }
+    var option = new Option<string>(
+        new[] { "--shell", "-s" },
+        () => string.Empty,
+        "Shell template."
+      ) { IsRequired = false }
+      .FromAmong(SupportedShells);
+    return option;
   }
 }

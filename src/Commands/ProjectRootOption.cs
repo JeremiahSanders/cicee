@@ -5,7 +5,7 @@ namespace Cicee.Commands
 {
   internal static class ProjectRootOption
   {
-    public static Option Create()
+    public static Option<string> Create()
     {
       return new Option<string>(
         aliases: new[] {"--project-root", "-p"},

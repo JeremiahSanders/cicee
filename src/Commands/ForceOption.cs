@@ -4,7 +4,7 @@ namespace Cicee.Commands
 {
   public static class ForceOption
   {
-    public static Option Create()
+    public static Option<bool> Create()
     {
       return new Option<bool>(
         new[] { "--force", "-f" },

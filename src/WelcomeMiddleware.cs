@@ -21,7 +21,7 @@ namespace Cicee
 
     private static bool RequiresRawOutput(InvocationContext context)
     {
-      return (context.ParseResult.Tokens.FirstOrDefault()?.Value ?? string.Empty) == "lib";
+      return (context.ParseResult.Tokens.FirstOrDefault().Value) == "lib";
     }
   }
 }
