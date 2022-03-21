@@ -1,18 +1,22 @@
 using System.Threading.Tasks;
 
-namespace Cicee.Commands.Lib
+namespace Cicee.Commands.Lib;
+
+public static class LibEntrypoint
 {
-  public static class LibEntrypoint
+  public static Task<int> HandleAsync(string? shell)
   {
-    public static async Task<int> HandleAsync(string? shell)
-    {
-      var dependencies = CommandDependencies.Create();
-      return (await LibHandling.HandleAsync(dependencies, new LibRequest(shell ?? string.Empty)))
-        .TapLeft(exception =>
-        {
-          dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
-        })
-        .ToExitCode();
-    }
+    return HandleAsync(new LibRequest(shell ?? string.Empty));
+  }
+
+  public static async Task<int> HandleAsync(LibRequest request)
+  {
+    var dependencies = CommandDependencies.Create();
+    return (await LibHandling.HandleAsync(dependencies, request))
+      .TapLeft(exception =>
+      {
+        dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
+      })
+      .ToExitCode();
   }
 }
