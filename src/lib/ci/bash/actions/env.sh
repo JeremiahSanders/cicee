@@ -30,7 +30,7 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 #   PROJECT_ROOT - Project root directory.
 #   PROJECT_TITLE - Project human-readable name. Defaults to PROJECT_NAME.
 #   PROJECT_VERSION - Project distributable Major.Minor.Patch version. I.e., 2.3.1.
-#   PROJECT_VERSION_DIST - Project distributable version. Expected to be in the following format: Release versions: Major.Minor.Patch, e.g., 4.1.7. Pre-release versions: Major.Minor.Patch-sha-GitSha, e.g., 4.1.7-sha-a7328f. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet packages, and Docker tags.
+#   PROJECT_VERSION_DIST - Project distributable version. Expected to be in the following format: Release versions: Major.Minor.Patch, e.g., 4.1.7. Pre-release versions: Major.Minor.Patch-YearMonthDay-HourMinuteSecond-sha-GitSha, e.g., 4.1.7-20220313-131121-sha-a7328f. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet packages, and Docker tags.
 #   CURRENT_GIT_BRANCH - Current Git branch.
 #   CURRENT_GIT_HASH - Current Git hash.
 #  - Configuration -
