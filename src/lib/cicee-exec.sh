@@ -88,6 +88,7 @@ __arrange() {
   __build_project_ci() {
     if [[ -f "${PROJECT_ROOT}/ci/Dockerfile" ]]; then
       docker build \
+        --pull \
         --rm \
         --file "${PROJECT_ROOT}/ci/Dockerfile" \
         "${PROJECT_ROOT}/ci"
