@@ -24,7 +24,7 @@ rm -rfv \
   "${PROJECT_ROOT}/src/bin" \
   "${PROJECT_ROOT}/src/obj" \
   "${PROJECT_ROOT}/tests/unit/bin" \
-  "${PROJECT_ROOT}/tests/unit/bin" \
+  "${PROJECT_ROOT}/tests/unit/obj" \
   "${PROJECT_ROOT}/tests/integration/bin" \
-  "${PROJECT_ROOT}/tests/integration/bin" &&
+  "${PROJECT_ROOT}/tests/integration/obj" &&
   printf "\n\nBuild artifacts cleaned.\n\n\n"

@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
-# shellcheck disable=SC1090 # ShellCheck can't follow non-constant source. Use a directive to specify location.
-# shellcheck disable=SC2155 # Declare and assign separately to avoid masking return values.
+# shellcheck disable=SC2155
 
 ###
 # Build the project's artifact composition.
@@ -13,8 +12,10 @@ set -o errexit  # Fail or exit immediately if there is an error.
 set -o nounset  # Fail if an unset variable is used.
 set -o pipefail # Fail pipelines if any command errors, not just the last one.
 
+declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
+declare PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_LOCATION}/../.." && pwd)}"
+
 __initialize() {
-  declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
   # Load the CICEE CI action library and project CI workflow library.
   # Then execute the ci-env-init, ci-env-display, and ci-env-require functions, provided by the CI action library.
   source "$(dotnet run --project src --framework net6.0 -- lib)" &&
