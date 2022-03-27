@@ -12,10 +12,10 @@ CICEE also provides a [continuous integration shell function library][cicee-lib]
 
 ### What does CICEE require? What are its dependencies?
 
-* `bash`
-* `docker`
-* `docker-compose` (compose file version `3.7` support required)
-* `dotnet` - .NET `5` runtime.
+* `bash`: bash shell
+* `docker`: Docker command-line interface
+* `docker-compose`: Docker Compose command-line interface (compose file version `3.7` support required)
+* `dotnet`:- .NET runtime (`5` and `6` supported)
 
 ## Why use CICEE?
 
@@ -40,7 +40,7 @@ CICEE users' most common use cases:
 dotnet tool install -g cicee
 ```
 
-> If you already have CICEE installed, but want to date to the latest release:
+> If you already have CICEE installed, but want to update to the latest release:
 >
 > ```bash
 > dotnet tool update -g cicee
