@@ -13,7 +13,7 @@ namespace Cicee.Tests.Unit.Commands.Init
       {
         var expected = new CommandValues(
           "init",
-          "Initialize project. Creates suggested cicee files.",
+          "Initialize project. Creates suggested CICEE files.",
           new[]
           {
             new OptionValues(
