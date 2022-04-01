@@ -28,6 +28,7 @@ CICEE users' most common use cases:
 * [What Files and Directories Does CICEE Require?][project-structure]
 * [Using `cicee`][using-cicee]
 
+
 ## Quickstart
 
 ### Step 0: Install CICEE
@@ -46,47 +47,34 @@ dotnet tool install -g cicee
 
 Open a Bash terminal session **in the root directory of the project**.
 
-Execute [`cicee init`][cicee-init].
+Execute [`cicee init repository`][cicee-init-repository].
 
 ```bash
-cicee init
+cicee init repository
 ```
 
-This adds a `Dockerfile` which will provide all the tools needed to perform the project's continuous integration tasks.
+This adds:
 
-It also creates `docker-compose` files which define the continuous integration containerized execution environment.
+* a `Dockerfile` which will provide all the tools needed to perform the project's continuous integration tasks.
+* `docker-compose` files which define the continuous integration containerized execution environment.
+* a small, flexible continuous integration workflow template. Three initial workflows are provided:
+  * `compose`: Create the project's distributable artifacts. For example, render SASS to CSS, compile source code, build docker images, compress zip archives, package for NPM, etc.
+  * `publish`: Publish the project's distributable artifacts to their repositories. For example, push docker images, publish a package to NuGet, etc.
+  * `validate`: Validate the current project for correctness, completeness, or other rules. **Supports automated checks which should be executed during pull request review.**
 
-#### (Optional) Add CICEE Shell Library
+> #### (Optional Alternative) Include CICEE Shell Library
+>
+> CICEE's core runtime ability is `cicee exec`: executing a specified Docker `entrypoint` and `command` within the continuous integration containerized execution environment. However, that requires a `cicee` installation.
+>
+> By installing the CICEE shell library, the same `cicee exec` process can be performed _without installing `cicee`_. For example, on a continuous integration build server.
+>
+> Execute this alternative [`cicee init repository`][cicee-init-repository] command, which uses the `--ci-lib` option to include the CICEE CI library.
+>
+> ```bash
+> cicee init repository --ci-lib
+> ```
 
-CICEE's core runtime ability is `cicee exec`: executing a specified Docker `entrypoint` and `command` within the continuous integration containerized execution environment. However, that requires a `cicee` installation.
-
-By installing the CICEE shell library, the same `cicee exec` process can be performed _without installing `cicee`_. For example, on a continuous integration build server.
-
-Open a Bash terminal session **in the root directory of the project**.
-
-Execute [`cicee template lib`][cicee-template-lib].
-
-```bash
-cicee template lib
-```
-
-### Step 2: Add a Continuous Integration Workflow Template
-
-Open a Bash terminal session **in the root directory of the project**.
-
-Execute [`cicee template init`][cicee-template-init].
-
-```bash
-cicee template init
-```
-
-This adds a small, flexible continuous integration workflow template. Three initial workflows are provided:
-
-* `compose`: Create the project's distributable artifacts. For example, render SASS to CSS, compile source code, build docker images, compress zip archives, package for NPM, etc.
-* `publish`: Publish the project's distributable artifacts to their repositories. For example, push docker images, publish a package to NuGet, etc.
-* `validate`: Validate the current project for correctness, completeness, or other rules. **Supports automated checks which should be executed during pull request review.**
-
-### Step 3: _Try It Out_
+### Step 2: _Try It Out_
 
 Open a Bash terminal session **in the root directory of the project**.
 
@@ -105,7 +93,7 @@ cicee exec --entrypoint ci/bin/validate.sh
 * Set up the continuous integration workflow.
 
 [cicee-exec]: https://github.com/JeremiahSanders/cicee/tree/main/docs/use/execute.md
-[cicee-init]: https://github.com/JeremiahSanders/cicee/tree/main/docs/use/initialize.md
+[cicee-init-repository]: https://github.com/JeremiahSanders/cicee/tree/main/docs/use/initialize-repository.md
 [cicee-lib]: https://github.com/JeremiahSanders/cicee/tree/main/docs/use/ci-library.md
 [cicee-template-init]: https://github.com/JeremiahSanders/cicee/tree/main/docs/use/template-init.md
 [cicee-template-lib]: https://github.com/JeremiahSanders/cicee/tree/main/docs/use/template-lib.md
