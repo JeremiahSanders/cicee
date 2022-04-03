@@ -10,25 +10,27 @@ namespace Cicee.Commands.Template.Init
     private static IReadOnlyCollection<FileCopyRequest> GetFiles(CommandDependencies dependencies,
       TemplateInitContext request)
     {
-      var templatesPath = dependencies.CombinePath(dependencies.GetInitTemplatesDirectoryPath(), "bin");
+      var templatesBinPath = dependencies.CombinePath(dependencies.GetInitTemplatesDirectoryPath(), Conventions.CiBinDirectoryName);
+      var templatesLibExecPath = dependencies.CombinePath(dependencies.GetInitTemplatesDirectoryPath(), Conventions.CiLibExecDirectoryName);
       var ciPath = dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName);
       var ciBinPath = dependencies.CombinePath(ciPath, Conventions.CiBinDirectoryName);
+      var ciLibExecPath = dependencies.CombinePath(ciPath, Conventions.CiLibExecDirectoryName);
       return new[]
       {
         new FileCopyRequest(
-          dependencies.CombinePath(templatesPath, "ci-workflows.sh"),
-          dependencies.CombinePath(ciBinPath, "ci-workflows.sh")
+          dependencies.CombinePath(templatesLibExecPath, "ci-workflows.sh"),
+          dependencies.CombinePath(ciLibExecPath, "ci-workflows.sh")
         ),
         new FileCopyRequest(
-          dependencies.CombinePath(templatesPath, "compose.sh"),
+          dependencies.CombinePath(templatesBinPath, "compose.sh"),
           dependencies.CombinePath(ciBinPath, "compose.sh")
         ),
         new FileCopyRequest(
-          dependencies.CombinePath(templatesPath, "publish.sh"),
+          dependencies.CombinePath(templatesBinPath, "publish.sh"),
           dependencies.CombinePath(ciBinPath, "publish.sh")
         ),
         new FileCopyRequest(
-          dependencies.CombinePath(templatesPath, "validate.sh"),
+          dependencies.CombinePath(templatesBinPath, "validate.sh"),
           dependencies.CombinePath(ciBinPath, "validate.sh")
         )
       };
@@ -92,9 +94,13 @@ namespace Cicee.Commands.Template.Init
     {
       var projectCiBin = dependencies.CombinePath(
         dependencies.CombinePath(initResult.ProjectRoot, "ci"),
-        "bin"
+        Conventions.CiBinDirectoryName
       );
-      var workflowsScriptLocation = dependencies.CombinePath(projectCiBin, "ci-workflows.sh");
+      var projectCiLibExec = dependencies.CombinePath(
+        dependencies.CombinePath(initResult.ProjectRoot, "ci"),
+        Conventions.CiLibExecDirectoryName
+      );
+      var workflowsScriptLocation = dependencies.CombinePath(projectCiLibExec, "ci-workflows.sh");
       var nextSteps = $@"
 Continuous integration scripts initialized successfully.
 
@@ -118,10 +124,10 @@ Next steps:
   * Add execute permission to all initialized scripts.
     If using macOS or Linux:
       Run the following from your shell (from {initResult.ProjectRoot}):
-      chmod +x ci/bin/*.sh
+      chmod +x ci/bin/*.sh ci/libexec/*.sh
     If using Windows:
       After adding the scripts to Git, run the following from Git Bash (from {initResult.ProjectRoot}):
-      git update-index --chmod=+x ci/bin/*.sh
+      git update-index --chmod=+x ci/bin/*.sh ci/libexec/*.sh
   * Update {workflowsScriptLocation}.
     Setup the continuous integration processes the project needs.
 ";

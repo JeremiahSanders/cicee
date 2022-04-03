@@ -67,7 +67,7 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="templates\init\bin\ci-workflows.sh">
+    <Content Include="templates\init\libexec\ci-workflows.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="templates\init\Template.Dockerfile">
