@@ -4,7 +4,7 @@ The [CI environment][ci-library] provides two version-related environment variab
 
 `PROJECT_VERSION` is the current project semantic version, as defined in [project metadata][project-structure].
 
-`PROJECT_VERSION_DIST` is, by default, dependent upon `RELEASE_ENVIRONMENT`. If `RELEASE_ENVIRONMENT` is `true`, then `PROJECT_VERSION_DIST` matches `PROJECT_VERSION`. If `RELEASE_ENVIRONMENT` is unset (i.e., the default) or any value other than `true`, then `PROJECT_VERSION_DIST` is `${PROJECT_VERSION}-sha-${CURRENT_GIT_HASH}`.
+`PROJECT_VERSION_DIST` is, by default, dependent upon `RELEASE_ENVIRONMENT`. If `RELEASE_ENVIRONMENT` is `true`, then `PROJECT_VERSION_DIST` matches `PROJECT_VERSION`. If `RELEASE_ENVIRONMENT` is unset (i.e., the default) or any value other than `true`, then `PROJECT_VERSION_DIST` is `${PROJECT_VERSION}-${CURRENT_YEARMONTHDAY}-${CURRENT_HOURMINUTESECOND}-sha-${CURRENT_GIT_HASH}`.
 
 ## Goal
 

@@ -15,16 +15,12 @@ set -o pipefail
 # Context
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd ../.. && pwd)"
 
-source "${PROJECT_ROOT}/ci/lib/ci-env-load.sh" &&
-    "${PROJECT_ROOT}/ci/lib/ci-env-display.sh" &&
-    printf "Cleaning %s version %s artifacts...\n\n\n" "${PROJECT_NAME}" "${PROJECT_VERSION_DIST}"
-
 rm -rfv \
   "${PROJECT_ROOT}/build" \
   "${PROJECT_ROOT}/src/bin" \
   "${PROJECT_ROOT}/src/obj" \
   "${PROJECT_ROOT}/tests/unit/bin" \
-  "${PROJECT_ROOT}/tests/unit/bin" \
+  "${PROJECT_ROOT}/tests/unit/obj" \
   "${PROJECT_ROOT}/tests/integration/bin" \
-  "${PROJECT_ROOT}/tests/integration/bin" &&
+  "${PROJECT_ROOT}/tests/integration/obj" &&
   printf "\n\nBuild artifacts cleaned.\n\n\n"

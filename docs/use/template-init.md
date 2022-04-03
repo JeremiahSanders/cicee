@@ -1,6 +1,6 @@
 # Initialize Project Continuous Integration Scripts
 
-To initialize a project repository with continuous integration workflow scripts.
+Initializes a project repository with continuous integration workflow scripts.
 
 ```bash
 $ cicee template init --help

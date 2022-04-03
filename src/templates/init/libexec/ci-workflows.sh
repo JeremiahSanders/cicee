@@ -7,7 +7,7 @@
 #
 # How to use:
 #   Update the "workflow compositions" in this file to perform each of the named continuous integration tasks.
-#   Add additional workflow functions as needed. Note: Functions must be executed
+#   Add additional workflow functions as needed. Note: Functions must be executed to affect CI process.
 ###
 
 set -o errexit  # Fail or exit immediately if there is an error.
