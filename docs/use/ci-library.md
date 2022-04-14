@@ -130,8 +130,9 @@ _Contextual_
 * `PROJECT_TITLE` - Project human-readable name. Defaults to PROJECT_NAME.
 * `PROJECT_VERSION` - Project distributable Major.Minor.Patch semantic version. I.e., 2.3.1.
 * `PROJECT_VERSION_DIST` - Project distributable version. Expected to be in the following format: Release versions: `Major.Minor.Patch`, e.g., `4.1.7`. Pre-release versions: `Major.Minor.Patch-hyphenated-alphanumeric-suffix`, E.g., `4.1.7-alpha`. These formats are very important. They help ensure compatibility across .NET projects, .NET NuGet packages, and Docker tags.
-  * If not overridden, the library initializes this with `Major.Minor.Patch-BuildDateUtc-BuildTimeUtc-sha-GitSha`, e.g., `4.1.7-20220315-142217-sha-a7328f`.
+  * If not overridden, the library initializes this with `Major.Minor.Patch-build-BuildDateUtc-BuildTimeUtc-sha-GitSha`, e.g., `4.1.7-build-20220315-142217-sha-a7328f`.
   * If the `PROJECT_VERSION` can be parsed as a `Major.Minor.Patch` version, e.g., `4.1.7`, then the library will infer this to be a _prerelease build_ for the _next minor version_, to increase clarity of ordering when distributing prerelease versions. E.g., given `PROJECT_VERSION` of `4.1.7`, a prerelease build would be similar to `4.2.0-20220315-142217-sha-a7328f`.
+  * The "`build`" prefix to the prerelease version suffix exists to support compatibility with NuGet restrictions on SemVer 2.0.
 * `CURRENT_GIT_BRANCH` - Current Git branch.
 * `CURRENT_GIT_HASH` - Current Git hash.
 
