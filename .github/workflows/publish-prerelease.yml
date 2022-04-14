@@ -1,9 +1,7 @@
 name: Publish Prerelease
 
 on:
-  push:
-    branches:
-      - dev
+  workflow_dispatch:
 
 jobs:
   publish-prerelease:
@@ -14,8 +12,8 @@ jobs:
     steps:
       - name: Checkout latest commit
         uses: actions/checkout@v2
-      - name: Execute compose script - Create distributable composition, without publishing
-        run: bin/cicee-exec-compose.sh
+      - name: Execute publish script - Publish project artifacts
+        run: bin/cicee-exec-publish.sh
         env:
           NUGET_API_KEY: ${{secrets.NUGET_API_KEY}}
           NUGET_SOURCE: ${{secrets.NUGET_SOURCE}}
