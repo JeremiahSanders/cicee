@@ -71,10 +71,10 @@ ci-dotnet-pack() {
 
 # .NET NuGet push - requires environment $NUGET_SOURCE and NUGET_API_KEY
 ci-dotnet-nuget-push() {
-  for packageFile in "${BUILD_PACKAGED_DIST}"/nuget/*.nupkg; do
-    dotnet nuget push "${packageFile}" --api-key "${NUGET_API_KEY}" --source "${NUGET_SOURCE}" &&
-      printf "\n  Pushed '%s'" "${packageFile}"
-  done
+  # dotnet nuget push supports wildcard package names. See: https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-nuget-push
+  printf "\n  Pushing NuGet packages to '%s' using 'dotnet nuget push'.\n" "${NUGET_SOURCE}" &&
+    dotnet nuget push "${BUILD_PACKAGED_DIST}/nuget/*.nupkg" --api-key "${NUGET_API_KEY}" --source "${NUGET_SOURCE}" &&
+    printf "\n  Pushed NuGet packages to '%s'.\n" "${NUGET_SOURCE}"
 }
 
 export -f ci-dotnet-build

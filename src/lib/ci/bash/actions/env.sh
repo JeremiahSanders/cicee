@@ -244,10 +244,12 @@ function ci-env-init() {
         local PATCH="0"
         # The $(()) converts ${MINOR} to a number.
         local BUMPED_MINOR=$((${MINOR} + 1))
-        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${MAJOR}.${BUMPED_MINOR}.${PATCH}-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
+        # NOTE: The "build" string starting the prerelease suffix is required for NuGet limitations to SemVer2 compatibility.
+        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${MAJOR}.${BUMPED_MINOR}.${PATCH}-build-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
       else
         # The version is not in Major.Minor.Patch format.
-        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
+        # NOTE: The "build" string starting the prerelease suffix is required for NuGet limitations to SemVer2 compatibility.
+        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}-build-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
       fi
     fi
 
