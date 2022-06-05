@@ -2,7 +2,7 @@
   "name": "cicee",
   "description": "Runs continuous integration workloads via docker-compose, locally or on a build server.",
   "title": "Continuous Integration Containerized Execution Environment (CICEE)",
-  "version": "0.12.1",
+  "version": "1.0.0",
   "ciEnvironment": {
     "variables": [
       {
