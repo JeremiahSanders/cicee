@@ -50,7 +50,7 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 #   BUILD_UNPACKAGED_DIST="${BUILD_ROOT}/app" - Project unpackaged build output. E.g., processed output which might be further packaged or compressed before distribution. E.g., .NET DLLs, Java class files.
 #
 # Workflow:
-#   1 - Initialize convention-based CI enviroment variables.
+#   1 - Initialize convention-based CI environment variables.
 #   2 - Attempt to load project metadata by convention.
 #       Populates PROJECT_NAME, PROJECT_TITLE, and PROJECT_VERSION from JSON file. From "name", "title", and "version" properties, respectively.
 #       Default location: PROJECT_ROOT/project-metadata.json
