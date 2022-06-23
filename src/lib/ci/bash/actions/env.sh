@@ -24,6 +24,10 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 #   Design note: This function's name follows the CI workflow pattern because it is expected to be executed in a
 #                workflow entrypoint script.
 #
+# Optional initialization environment overrides:
+#   PROJECT_ROOT - Project root directory. Default: $(pwd)
+#   PROJECT_METADATA - Project metadata JSON file. Default: ${PROJECT_ROOT}/project-metadata.json | ${PROJECT_ROOT}/package.json
+#
 # Expected environment available to all CI actions, after ci-env-init is executed:
 #  - Contextual -
 #   PROJECT_NAME - Project name. By convention this should be in lower kebab case. I.e., multi-word-project-name. This will be used to pattern conventional output paths, e.g., as part of a zip archive file name.
@@ -74,6 +78,20 @@ function ci-env-init() {
     else
       return 1
     fi
+  }
+
+  #----
+  # Find first file which exists.
+  #----
+  function __findFirstExistsFile() {
+    for fileName in "${@}"; do
+      if [[ -f "${fileName}" ]]; then
+        echo "${fileName}"
+        return 0
+      fi
+    done
+
+    return 1
   }
 
   #----
@@ -215,13 +233,15 @@ function ci-env-init() {
       fi
     }
 
-    __loadMetadataFromFile "${PROJECT_ROOT}/project-metadata.json" ||
-      __loadMetadataFromFile "${PROJECT_ROOT}/.project-metadata.json" ||
-      __loadMetadataFromFile "${PROJECT_ROOT}/ci/project-metadata.json" ||
-      __loadMetadataFromFile "${PROJECT_ROOT}/ci/.project-metadata.json" ||
-      __loadMetadataFromFile "${PROJECT_ROOT}/package.json" ||
-      __loadMetadataFromFile "${PROJECT_ROOT}/src/package.json" ||
-      return 0
+    METADATA_FILE=$(
+      __findFirstExistsFile "${PROJECT_ROOT}/project-metadata.json" \
+        "${PROJECT_ROOT}/.project-metadata.json" \
+        "${PROJECT_ROOT}/ci/project-metadata.json" \
+        "${PROJECT_ROOT}/ci/.project-metadata.json" \
+        "${PROJECT_ROOT}/package.json" \
+        "${PROJECT_ROOT}/src/package.json"
+    )
+    __loadMetadataFromFile "${PROJECT_METADATA:-${METADATA_FILE}}" || return 0
   }
 
   #----

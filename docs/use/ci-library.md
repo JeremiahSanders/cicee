@@ -121,9 +121,18 @@ Once the CI library is loaded, the continuous integration execution environment 
 
 All CI actions implicitly require this function to be executed. Its purpose is to provide a consistent execution environment for project-level activities. For example, by using a consistent `BUILD_PACKAGED_DIST` variable, CI actions creating an output zip file, NPM package, or APK can all place their artifacts in consistent locations.
 
+#### Initialization Overrides
+
+The following environment variables may be provided to override inferred configuration.
+
+* `PROJECT_METADATA` - Project metadata JSON file. Default: `${PROJECT_ROOT}/project-metadata.json` or `${PROJECT_ROOT}/package.json`
+* `PROJECT_ROOT` - Project root directory.
+
+#### Initialization Effect
+
 Expected environment available to all CI actions, after `ci-env-init` is executed:
 
-_Contextual_
+##### Contextual Environment Variables
 
 * `PROJECT_NAME` - Project name. By convention this should be in lower kebab case. I.e., multi-word-project-name. This will be used to pattern conventional output ths, e.g., as part of a zip archive file name.
 * `PROJECT_ROOT` - Project root directory.
@@ -136,7 +145,7 @@ _Contextual_
 * `CURRENT_GIT_BRANCH` - Current Git branch.
 * `CURRENT_GIT_HASH` - Current Git hash.
 
-_Configuration_
+##### Configuration Environment Variables
 
 The `CIENV_VARIABLES*` variables below are all derived from loading `.ciEnvironment.variables` JSON path from a project metadata file (if one exists) using `jq`.
 
@@ -145,7 +154,7 @@ The `CIENV_VARIABLES*` variables below are all derived from loading `.ciEnvironm
 * `CIENV_VARIABLES_REQUIRED` - Array of project-specific CI environment variable names which are marked required (by their .required JSON path property).
 * `CIENV_VARIABLES_SECRET` - Array of project-specific CI environment variable names which ARE marked secret (by their .secret JSON path property).
 
-_Conventional Output_
+##### Conventional Output Environment Variables
 
 * `BUILD_DOCS="${BUILD_ROOT}/docs"` - Project distributable documentation which would accompany packaged build output.
 * `BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist"` - Project packaged build output. E.g., .NET NuGet packages, zip archives, AWS CDK cloud assemblies.
