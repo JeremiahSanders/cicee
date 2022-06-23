@@ -163,7 +163,7 @@ The `CIENV_VARIABLES*` variables below are all derived from loading `.ciEnvironm
 
 #### Initialization Workflow
 
-1. Initialize convention-based CI enviroment variables.
+1. Initialize convention-based CI environment variables.
 2. Attempt to load project metadata by convention.
     * Populates `PROJECT_NAME`, `PROJECT_TITLE`, and `PROJECT_VERSION` from JSON file. From "name", "title", and "version" properties, respectively.
     * Default location: `PROJECT_ROOT/project-metadata.json`
