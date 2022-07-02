@@ -3,25 +3,38 @@ using System.CommandLine.Invocation;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Cicee
+namespace Cicee;
+
+public static class WelcomeMiddleware
 {
-  public static class WelcomeMiddleware
+  public static Task InvokeMiddleware(InvocationContext context, Func<InvocationContext, Task> next)
   {
-    public static Task InvokeMiddleware(InvocationContext context, Func<InvocationContext, Task> next)
+    if (!RequiresRawOutput(context))
     {
-      if (!RequiresRawOutput(context))
-      {
-        context.Console.Out.Write(
-          $"\n-- cicee (v{typeof(WelcomeMiddleware).Assembly.GetName().Version?.ToString(fieldCount: 3)}) --\n\n"
-        );
-      }
-
-      return next(context);
+      context.Console.Out.Write(
+        $"\n-- cicee (v{typeof(WelcomeMiddleware).Assembly.GetName().Version?.ToString(fieldCount: 3)}) --\n\n"
+      );
     }
 
-    private static bool RequiresRawOutput(InvocationContext context)
+    return next(context);
+  }
+
+
+  private static bool RequiresRawOutput(InvocationContext context)
+  {
+    bool IsLib()
     {
-      return (context.ParseResult.Tokens.FirstOrDefault().Value) == "lib";
+      return context.ParseResult.Tokens.FirstOrDefault().Value == "lib";
     }
+
+    bool IsMetaVersion()
+    {
+      return context.ParseResult.Tokens
+        .Select(token => token.Value)
+        .Take(count: 2)
+        .SequenceEqual(new[] {"meta", "version"});
+    }
+
+    return IsLib() || IsMetaVersion();
   }
 }

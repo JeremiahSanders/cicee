@@ -3,38 +3,37 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.Linq;
 
-namespace Cicee.Tests.Unit.Commands.Exec
+namespace Cicee.Tests.Unit.Commands;
+
+public record CommandValues(string Name, string? Description, IReadOnlyList<OptionValues> Options)
 {
-  public record CommandValues(string Name, string Description, IReadOnlyList<OptionValues> Options)
+  public virtual bool Equals(CommandValues? other)
   {
-    public virtual bool Equals(CommandValues other)
+    if (ReferenceEquals(objA: null, other))
     {
-      if (ReferenceEquals(objA: null, other))
-      {
-        return false;
-      }
-
-      if (ReferenceEquals(objA: this, other))
-      {
-        return true;
-      }
-
-      return Name == other.Name && Description == other.Description && Options.SequenceEqual(other.Options);
+      return false;
     }
 
-    public override int GetHashCode()
+    if (ReferenceEquals(this, other))
     {
-      return HashCode.Combine(Name, Description, Options);
+      return true;
     }
 
-    public static CommandValues FromCommand(Command command)
-    {
-      return new(
-        command.Name,
-        command.Description,
-        Options: command.Options.Select(OptionValues.FromOption)
-          .ToList()
-      );
-    }
+    return Name == other.Name && Description == other.Description && Options.SequenceEqual(other.Options);
+  }
+
+  public override int GetHashCode()
+  {
+    return HashCode.Combine(Name, Description, Options);
+  }
+
+  public static CommandValues FromCommand(Command command)
+  {
+    return new CommandValues(
+      command.Name,
+      command.Description,
+      command.Options.Select(OptionValues.FromOption)
+        .ToArray()
+    );
   }
 }
