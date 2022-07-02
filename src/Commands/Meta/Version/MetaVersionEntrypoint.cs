@@ -11,8 +11,8 @@ public static class MetaVersionEntrypoint
     Task<int> Handle(string projectMetadataPath)
     {
       return MetaVersionHandling.HandleMetaVersionRequest(dependencies, projectMetadataPath)
-        .Tap(dependencies.StandardOutWriteLine)
-        .TapLeft(exception =>
+        .TapSuccess(dependencies.StandardOutWriteLine)
+        .TapFailure(exception =>
         {
           dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
         })

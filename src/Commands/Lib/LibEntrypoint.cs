@@ -13,7 +13,7 @@ public static class LibEntrypoint
   {
     var dependencies = CommandDependencies.Create();
     return (await LibHandling.HandleAsync(dependencies, request))
-      .TapLeft(exception =>
+      .TapFailure(exception =>
       {
         dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
       })

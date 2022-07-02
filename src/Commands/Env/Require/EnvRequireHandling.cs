@@ -13,12 +13,12 @@ namespace Cicee.Commands.Env.Require
       return TryValidateRequest(dependencies, envRequireRequest)
         .Bind(context => ProjectEnvironmentHelpers
           .ValidateEnvironment(dependencies.GetEnvironmentVariables, context.ProjectMetadata).Map(_ => context))
-        .Tap(context =>
+        .TapSuccess(context =>
         {
           dependencies.StandardOutWriteLine("Environment validation succeeded.");
           dependencies.StandardOutWriteLine($"  Metadata file: {context.FilePath}");
         })
-        .TapLeft(exception =>
+        .TapFailure(exception =>
         {
           dependencies.StandardErrorWriteLine("Environment validation failed.");
           dependencies.StandardErrorWriteLine($"  Reason: {exception.Message}");

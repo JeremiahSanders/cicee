@@ -39,12 +39,12 @@ namespace Cicee.Commands.Template.Lib
           GetTemplateValues(request),
           request.OverwriteFiles
         ))
-        .TapLeft(exception =>
+        .TapFailure(exception =>
           dependencies.StandardOutWriteLine(
             $"Failed to write CICEE execution scripts.\nError: {exception.GetType()}\nMessage: {exception.Message}"
           )
         )
-        .Tap(results =>
+        .TapSuccess(results =>
         {
           dependencies.StandardOutWriteLine("CICEE execution script initialization complete.");
           dependencies.StandardOutWriteLine("Files:");
@@ -78,12 +78,12 @@ namespace Cicee.Commands.Template.Lib
       dependencies.StandardOutWriteLine($"  Destination: {request.DestinationDirectoryPath}");
 
       return (await dependencies.TryCopyDirectoryAsync(request))
-        .TapLeft(exception =>
+        .TapFailure(exception =>
           dependencies.StandardErrorWriteLine(
             $"Failed to copy CICEE CI action library.\nError: {exception.GetType()}\nMessage: {exception.Message}"
           )
         )
-        .Tap(results =>
+        .TapSuccess(results =>
         {
           dependencies.StandardOutWriteLine("CICEE CI action library initialized.");
 
@@ -134,7 +134,7 @@ namespace Cicee.Commands.Template.Lib
       dependencies.StandardOutWriteLine("Initializing project with CICEE execution library...\n");
       var validationResult = await Validation.ValidateRequestAsync(dependencies, request);
       return (await validationResult
-          .TapLeft(exception =>
+          .TapFailure(exception =>
             dependencies.StandardOutWriteLine(
               $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
           .BindAsync(async validatedRequest =>
@@ -158,7 +158,7 @@ namespace Cicee.Commands.Template.Lib
                   );
               })
           ))
-        .Tap(result => DisplayNextSteps(dependencies, result));
+        .TapSuccess(result => DisplayNextSteps(dependencies, result));
     }
 
     private static void DisplayNextSteps(CommandDependencies dependencies, TemplateLibResult libResult)

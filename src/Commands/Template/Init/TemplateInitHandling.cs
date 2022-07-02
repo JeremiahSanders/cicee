@@ -46,7 +46,7 @@ namespace Cicee.Commands.Template.Init
     {
       dependencies.StandardOutWriteLine("Initializing project...\n");
       return await (await Validation.ValidateRequestExecution(dependencies, request)
-          .TapLeft(exception =>
+          .TapFailure(exception =>
             dependencies.StandardOutWriteLine(
               $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
           .BindAsync(context => TryWriteMetadataFile(dependencies, context)))
@@ -57,12 +57,12 @@ namespace Cicee.Commands.Template.Init
             GetTemplateValues(request),
             validatedRequest.OverwriteFiles
           ))
-          .TapLeft(exception =>
+          .TapFailure(exception =>
             dependencies.StandardOutWriteLine(
               $"Failed to write files.\nError: {exception.GetType()}\nMessage: {exception.Message}"
             )
           )
-          .Tap(results =>
+          .TapSuccess(results =>
           {
             dependencies.StandardOutWriteLine("Initialization complete.");
             dependencies.StandardOutWriteLine($"Project metadata updated: {validatedRequest.MetadataFile}");
@@ -74,7 +74,7 @@ namespace Cicee.Commands.Template.Init
             }
           })
           .Map(_ => new TemplateInitResult(validatedRequest.ProjectRoot, validatedRequest.OverwriteFiles))
-          .Tap(result => DisplayNextSteps(dependencies, result))
+          .TapSuccess(result => DisplayNextSteps(dependencies, result))
         );
     }
 
