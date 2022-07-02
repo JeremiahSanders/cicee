@@ -17,7 +17,7 @@ namespace Cicee.Commands.Exec
             image
           )
         ))
-        .TapLeft(exception =>
+        .TapFailure(exception =>
         {
           dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
         })

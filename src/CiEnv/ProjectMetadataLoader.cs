@@ -35,7 +35,7 @@ public static class ProjectMetadataLoader
               new Result<(string FilePath, ProjectMetadata ProjectMetadata)>(new BadRequestException(
                 $"Failed to find a suitable metadata file. Add a {DefaultMetadataFileName} file in the project root.")),
               (lastResult, filePath) => lastResult
-                .BindLeft(_ =>
+                .BindFailure(_ =>
                   TryLoadFromFile(ensureFileExists, tryLoadFileString, combinePath(projectRoot, filePath))
                     .Map(metadata =>
                       (combinePath(projectRoot, filePath), metadata)
@@ -109,12 +109,12 @@ public static class ProjectMetadataLoader
     return
       ensureFileExists(filePath)
         .Bind(validatedFile => tryLoadFileString(validatedFile)
-          .MapLeft(loadingFailure =>
+          .MapFailure(loadingFailure =>
             new BadRequestException("Failed to load project metadata.", loadingFailure))
         )
         .Bind(content =>
           Json.TryDeserialize<ProjectMetadata>(content)
-            .MapLeft(deserializationFailure =>
+            .MapFailure(deserializationFailure =>
               new BadRequestException("Failed to deserialize project metadata.", deserializationFailure)
             )
         );

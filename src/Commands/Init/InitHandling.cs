@@ -51,7 +51,7 @@ namespace Cicee.Commands.Init
     {
       dependencies.StandardOutWriteLine("Initializing project...\n");
       return await Validation.ValidateRequestExecution(dependencies, request)
-        .TapLeft(exception =>
+        .TapFailure(exception =>
           dependencies.StandardOutWriteLine(
             $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
         .BindAsync(async validatedRequest =>
@@ -61,12 +61,12 @@ namespace Cicee.Commands.Init
             GetTemplateValues(request),
             validatedRequest.OverwriteFiles
           ))
-          .TapLeft(exception =>
+          .TapFailure(exception =>
             dependencies.StandardOutWriteLine(
               $"Failed to write files.\nError: {exception.GetType()}\nMessage: {exception.Message}"
             )
           )
-          .Tap(results =>
+          .TapSuccess(results =>
           {
             dependencies.StandardOutWriteLine("Initialization complete.\n\nFiles:");
             foreach (var result in results)
