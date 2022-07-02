@@ -31,6 +31,7 @@ Commands:
 * [`lib`][lib] - Commands working with [CICEE shell script library][lib].
 * `meta` - Commands working with project metadata.
   * [`version`][meta-version] - Gets `.version` in project metadata.
+    * [`bump`][meta-version-bump] - Bumps the `.version` in project metadata by a SemVer increment.
 * `template` - Commands working with project [continuous integration templates][template].
   * [`init`][template-init] - Initialize a project repository with continuous integration workflow scripts.
   * [`lib`][template-lib] - Initialize project CI with CICEE execution library. Supports `cicee exec`-like behavior without CICEE installation.
@@ -42,6 +43,7 @@ Commands:
 [initialize]: ./initialize.md
 [lib]: ./ci-library.md
 [meta-version]: ./meta-version.md
+[meta-version-bump]: ./meta-version-bump.md
 [project's docker-compose file]: ../use/project-structure.md
 [template-init]: ./template-init.md
 [template-lib]: ./template-lib.md
