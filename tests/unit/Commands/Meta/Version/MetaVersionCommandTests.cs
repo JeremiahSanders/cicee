@@ -1,5 +1,4 @@
 using Cicee.Commands.Meta.Version;
-using Cicee.Tests.Unit.Commands.Exec;
 using Xunit;
 
 namespace Cicee.Tests.Unit.Commands.Meta.Version;
