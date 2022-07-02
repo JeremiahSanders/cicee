@@ -29,6 +29,8 @@ Commands:
 * [`exec`][execute] - [Execute a command][execute] in a containerized execution environment.
 * [`init`][initialize] - [Initialize project CI containerization files][initialize]. Creates suggested cicee files.
 * [`lib`][lib] - Commands working with [CICEE shell script library][lib].
+* `meta` - Commands working with project metadata.
+  * [`version`][meta-version] - Gets `.version` in project metadata.
 * `template` - Commands working with project [continuous integration templates][template].
   * [`init`][template-init] - Initialize a project repository with continuous integration workflow scripts.
   * [`lib`][template-lib] - Initialize project CI with CICEE execution library. Supports `cicee exec`-like behavior without CICEE installation.
@@ -39,6 +41,7 @@ Commands:
 [execute]: ./execute.md
 [initialize]: ./initialize.md
 [lib]: ./ci-library.md
+[meta-version]: ./meta-version.md
 [project's docker-compose file]: ../use/project-structure.md
 [template-init]: ./template-init.md
 [template-lib]: ./template-lib.md
