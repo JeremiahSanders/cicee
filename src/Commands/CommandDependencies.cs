@@ -2,11 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Threading.Tasks;
-using Cicee.CiEnv;
 using Cicee.Commands.Exec;
-using LanguageExt;
 using LanguageExt.Common;
 
 namespace Cicee.Commands;
@@ -40,7 +37,12 @@ public record CommandDependencies(
       Io.EnsureFileExists,
       EnvironmentVariableHelpers.GetEnvironmentVariables,
       Console.Out.WriteLine,
-      Console.Error.WriteLine,
+      line =>
+      {
+        Console.ForegroundColor = ConsoleColor.Red;
+        Console.Error.WriteLine(line);
+        Console.ResetColor();
+      },
       Io.TryLoadFileString,
       processStartInfo => ProcessHelpers.ExecuteProcessAsync(processStartInfo, debugLogger: null),
       Io.GetLibraryRootPath,
@@ -54,5 +56,4 @@ public record CommandDependencies(
       Io.TryGetParentDirectory
     );
   }
-
 }
