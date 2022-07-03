@@ -15,7 +15,7 @@ internal static class CiceeRootCommand
     var dependencies = CommandDependencies.Create();
     var command = new RootCommand("cicee")
     {
-      EnvCommand.Create(),
+      EnvCommand.Create(dependencies),
       ExecCommand.Create(),
       InitCommand.Create(),
       LibCommand.Create(),

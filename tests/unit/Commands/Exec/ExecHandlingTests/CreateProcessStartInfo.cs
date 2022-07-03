@@ -65,8 +65,15 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
     )
     {
       var actualResult = ExecHandling.CreateProcessStartInfo(dependencies, execRequestContext)
-        .Map(result => new ProcessStartInfoResult(result.FileName, result.Arguments,
-          new Dictionary<string, string>(result.Environment)));
+        .Map(result => new ProcessStartInfoResult(
+            result.FileName,
+            result.Arguments,
+            new Dictionary<string, string>(result.Environment.Map(kvp =>
+                new KeyValuePair<string, string>(kvp.Key, kvp.Value ?? string.Empty)
+              )
+            )
+          )
+        );
 
       expectedResult.IfSucc(expected =>
       {

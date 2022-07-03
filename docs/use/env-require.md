@@ -11,7 +11,7 @@ Usage:
   cicee env require [options]
 
 Options:
-  -p, --project-root <project-root>  Project repository root directory [default: C:\Users\gnosi\source\repos\cicee]
+  -p, --project-root <project-root>  Project repository root directory [default: $(pwd)]
   -f, --file <file>                  Project metadata file.
   -?, -h, --help                     Show help and usage information
 ```

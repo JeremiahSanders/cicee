@@ -128,17 +128,14 @@ namespace Cicee.Commands.Exec
 
       void DisplayProjectEnvironmentValues()
       {
-        var environmentDisplay =
-          ProjectEnvironmentHelpers.GetEnvironmentDisplay(dependencies.GetEnvironmentVariables, execRequestContext);
-        dependencies.StandardOutWriteLine("CI Environment:");
-        if (environmentDisplay.Any())
-        {
-          WriteEnvironmentVariables(environmentDisplay);
-        }
-        else
-        {
-          dependencies.StandardOutWriteLine("  No CI environment variables defined.");
-        }
+        ProjectEnvironmentHelpers.DisplayProjectEnvironmentValues(
+          dependencies.StandardOutWriteLine,
+          dependencies.StandardOutWrite,
+          ProjectEnvironmentHelpers.GetEnvironmentDisplay(
+            dependencies.GetEnvironmentVariables,
+            execRequestContext.ProjectMetadata
+          )
+        );
       }
 
       void DisplayExecEnvironmentValues()
