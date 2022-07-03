@@ -11,9 +11,11 @@ Usage:
   cicee env require [options]
 
 Options:
-  -p, --project-root <project-root>  Project repository root directory [default: $(pwd)]
-  -f, --file <file>                  Project metadata file.
-  -?, -h, --help                     Show help and usage information
+  -p, --project-root <project-root>      Project repository root directory [default:
+                                         $(pwd)]
+  -f, -m, --file, --metadata <metadata>  Project metadata file. [default:
+                                         $(pwd)/.project-metadata.json]
+  -?, -h, --help                         Show help and usage information
 ```
 
 ## Configuring Project CI Environment

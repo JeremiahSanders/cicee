@@ -14,7 +14,7 @@ public static class ProjectMetadataOption
     ) {IsRequired = isRequired};
   }
 
-  public static System.CommandLine.Option<string> Create(CommandDependencies dependencies, bool isRequired = true)
+  public static LanguageExt.Option<string> GetDefaultMetadataPathProvider(CommandDependencies dependencies)
   {
     LanguageExt.Option<string> GetDefaultFileName()
     {
@@ -26,19 +26,21 @@ public static class ProjectMetadataOption
         .IfFail(Prelude.None);
     }
 
-    return Of(() =>
-        ProjectMetadataLoader.InferProjectMetadataPath(
-            dependencies.EnsureDirectoryExists,
-            dependencies.EnsureFileExists,
-            dependencies.TryLoadFileString,
-            dependencies.CombinePath,
-            dependencies.TryGetParentDirectory,
-            dependencies.TryGetCurrentDirectory
-          )
-          .Match(Prelude.Some, _ => Prelude.None)
-          .BiBind(Prelude.Some, GetDefaultFileName)
-          .IfNone(string.Empty),
-      isRequired
-    );
+    return
+      ProjectMetadataLoader.InferProjectMetadataPath(
+          dependencies.EnsureDirectoryExists,
+          dependencies.EnsureFileExists,
+          dependencies.TryLoadFileString,
+          dependencies.CombinePath,
+          dependencies.TryGetParentDirectory,
+          dependencies.TryGetCurrentDirectory
+        )
+        .Match(Prelude.Some, _ => Prelude.None)
+        .BiBind(Prelude.Some, GetDefaultFileName);
+  }
+
+  public static System.CommandLine.Option<string> Create(CommandDependencies dependencies, bool isRequired = true)
+  {
+    return Of(() => GetDefaultMetadataPathProvider(dependencies).IfNone(string.Empty), isRequired);
   }
 }
