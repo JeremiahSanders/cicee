@@ -26,7 +26,8 @@ public record CommandDependencies(
   Func<(string FileName, string Content), Task<Result<(string FileName, string Content)>>> TryWriteFileStringAsync,
   Func<DirectoryCopyRequest, Task<Result<DirectoryCopyResult>>> TryCopyDirectoryAsync,
   Func<Result<string>> TryGetCurrentDirectory,
-  Func<string, Result<string>> TryGetParentDirectory
+  Func<string, Result<string>> TryGetParentDirectory,
+  Action<ConsoleColor?, string> StandardOutWrite
 )
 {
   public static CommandDependencies Create()
@@ -53,7 +54,21 @@ public record CommandDependencies(
       Io.TryWriteFileStringAsync,
       Io.TryCopyDirectoryAsync,
       Io.TryGetCurrentDirectory,
-      Io.TryGetParentDirectory
+      Io.TryGetParentDirectory,
+      (consoleColor, value) =>
+      {
+        if (consoleColor != null)
+        {
+          Console.ForegroundColor = consoleColor.Value;
+        }
+        else
+        {
+          Console.ResetColor();
+        }
+
+        Console.Out.Write(value);
+        Console.ResetColor();
+      }
     );
   }
 }

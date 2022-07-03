@@ -25,6 +25,7 @@ Commands:
 ## Commands
 
 * `env` - Commands which interact with the current environment.
+  * [`display`][env-display] - Display the project's CI environment variables with current values.
   * [`require`][env-require] - Require that the environment contains all required variables.
 * [`exec`][execute] - [Execute a command][execute] in a containerized execution environment.
 * [`init`][initialize] - [Initialize project CI containerization files][initialize]. Creates suggested cicee files.
@@ -38,6 +39,7 @@ Commands:
 
 [docker-compose-command]: https://docs.docker.com/compose/compose-file/compose-file-v3/#command
 [docker-compose-entrypoint]: https://docs.docker.com/compose/compose-file/compose-file-v3/#entrypoint
+[env-display]: ./env-display.md
 [env-require]: ./env-require.md
 [execute]: ./execute.md
 [initialize]: ./initialize.md
