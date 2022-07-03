@@ -31,7 +31,7 @@ namespace Cicee.Commands.Exec
     {
       var ciceeExecPath = dependencies.CombinePath(dependencies.GetLibraryRootPath(), CiceeExecScriptName);
       return dependencies.EnsureFileExists(ciceeExecPath)
-        .MapLeft(
+        .MapFailure(
           exception => exception is FileNotFoundException
             ? new BadRequestException($"Failed to find library file: {ciceeExecPath}")
             : exception
@@ -90,8 +90,8 @@ namespace Cicee.Commands.Exec
                   ProjectMetadataLoader.InferProjectMetadata(dependencies, validatedProjectRoot))
           )
           .Bind(projectMetadata => Require.AsResult.NotNullOrWhitespace(request.Image)
-            .BindLeft(_ => dependencies.EnsureFileExists(CreateCiDockerfilePath(dependencies, request)))
-            .MapLeft(exception =>
+            .BindFailure(_ => dependencies.EnsureFileExists(CreateCiDockerfilePath(dependencies, request)))
+            .MapFailure(exception =>
               new BadRequestException(
                 $"Image argument was not provided and '{CreateCiDockerfilePath(dependencies, request)}; does not exist.",
                 exception)
@@ -128,17 +128,14 @@ namespace Cicee.Commands.Exec
 
       void DisplayProjectEnvironmentValues()
       {
-        var environmentDisplay =
-          ProjectEnvironmentHelpers.GetEnvironmentDisplay(dependencies.GetEnvironmentVariables, execRequestContext);
-        dependencies.StandardOutWriteLine("CI Environment:");
-        if (environmentDisplay.Any())
-        {
-          WriteEnvironmentVariables(environmentDisplay);
-        }
-        else
-        {
-          dependencies.StandardOutWriteLine("  No CI environment variables defined.");
-        }
+        ProjectEnvironmentHelpers.DisplayProjectEnvironmentValues(
+          dependencies.StandardOutWriteLine,
+          dependencies.StandardOutWrite,
+          ProjectEnvironmentHelpers.GetEnvironmentDisplay(
+            dependencies.GetEnvironmentVariables,
+            execRequestContext.ProjectMetadata
+          )
+        );
       }
 
       void DisplayExecEnvironmentValues()
@@ -217,11 +214,11 @@ namespace Cicee.Commands.Exec
       {
         // Require either a command
         return Require.AsResult.NotNullOrWhitespace(context.Command)
-          .BindLeft(missingCommandException =>
+          .BindFailure(missingCommandException =>
             // ... or an entrypoint
             Require.AsResult.NotNullOrWhitespace(context.Entrypoint)
           )
-          .MapLeft(exception =>
+          .MapFailure(exception =>
             new BadRequestException("At least one of command or entrypoint must be provided.", exception)
           )
           .Map(_ => context);
@@ -230,7 +227,7 @@ namespace Cicee.Commands.Exec
       Result<ExecRequestContext> RequireProjectRoot(ExecRequestContext contextWithStartupCommand)
       {
         return dependencies.EnsureDirectoryExists(contextWithStartupCommand.ProjectRoot)
-          .MapLeft(exception => exception is DirectoryNotFoundException
+          .MapFailure(exception => exception is DirectoryNotFoundException
             ? new BadRequestException(
               $"Project root '{contextWithStartupCommand.ProjectRoot}' cannot be found.")
             : exception)

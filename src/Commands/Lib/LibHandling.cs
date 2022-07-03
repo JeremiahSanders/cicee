@@ -8,7 +8,7 @@ namespace Cicee.Commands.Lib
     public static async Task<Result<LibContext>> HandleAsync(CommandDependencies dependencies, LibRequest libRequest)
     {
       return (await Validation.ValidateRequestAsync(dependencies, libRequest))
-        .Tap(context =>
+        .TapSuccess(context =>
         {
           dependencies.StandardOutWriteLine(context.LibPath);
         });
