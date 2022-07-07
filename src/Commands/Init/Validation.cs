@@ -1,3 +1,4 @@
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Init

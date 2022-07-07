@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Exec;
 
@@ -28,9 +29,9 @@ public static class ExecCommand
     ) { IsRequired = false };
   }
 
-  public static Command Create()
+  public static Command Create(CommandDependencies dependencies)
   {
-    var projectRoot = ProjectRootOption.Create();
+    var projectRoot = ProjectRootOption.Create(dependencies);
     var serviceCommand = ServiceCommandOption();
     var serviceEntrypoint = ServiceEntrypointOption();
     var image = ImageOption();

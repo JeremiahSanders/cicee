@@ -4,6 +4,7 @@ using System.Linq;
 using Cicee.CiEnv;
 using Cicee.Commands;
 using Cicee.Commands.Env.Display;
+using Cicee.Dependencies;
 using Jds.LanguageExt.Extras;
 using LanguageExt;
 using LanguageExt.Common;

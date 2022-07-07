@@ -3,6 +3,7 @@ using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
 using Cicee.Commands.Exec;
+using Cicee.Dependencies;
 using LanguageExt;
 using LanguageExt.Common;
 

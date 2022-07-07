@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Cicee.Commands;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.CiEnv;

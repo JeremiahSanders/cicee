@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Cicee.Commands.Meta.Version.Bump;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Meta.Version;
 

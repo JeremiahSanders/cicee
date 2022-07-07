@@ -1,6 +1,7 @@
 using System;
 using Cicee.CiEnv;
 using Cicee.Commands;
+using Cicee.Dependencies;
 using Cicee.Tests.Unit.Commands;
 using LanguageExt.Common;
 using Xunit;

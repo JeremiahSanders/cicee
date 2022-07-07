@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Cicee.Commands;
 using Cicee.Commands.Exec;
+using Cicee.Dependencies;
 using LanguageExt;
 using LanguageExt.Common;
 

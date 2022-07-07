@@ -5,6 +5,7 @@ using System.Linq;
 using Cicee.CiEnv;
 using Cicee.Commands;
 using Cicee.Commands.Exec;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 using Xunit;
 
@@ -40,12 +41,6 @@ namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests
       {
         Arguments =
         "-c \"" +
-        $"CI_EXEC_CONTEXT=\\\"{happyPathDependencies.CombinePath(happyPathRequest.ProjectRoot, "ci")}\\\" " +
-        $"PROJECT_NAME=\\\"{happyPathRequest.ProjectMetadata.Name}\\\" " +
-        $"PROJECT_ROOT=\\\"{happyPathRequest.ProjectRoot}\\\" " +
-        $"LIB_ROOT=\\\"{happyPathDependencies.GetLibraryRootPath()}\\\" " +
-        $"CI_COMMAND=\\\"{happyPathRequest.Command}\\\" " +
-        $"CI_ENTRYPOINT=\\\"{happyPathRequest.Entrypoint}\\\" " +
         $"{happyPathDependencies.CombinePath(happyPathDependencies.GetLibraryRootPath(), "cicee-exec.sh")}\"",
         Environment = happyPathDependencies.GetEnvironmentVariables()
       };

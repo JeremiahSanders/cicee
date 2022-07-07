@@ -1,6 +1,7 @@
 using System;
 using System.CommandLine;
 using System.Threading.Tasks;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Meta.Version.Bump;
 

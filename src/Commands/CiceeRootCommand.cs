@@ -5,6 +5,7 @@ using Cicee.Commands.Init;
 using Cicee.Commands.Lib;
 using Cicee.Commands.Meta;
 using Cicee.Commands.Template;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands;
 
@@ -16,11 +17,11 @@ internal static class CiceeRootCommand
     var command = new RootCommand("cicee")
     {
       EnvCommand.Create(dependencies),
-      ExecCommand.Create(),
-      InitCommand.Create(),
-      LibCommand.Create(),
+      ExecCommand.Create(dependencies),
+      InitCommand.Create(dependencies),
+      LibCommand.Create(dependencies),
       MetaCommand.Create(dependencies),
-      TemplateCommand.Create()
+      TemplateCommand.Create(dependencies)
     };
     return command;
   }

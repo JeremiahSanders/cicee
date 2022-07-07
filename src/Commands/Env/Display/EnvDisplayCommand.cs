@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Env.Display;
 

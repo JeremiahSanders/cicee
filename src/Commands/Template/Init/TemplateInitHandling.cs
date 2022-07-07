@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Template.Init

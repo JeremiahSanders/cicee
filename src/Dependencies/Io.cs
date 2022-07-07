@@ -3,11 +3,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Cicee.Commands;
 using LanguageExt;
 using LanguageExt.Common;
 
-namespace Cicee;
+namespace Cicee.Dependencies;
 
 public static class Io
 {
@@ -31,6 +30,28 @@ public static class Io
           ? new Result<string>(file)
           : new Result<string>(new FileNotFoundException($"File '{file}' does not exist.", file))
       );
+  }
+
+  /// <summary>
+  ///   Helper method which converts Windows paths to Linux style.
+  /// </summary>
+  /// <remarks>
+  ///   <para>
+  ///     Converts Windows drive letters to lower-case top-level directories. E.g., <c>D:\place\thing.txt</c> would become
+  ///     <c>/d/place/thing.txt</c>.
+  ///   </para>
+  /// </remarks>
+  /// <param name="path">A path.</param>
+  /// <returns>A path which may be Linux-friendly.</returns>
+  internal static string NormalizeToLinuxPath(string path)
+  {
+    static string WindowsToLinuxPath(string path)
+    {
+      var driveAndPath = path.Split(":\\");
+      return $"/{driveAndPath[0].ToLowerInvariant()}/{driveAndPath[1].Replace(oldChar: '\\', newChar: '/')}";
+    }
+
+    return path.Contains(":\\") ? WindowsToLinuxPath(path) : path;
   }
 
   public static string GetLibraryRootPath()

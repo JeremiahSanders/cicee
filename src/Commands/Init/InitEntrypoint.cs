@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Init;

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Cicee.Commands;
 using Cicee.Commands.Init;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 using Xunit;
 

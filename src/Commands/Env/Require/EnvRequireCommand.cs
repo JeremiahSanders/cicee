@@ -1,5 +1,6 @@
 using System;
 using System.CommandLine;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Env.Require;
 
@@ -7,7 +8,7 @@ public static class EnvRequireCommand
 {
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectRoot = OptionalProjectRootOption();
+    var projectRoot = OptionalProjectRootOption(dependencies);
     var file = ProjectMetadataFile(() =>
     {
       var possibleValue = ProjectMetadataOption.GetDefaultMetadataPathProvider(dependencies);
@@ -20,9 +21,9 @@ public static class EnvRequireCommand
     return command;
   }
 
-  private static Option OptionalProjectRootOption()
+  private static Option OptionalProjectRootOption(CommandDependencies dependencies)
   {
-    var option = ProjectRootOption.Create();
+    var option = ProjectRootOption.Create(dependencies);
     option.IsRequired = false;
     return option;
   }
