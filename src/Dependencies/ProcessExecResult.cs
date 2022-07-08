@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Cicee.Commands.Exec
+namespace Cicee.Dependencies
 {
   [ExcludeFromCodeCoverage]
   public record ProcessExecResult

@@ -1,6 +1,7 @@
 using System.Threading.Tasks;
 using Cicee.CiEnv;
 using Cicee.Commands.Lib;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Template.Lib
@@ -15,7 +16,7 @@ namespace Cicee.Commands.Template.Lib
       var (projectRoot, shell, overwriteFiles) = request;
       return await dependencies.EnsureDirectoryExists(projectRoot)
         .BindAsync(async validatedProjectRoot =>
-          (await Cicee.Commands.Lib.Validation.ValidateRequestAsync(dependencies, new LibRequest(shell ?? "")))
+          (await Cicee.Commands.Lib.Validation.ValidateRequestAsync(dependencies, new LibRequest(shell)))
           .Map(libContext => new TemplateLibContext(
               validatedProjectRoot,
               libContext.ShellTemplate,

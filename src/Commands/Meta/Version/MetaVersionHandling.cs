@@ -1,4 +1,5 @@
 using Cicee.CiEnv;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Meta.Version;

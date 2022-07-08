@@ -3,11 +3,31 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Cicee.Commands.Exec;
 using LanguageExt.Common;
 
-namespace Cicee.Commands;
+namespace Cicee.Dependencies;
 
+/// <summary>
+///   Impure dependencies required by commands.
+/// </summary>
+/// <param name="CombinePath"></param>
+/// <param name="EnsureDirectoryExists"></param>
+/// <param name="EnsureFileExists"></param>
+/// <param name="GetEnvironmentVariables"></param>
+/// <param name="StandardOutWriteLine"></param>
+/// <param name="StandardErrorWriteLine"></param>
+/// <param name="TryLoadFileString"></param>
+/// <param name="ProcessExecutor"></param>
+/// <param name="GetLibraryRootPath"></param>
+/// <param name="CopyTemplateToPath"></param>
+/// <param name="DoesFileExist"></param>
+/// <param name="GetInitTemplatesDirectoryPath"></param>
+/// <param name="GetFileName"></param>
+/// <param name="TryWriteFileStringAsync"></param>
+/// <param name="TryCopyDirectoryAsync"></param>
+/// <param name="TryGetCurrentDirectory"></param>
+/// <param name="TryGetParentDirectory"></param>
+/// <param name="StandardOutWrite"></param>
 [ExcludeFromCodeCoverage]
 public record CommandDependencies(
   Func<string, string, string> CombinePath,
@@ -30,6 +50,10 @@ public record CommandDependencies(
   Action<ConsoleColor?, string> StandardOutWrite
 )
 {
+  /// <summary>
+  ///   Initializes a new instance of <see cref="CommandDependencies" /> using the default environment providers.
+  /// </summary>
+  /// <returns></returns>
   public static CommandDependencies Create()
   {
     return new CommandDependencies(

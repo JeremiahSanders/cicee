@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Cicee.CiEnv;
 using Cicee.Commands;
 using Cicee.Commands.Meta.Version.Bump;
+using Cicee.Dependencies;
 using Jds.LanguageExt.Extras;
 using LanguageExt.Common;
 using Xunit;

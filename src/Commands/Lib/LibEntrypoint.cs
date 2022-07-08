@@ -1,17 +1,18 @@
+using System;
 using System.Threading.Tasks;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Lib;
 
 public static class LibEntrypoint
 {
-  public static Task<int> HandleAsync(string? shell)
+  public static Func<LibraryShellTemplate?, Task<int>> CreateHandler(CommandDependencies dependencies)
   {
-    return HandleAsync(new LibRequest(shell ?? string.Empty));
+    return shell => HandleAsync(dependencies, new LibRequest(shell));
   }
 
-  public static async Task<int> HandleAsync(LibRequest request)
+  public static async Task<int> HandleAsync(CommandDependencies dependencies, LibRequest request)
   {
-    var dependencies = CommandDependencies.Create();
     return (await LibHandling.HandleAsync(dependencies, request))
       .TapFailure(exception =>
       {

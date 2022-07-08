@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Cicee.Commands.Lib;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Template.Lib
 {

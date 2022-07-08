@@ -1,5 +1,6 @@
 using System;
 using Cicee.CiEnv;
+using Cicee.Dependencies;
 using Jds.LanguageExt.Extras;
 
 namespace Cicee.Tests.Unit;

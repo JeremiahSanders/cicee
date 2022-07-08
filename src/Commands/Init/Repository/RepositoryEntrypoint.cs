@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Cicee.Commands.Lib;
 using Cicee.Commands.Template.Init;
 using Cicee.Commands.Template.Lib;
 using LanguageExt.Common;
@@ -8,7 +9,7 @@ namespace Cicee.Commands.Init.Repository;
 public static class RepositoryEntrypoint
 {
   public static async Task<Result<RepositoryResult>> TryHandleAsync(string projectRoot, string? image, bool force,
-    bool initCiLib, string shell)
+    bool initCiLib, LibraryShellTemplate? shell)
   {
     return await (await InitEntrypoint.TryHandleAsync(projectRoot, image, force))
       .BindAsync(async initResult =>
@@ -22,7 +23,7 @@ public static class RepositoryEntrypoint
           ));
   }
 
-  public static async Task<int> HandleAsync(string projectRoot, string? image, bool force, bool initCiLib, string shell)
+  public static async Task<int> HandleAsync(string projectRoot, string? image, bool force, bool initCiLib, LibraryShellTemplate? shell)
   {
     return (await TryHandleAsync(projectRoot, image, force, initCiLib, shell)).ToExitCode();
   }

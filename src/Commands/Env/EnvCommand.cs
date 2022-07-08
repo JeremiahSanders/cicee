@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Cicee.Commands.Env.Display;
 using Cicee.Commands.Env.Require;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Env;
 

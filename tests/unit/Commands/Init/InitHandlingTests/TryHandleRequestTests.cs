@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Cicee.Commands;
 using Cicee.Commands.Init;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 using Xunit;
 

@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Exec
@@ -39,7 +40,7 @@ namespace Cicee.Commands.Exec
         .Bind(validatedCiceeExecPath =>
         {
           // TODO: See if the path can be inferred correctly, rather than hacking it into Linux assumptions.
-          var ciceeExecLinuxPath = NormalizeToLinuxPath(validatedCiceeExecPath);
+          var ciceeExecLinuxPath = Io.NormalizeToLinuxPath(validatedCiceeExecPath);
 
           return ProcessHelpers.TryCreateBashProcessStartInfo(
             GetExecEnvironment(dependencies, execRequestContext),
@@ -160,10 +161,10 @@ namespace Cicee.Commands.Exec
       var environment =
         new Dictionary<string, string>
         {
-          [CiExecContext] = NormalizeToLinuxPath(dependencies.CombinePath(context.ProjectRoot, CiDirectoryName)),
+          [CiExecContext] = Io.NormalizeToLinuxPath(dependencies.CombinePath(context.ProjectRoot, CiDirectoryName)),
           [ProjectName] = context.ProjectMetadata.Name,
-          [ProjectRoot] = NormalizeToLinuxPath(context.ProjectRoot),
-          [LibRoot] = NormalizeToLinuxPath(dependencies.GetLibraryRootPath())
+          [ProjectRoot] = Io.NormalizeToLinuxPath(context.ProjectRoot),
+          [LibRoot] = Io.NormalizeToLinuxPath(dependencies.GetLibraryRootPath())
         };
 
       void ConditionallyAdd(string key, string? possibleValue)
@@ -181,16 +182,7 @@ namespace Cicee.Commands.Exec
       return environment;
     }
 
-    private static string NormalizeToLinuxPath(string path)
-    {
-      static string WindowsToLinuxPath(string path)
-      {
-        var driveAndPath = path.Split(":\\");
-        return $"/{driveAndPath[0].ToLowerInvariant()}/{driveAndPath[1].Replace(oldChar: '\\', newChar: '/')}";
-      }
-
-      return path.Contains(":\\") ? WindowsToLinuxPath(path) : path;
-    }
+    
 
 
     private static async Task<Result<ExecRequestContext>> TryExecute(
