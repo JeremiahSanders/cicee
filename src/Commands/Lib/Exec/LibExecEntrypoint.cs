@@ -17,12 +17,19 @@ public static class LibExecEntrypoint
   private static Result<ProcessStartInfo> TryCreateProcessStartInfo(CommandDependencies dependencies,
     LibExecRequest request)
   {
+    var projectRoot = request.Shell == LibraryShellTemplate.Bash
+      ? Io.NormalizeToLinuxPath(request.ProjectRoot)
+      : request.ProjectRoot;
+    var projectMetadata = request.Shell == LibraryShellTemplate.Bash
+      ? Io.NormalizeToLinuxPath(request.MetadataPath)
+      : request.MetadataPath;
+
     Dictionary<string, string> GetProcessEnvironment()
     {
       var env = dependencies.GetEnvironmentVariables()
         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-      env[ProjectRoot] = request.ProjectRoot;
-      env[ProjectMetadata] = request.MetadataPath;
+      env[ProjectRoot] = projectRoot;
+      env[ProjectMetadata] = projectMetadata;
 
       bool IsDefaultNeeded(ProjectEnvironmentVariable variable)
       {
@@ -40,10 +47,7 @@ public static class LibExecEntrypoint
 
     Dictionary<string, string> GetRequiredEnvironment()
     {
-      return new Dictionary<string, string>
-      {
-        {ProjectRoot, request.ProjectRoot}, {ProjectMetadata, request.MetadataPath}
-      };
+      return new Dictionary<string, string> {{ProjectRoot, projectRoot}, {ProjectMetadata, projectMetadata}};
     }
 
     Result<ProcessStartInfo> CreateBash()
