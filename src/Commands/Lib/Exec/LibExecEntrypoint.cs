@@ -11,6 +11,9 @@ namespace Cicee.Commands.Lib.Exec;
 
 public static class LibExecEntrypoint
 {
+  private const string ProjectRoot = "PROJECT_ROOT";
+  private const string ProjectMetadata = "PROJECT_METADATA";
+
   private static Result<ProcessStartInfo> TryCreateProcessStartInfo(CommandDependencies dependencies,
     LibExecRequest request)
   {
@@ -18,8 +21,8 @@ public static class LibExecEntrypoint
     {
       var env = dependencies.GetEnvironmentVariables()
         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-      env["PROJECT_ROOT"] = request.ProjectRoot;
-      env["PROJECT_METADATA"] = request.MetadataPath;
+      env[ProjectRoot] = request.ProjectRoot;
+      env[ProjectMetadata] = request.MetadataPath;
 
       bool IsDefaultNeeded(ProjectEnvironmentVariable variable)
       {
@@ -35,16 +38,27 @@ public static class LibExecEntrypoint
       return env.Concat(fallbacks).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
     }
 
+    Dictionary<string, string> GetRequiredEnvironment()
+    {
+      return new Dictionary<string, string>
+      {
+        {ProjectRoot, request.ProjectRoot}, {ProjectMetadata, request.MetadataPath}
+      };
+    }
+
     Result<ProcessStartInfo> CreateBash()
     {
-      var executionEnvironment = GetProcessEnvironment();
       const string execScript = "exec.sh";
       var scriptPath = Io.NormalizeToLinuxPath(
         dependencies.CombinePath(LibraryPaths.Bash(dependencies), execScript)
       );
       var shellExecPath = $"{scriptPath} {request.Command}";
 
-      return ProcessHelpers.TryCreateBashProcessStartInfo(executionEnvironment, shellExecPath);
+      return ProcessHelpers.TryCreateBashProcessStartInfo(
+        GetRequiredEnvironment(),
+        GetProcessEnvironment(),
+        shellExecPath
+      );
     }
 
     return request.Shell switch
@@ -61,7 +75,7 @@ public static class LibExecEntrypoint
         async processStartInfo =>
           (await dependencies.ProcessExecutor(processStartInfo))
           .Map(processExecResult =>
-            new LibExecResponse(processStartInfo, processExecResult) { Shell = request.Shell }
+            new LibExecResponse(processStartInfo, processExecResult) {Shell = request.Shell}
           )
       );
   }
