@@ -166,10 +166,17 @@ function ci-env-init() {
     BUILD_PACKAGED_DIST="${BUILD_ROOT}/dist"
     BUILD_DOCS="${BUILD_ROOT}/docs"
 
-    if [[ -n "$(which git)" && -d "${PROJECT_ROOT}/.git" ]]; then
-      # We have git installed
-      CURRENT_GIT_BRANCH="$(git branch | sed -n '/\* /s///p')"
-      CURRENT_GIT_HASH="$(git log --pretty=format:'%h' -n 1)"
+    if [[ -n "$(command -v git)" ]]; then
+      if [[ -d "${PROJECT_ROOT}/.git" ]]; then
+        # We have git installed
+        cd "${PROJECT_ROOT}"
+        CURRENT_GIT_BRANCH="$(git branch | sed -n '/\* /s///p')"
+        CURRENT_GIT_HASH="$(git log --pretty=format:'%h' -n 1)"
+        cd --
+      else
+        CURRENT_GIT_BRANCH="project-root-lacks-git-directory"
+        CURRENT_GIT_HASH="0000000"
+      fi
     else
       CURRENT_GIT_BRANCH="git-is-not-installed"
       CURRENT_GIT_HASH="0000000"
