@@ -18,7 +18,13 @@ public static class TemplateLibCommand
       new Command(
         "lib",
         Description) { projectRoot, shell, force };
-    command.SetHandler<string, LibraryShellTemplate?, bool>(TemplateLibEntrypoint.HandleAsync, projectRoot, shell, force);
+    command.SetHandler(
+      (string rootValue, LibraryShellTemplate shellValue, bool forceValue) =>
+        TemplateLibEntrypoint.HandleAsync(dependencies, rootValue, shellValue, forceValue),
+      projectRoot,
+      shell,
+      force
+    );
     return command;
   }
 }

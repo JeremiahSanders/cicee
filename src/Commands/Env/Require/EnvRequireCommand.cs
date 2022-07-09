@@ -16,8 +16,12 @@ public static class EnvRequireCommand
     });
     var command = new Command(
       "require",
-      "Require that the environment contains all required variables.") {projectRoot, file};
-    command.SetHandler<string?, string?>(EnvRequireEntrypoint.HandleAsync, projectRoot, file);
+      "Require that the environment contains all required variables.") { projectRoot, file };
+    command.SetHandler<string?, string?>(
+      (root, filePath) => EnvRequireEntrypoint.HandleAsync(dependencies, root, filePath),
+      projectRoot,
+      file
+    );
     return command;
   }
 
@@ -31,9 +35,9 @@ public static class EnvRequireCommand
   private static Option<string?> ProjectMetadataFile(Func<string?> getDefaultValue)
   {
     return new Option<string?>(
-      new[] {"--metadata", "-m", "--file", "-f"},
+      new[] { "--metadata", "-m", "--file", "-f" },
       getDefaultValue,
       "Project metadata file."
-    ) {IsRequired = false};
+    ) { IsRequired = false };
   }
 }

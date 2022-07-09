@@ -12,7 +12,7 @@ public static class TemplateInitCommand
     var command =
       new Command("init", "Initialize project CI scripts.") { projectRoot, force };
     command.SetHandler<string, bool>(
-      TemplateInitEntrypoint.HandleAsync,
+      (rootValue, forceValue) => TemplateInitEntrypoint.HandleAsync(dependencies, rootValue, forceValue),
       projectRoot,
       force
     );
