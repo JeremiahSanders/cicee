@@ -17,10 +17,10 @@ declare PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_LOCATION}/../.." && pwd)}"
 
 if [[ -z "$(command -v cicee)" ]]; then
   # Install CICEE, to add the CI shell library.
-  dotnet tool install -g cicee
+  dotnet tool install -g cicee || echo -e "\nFailed to install CICEE.\n  Unexpected errors may occur.\n\n"
 else
   # Ensure we're using the latest CI shell library scripts.
-  dotnet tool upgrade -g cicee
+  dotnet tool update -g cicee || echo -e "\nFailed to update CICEE.\n  Unexpected errors may occur.\n  Current CICEE version: $(cicee --version)\n\n"
 fi
 
 #--
