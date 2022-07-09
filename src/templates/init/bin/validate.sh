@@ -20,7 +20,7 @@ if [[ -z "$(command -v cicee)" ]]; then
   dotnet tool install -g cicee
 else
   # Ensure we're using the latest CI shell library scripts.
-  dotnet tool upgrade -g cicee
+  dotnet tool update -g cicee
 fi
 
 #--
