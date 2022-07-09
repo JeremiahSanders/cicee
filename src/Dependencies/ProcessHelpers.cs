@@ -14,9 +14,11 @@ public static class ProcessHelpers
 {
   private const string DefaultBashFileName = "bash";
 
-  public static string? TryFindBash()
+
+  public static (string BashPath, bool IsWsl) TryFindBash()
   {
-    string? path = null;
+    string path;
+    bool isWsl;
 
     // On Windows, 'bash' is provided by WSL. That maintains separate environment variables.
     // We need to use Git Bash, if it exists.
@@ -29,20 +31,23 @@ public static class ProcessHelpers
       if (File.Exists(expectedGitBashPath))
       {
         path = expectedGitBashPath;
+        isWsl = false;
       }
       else
       {
         // Since we didn't find Git Bash, we have to default to WSL for bash.
         path = DefaultBashFileName;
+        isWsl = true;
       }
     }
     else
     {
       // We'll assume we're on *nix and use 'bash'.
       path = DefaultBashFileName;
+      isWsl = false;
     }
 
-    return path;
+    return (path, isWsl);
   }
 
   public static Task<Result<ProcessExecResult>> ExecuteProcessAsync(
@@ -75,22 +80,61 @@ public static class ProcessHelpers
     }).Try();
   }
 
+  /// <summary>
+  ///   Attempts to create a <see cref="ProcessStartInfo" /> for <c>bash</c>.
+  /// </summary>
+  /// <remarks>
+  ///   <para>
+  ///     When CICEE infers that Windows Subsystem for Linux (WSL) <c>bash</c> will be used,
+  ///     <paramref name="requiredEnvironment" /> will be passed inline. WSL processes often maintain a separate
+  ///     environment which do no inherit the ambient Windows environment variables.
+  ///   </para>
+  /// </remarks>
+  /// <param name="requiredEnvironment">
+  ///   Environment variables which are required. If any conflict with
+  ///   <paramref name="ambientEnvironment" />, the required value is used.
+  /// </param>
+  /// <param name="ambientEnvironment">
+  ///   Environment variables which should be available to the <see cref="Process" />, if
+  ///   possible.
+  /// </param>
+  /// <param name="arguments">
+  ///   Arguments which will be passed to <c>bash</c>, in the form of: <c>-c \"${ARGUMENTS}\"</c>
+  /// </param>
+  /// <returns></returns>
   public static Result<ProcessStartInfo> TryCreateBashProcessStartInfo(
-    IReadOnlyDictionary<string, string> environment,
+    IReadOnlyDictionary<string, string> requiredEnvironment,
+    IReadOnlyDictionary<string, string> ambientEnvironment,
     string arguments
   )
   {
-    string CreateProcessArguments()
+    string CreateProcessArguments(bool isWsl)
     {
-      return $"-c \"{arguments}\"";
+      // When launching WSL bash, environment variables are not shared from Windows. We must pass required variables with the command.
+      var environmentVariableAssignments = isWsl
+        ? string.Join(
+          separator: ' ',
+          requiredEnvironment
+            .Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
+            .Select(kvp => $"{kvp.Key}=\\\"{kvp.Value}\\\"")
+        ) + " "
+        : string.Empty;
+
+      return $"-c \"{environmentVariableAssignments}{arguments}\"";
     }
 
-    return new Result<string>(CreateProcessArguments())
+    var (bashPath, isWslBash) = TryFindBash();
+    return new Result<string>(CreateProcessArguments(isWslBash))
       .Bind(ValidateArgumentsLength)
       .Map(validatedProcessArguments =>
       {
-        var startInfo = new ProcessStartInfo(TryFindBash() ?? DefaultBashFileName, validatedProcessArguments);
-        foreach (var keyValuePair in environment)
+        var startInfo = new ProcessStartInfo(bashPath, validatedProcessArguments);
+        foreach (var keyValuePair in ambientEnvironment)
+        {
+          startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
+        }
+
+        foreach (var keyValuePair in requiredEnvironment)
         {
           startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
         }
