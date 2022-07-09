@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Cicee.CiEnv;
 using Cicee.Commands;
 using Cicee.Commands.Env.Require;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 using Xunit;
 

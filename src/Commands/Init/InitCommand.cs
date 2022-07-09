@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Cicee.Commands.Init.Repository;
+using Cicee.Dependencies;
 
 namespace Cicee.Commands.Init;
 
@@ -13,16 +14,21 @@ public static class InitCommand
     ) { IsRequired = false };
   }
 
-  public static Command Create()
+  public static Command Create(CommandDependencies dependencies)
   {
-    var projectRoot = ProjectRootOption.Create();
+    var projectRoot = ProjectRootOption.Create(dependencies);
     var image = ImageOption();
     var force = ForceOption.Create();
     var command =
       new Command("init", "Initialize project. Creates suggested CICEE files.") { projectRoot, image, force };
-    command.SetHandler<string, string?, bool>(InitEntrypoint.HandleAsync, projectRoot, image, force);
+    command.SetHandler<string, string?, bool>(
+      (root, imageName, forceValue) => InitEntrypoint.HandleAsync(dependencies, root, imageName, forceValue),
+      projectRoot,
+      image,
+      force
+    );
 
-    command.AddCommand(RepositoryCommand.Create());
+    command.AddCommand(RepositoryCommand.Create(dependencies));
 
     return command;
   }

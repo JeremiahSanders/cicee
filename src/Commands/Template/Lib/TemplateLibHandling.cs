@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
 using Cicee.Commands.Lib;
+using Cicee.Dependencies;
 using LanguageExt;
 using LanguageExt.Common;
 

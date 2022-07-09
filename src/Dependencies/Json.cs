@@ -3,7 +3,7 @@ using System.Text.Json;
 using LanguageExt;
 using LanguageExt.Common;
 
-namespace Cicee;
+namespace Cicee.Dependencies;
 
 public static class Json
 {

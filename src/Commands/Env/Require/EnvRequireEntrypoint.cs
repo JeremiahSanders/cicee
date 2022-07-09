@@ -1,4 +1,5 @@
 using System.Threading.Tasks;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Env.Require
@@ -7,11 +8,11 @@ namespace Cicee.Commands.Env.Require
   {
     private const int DefaultFailureExitCode = -1;
 
-    public static async Task<int> HandleAsync(string? projectRoot, string? file)
+    public static async Task<int> HandleAsync(CommandDependencies dependencies, string? projectRoot, string? file)
     {
       return (await TryCreateRequest(projectRoot, file)
           .MapAsync(request =>
-            EnvRequireHandling.TryHandleAsync(CommandDependencies.Create(), request)
+            EnvRequireHandling.TryHandleAsync(dependencies, request)
           ))
         .ToExitCode();
     }

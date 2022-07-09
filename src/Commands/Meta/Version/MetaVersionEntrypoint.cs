@@ -1,5 +1,6 @@
 using System;
 using System.Threading.Tasks;
+using Cicee.Dependencies;
 using LanguageExt;
 
 namespace Cicee.Commands.Meta.Version;

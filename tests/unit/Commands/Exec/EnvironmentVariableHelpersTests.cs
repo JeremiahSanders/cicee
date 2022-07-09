@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using Cicee.Commands.Exec;
+using Cicee.Dependencies;
 using Xunit;
 
 namespace Cicee.Tests.Unit.Commands.Exec

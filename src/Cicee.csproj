@@ -56,6 +56,9 @@
     <Content Include="lib\ci\bash\utils.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="lib\ci\bash\exec.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="lib\docker-compose.dockerfile.yml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -68,7 +71,13 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Content Include="templates\init\libexec\ci-workflows.sh">
+    <Content Include="templates\init\libexec\workflows\ci-compose.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\init\libexec\workflows\ci-publish.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="templates\init\libexec\workflows\ci-validate.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="templates\init\Template.Dockerfile">
@@ -81,9 +90,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="templates\init\docker-compose.dependencies.yml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="templates\init\bin\compose.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <Content Include="templates\init\bin\publish.sh">

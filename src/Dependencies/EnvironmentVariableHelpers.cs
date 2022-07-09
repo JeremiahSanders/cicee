@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Cicee.Commands.Exec
+namespace Cicee.Dependencies
 {
   public static class EnvironmentVariableHelpers
   {

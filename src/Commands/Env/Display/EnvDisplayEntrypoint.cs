@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
+using Cicee.Dependencies;
 using LanguageExt;
 
 namespace Cicee.Commands.Env.Display;

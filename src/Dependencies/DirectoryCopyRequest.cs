@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Cicee.Commands
+namespace Cicee.Dependencies
 {
   [ExcludeFromCodeCoverage]
   public record DirectoryCopyRequest(string SourceDirectoryPath, string DestinationDirectoryPath, bool Overwrite);

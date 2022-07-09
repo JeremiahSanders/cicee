@@ -1,4 +1,4 @@
-namespace Cicee.Commands
+namespace Cicee.Dependencies
 {
   public static class LibraryPaths
   {

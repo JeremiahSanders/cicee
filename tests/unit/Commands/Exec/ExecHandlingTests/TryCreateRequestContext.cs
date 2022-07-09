@@ -4,6 +4,7 @@ using System.IO;
 using Cicee.CiEnv;
 using Cicee.Commands;
 using Cicee.Commands.Exec;
+using Cicee.Dependencies;
 using LanguageExt.Common;
 using Xunit;
 
