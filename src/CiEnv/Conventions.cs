@@ -6,5 +6,6 @@ namespace Cicee.CiEnv
     public const string CiBinDirectoryName = "bin";
     public const string CiLibDirectoryName = "lib";
     public const string CiLibExecDirectoryName = "libexec";
+    public const string CiLibExecWorkflowsDirectoryName = "workflows";
   }
 }

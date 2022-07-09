@@ -95,4 +95,18 @@ public record CommandDependencies(
       }
     );
   }
+
+  public void StandardOutWriteAll(IEnumerable<(ConsoleColor? OptionalColor, string Value)> items)
+  {
+    foreach (var tuple in items)
+    {
+      StandardOutWrite(tuple.OptionalColor, tuple.Value);
+    }
+  }
+
+  public void StandardOutWriteAsLine(IEnumerable<(ConsoleColor? OptionalColor, string Value)> items)
+  {
+    StandardOutWriteAll(items);
+    StandardOutWrite(arg1: null, Environment.NewLine);
+  }
 }

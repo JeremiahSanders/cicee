@@ -126,7 +126,8 @@ All CI actions implicitly require this function to be executed. Its purpose is t
 The following environment variables may be provided to override inferred configuration.
 
 * `PROJECT_METADATA` - Project metadata JSON file. Default: `${PROJECT_ROOT}/project-metadata.json` or `${PROJECT_ROOT}/package.json`
-* `PROJECT_ROOT` - Project root directory.
+* `PROJECT_ROOT` - Project root directory. Default: present working directory
+* `RELEASE_VERSION` - Boolean indicating whether the distributable artifact version is a _release_ (`true`) or _pre-release_ (`false`). Default: `false`
 
 #### Initialization Effect
 
