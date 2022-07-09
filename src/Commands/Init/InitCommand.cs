@@ -21,7 +21,12 @@ public static class InitCommand
     var force = ForceOption.Create();
     var command =
       new Command("init", "Initialize project. Creates suggested CICEE files.") { projectRoot, image, force };
-    command.SetHandler<string, string?, bool>(InitEntrypoint.HandleAsync, projectRoot, image, force);
+    command.SetHandler<string, string?, bool>(
+      (root, imageName, forceValue) => InitEntrypoint.HandleAsync(dependencies, root, imageName, forceValue),
+      projectRoot,
+      image,
+      force
+    );
 
     command.AddCommand(RepositoryCommand.Create(dependencies));
 

@@ -42,7 +42,8 @@ public static class RepositoryCommand
         shell
       };
     command.SetHandler<string, string?, bool, bool, LibraryShellTemplate?>(
-      RepositoryEntrypoint.HandleAsync,
+      (root, imageName, forceValue, initValue, shellValue) =>
+        RepositoryEntrypoint.HandleAsync(dependencies, root, imageName, forceValue, initValue, shellValue),
       projectRoot,
       image,
       force,

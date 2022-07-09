@@ -17,15 +17,24 @@ public static class LibExecCommand
       "Shell command"
     ) { IsRequired = true };
   }
+
   public static Command Create(CommandDependencies dependencies)
   {
     var shellOption = ShellOption.CreateRequired();
     var commandOption = ShellCommandOption();
     var projectRootOption = ProjectRootOption.Create(dependencies);
-    var metadataOption = ProjectMetadataOption.Create(dependencies, true);
-    var command = new Command(LibExecName, LibExecDescription) {shellOption, commandOption, projectRootOption, metadataOption};
+    var metadataOption = ProjectMetadataOption.Create(dependencies);
+    var command =
+      new Command(LibExecName, LibExecDescription) { shellOption, commandOption, projectRootOption, metadataOption };
 
-    command.SetHandler(LibExecEntrypoint.CreateHandler(dependencies), shellOption, commandOption, projectRootOption, metadataOption);
+    command.SetHandler(
+      (LibraryShellTemplate templateValue, string commandValue, string projectRootValue, string metadataValue) =>
+        LibExecEntrypoint.HandleAsync(dependencies, templateValue, commandValue, projectRootValue, metadataValue),
+      shellOption,
+      commandOption,
+      projectRootOption,
+      metadataOption
+    );
 
     return command;
   }

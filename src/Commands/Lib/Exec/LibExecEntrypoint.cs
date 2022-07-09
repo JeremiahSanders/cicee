@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
-using Cicee.Commands.Exec;
 using Cicee.Dependencies;
 using LanguageExt.Common;
 
@@ -18,7 +17,7 @@ public static class LibExecEntrypoint
     Dictionary<string, string> GetProcessEnvironment()
     {
       var env = dependencies.GetEnvironmentVariables()
-        .ToDictionary(kvp=>kvp.Key,kvp=>kvp.Value);
+        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       env["PROJECT_ROOT"] = request.ProjectRoot;
       env["PROJECT_METADATA"] = request.MetadataPath;
 
@@ -62,16 +61,9 @@ public static class LibExecEntrypoint
         async processStartInfo =>
           (await dependencies.ProcessExecutor(processStartInfo))
           .Map(processExecResult =>
-            new LibExecResponse(processStartInfo, processExecResult) {Shell = request.Shell}
+            new LibExecResponse(processStartInfo, processExecResult) { Shell = request.Shell }
           )
       );
-  }
-
-  public static Func<LibraryShellTemplate, string, string, string, Task<int>> CreateHandler(
-    CommandDependencies dependencies)
-  {
-    return (template, command, projectRoot, metadata) =>
-      HandleAsync(dependencies, template, command, projectRoot, metadata);
   }
 
   private static Result<LibExecRequest> TryCreateRequest(
@@ -103,7 +95,9 @@ public static class LibExecEntrypoint
       );
   }
 
-  private static async Task<int> HandleAsync(CommandDependencies dependencies, LibraryShellTemplate template,
+  public static async Task<int> HandleAsync(
+    CommandDependencies dependencies,
+    LibraryShellTemplate template,
     string command,
     string projectRoot,
     string metadataPath

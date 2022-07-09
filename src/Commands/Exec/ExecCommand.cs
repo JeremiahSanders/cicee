@@ -40,7 +40,8 @@ public static class ExecCommand
       projectRoot, serviceCommand, serviceEntrypoint, image
     };
     command.SetHandler<string, string?, string?, string?>(
-      ExecEntrypoint.HandleAsync,
+      (rootValue, commandValue, entrypointValue, imageValue) =>
+        ExecEntrypoint.HandleAsync(dependencies, rootValue, commandValue, entrypointValue, imageValue),
       projectRoot,
       serviceCommand,
       serviceEntrypoint,
