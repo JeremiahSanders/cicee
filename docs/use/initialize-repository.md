@@ -8,6 +8,8 @@ This combines the following CICEE commands' results:
 * [`template init`][template-init]
 * (optionally) [`template lib`][template-lib]
 
+> **Note:** When CICEE is installed as a .NET local tool (i.e., your `${PROJECT_ROOT}/.config/dotnet-tools.json` contains a reference to `cicee`), all `$ cicee ..arguments..` commands become `$ dotnet cicee ..arguments..`. Additionally, you may need to run `dotnet tool restore`, to ensure the tool is installed.
+
 ```bash
 $ cicee init repository --help
 Description:
