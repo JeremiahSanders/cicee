@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
 using Cicee.Dependencies;
+using Cicee.Extensions;
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Template.Init;
@@ -52,15 +53,29 @@ public static class TemplateInitHandling
     return new Dictionary<string, string>();
   }
 
+
   public static async Task<Result<TemplateInitResult>> TryHandleRequest(CommandDependencies dependencies,
     TemplateInitRequest request)
   {
     dependencies.StandardOutWriteLine("Initializing project...\n");
-    return await (await Validation.ValidateRequestExecution(dependencies, request)
-        .TapFailure(exception =>
-          dependencies.StandardOutWriteLine(
-            $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"))
-        .BindAsync(context => TryWriteMetadataFile(dependencies, context)))
+    return await (
+        await (await Validation.ValidateRequestExecution(dependencies, request)
+            .TapFailure(exception =>
+              dependencies.StandardOutWriteLine(
+                $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}")
+            )
+            .BindAsync(async context =>
+              (await dependencies.TryAddCiceeLocalToolAsync(context.ProjectRoot)).Map(_ => context)
+              .TapFailure(exception => dependencies.StandardErrorWriteLine(
+                $"Failed to install CICEE as a .NET local tool.\nError: {exception.GetType()}\nMessage: {exception.Message}"
+              ))
+            )
+          )
+          .BindAsync(async context =>
+            (await dependencies.TryWriteMetadataFile(context.MetadataFile, context.ProjectMetadata))
+            .Map(_ => context)
+          )
+      )
       .BindAsync(async validatedRequest =>
         (await FileCopyHelpers.TryWriteFiles(
           dependencies,
@@ -97,18 +112,6 @@ public static class TemplateInitHandling
       );
   }
 
-  private static async Task<Result<TemplateInitContext>> TryWriteMetadataFile(CommandDependencies dependencies,
-    TemplateInitContext context)
-  {
-    return context.MetadataFile.ToLowerInvariant().Contains("package.json")
-      // Don't update package.json files.
-      ? new Result<TemplateInitContext>(context)
-      : (await Json.TrySerialize(context.ProjectMetadata)
-        .BindAsync(json => dependencies.TryWriteFileStringAsync((FileName: context.MetadataFile, Content: json)))
-      )
-      .Map(_ => context);
-  }
-
   private static void DisplayNextSteps(CommandDependencies dependencies, TemplateInitResult initResult)
   {
     var ciPath = dependencies.CombinePath(initResult.ProjectRoot, Conventions.CiDirectoryName);
@@ -118,10 +121,7 @@ public static class TemplateInitHandling
 
     void WriteColorizedNode(ConsoleColor titleColor, string title, string description)
     {
-      var validateSteps = new[]
-      {
-        ((ConsoleColor?)null, " * "), (titleColor, title), ((ConsoleColor?)null, description)
-      };
+      var validateSteps = new[] {((ConsoleColor?)null, " * "), (titleColor, title), ((ConsoleColor?)null, description)};
       dependencies.StandardOutWriteAsLine(validateSteps);
     }
 

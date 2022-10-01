@@ -1,6 +1,8 @@
 # Continuous Integration Action Library
 
-CICEE includes a library of shell functions which provide patterned executions of various common continuous integration actions. E.g., "dotnet build", "docker push". By sourcing this function library in a continuous integration script, project continuous integration workflows can be templated for quick intialization.
+CICEE includes a library of shell functions which provide patterned executions of various common continuous integration actions. E.g., "dotnet build", "docker push". By sourcing this function library in a continuous integration script, project continuous integration workflows can be templated for quick initialization.
+
+> **Note:** When CICEE is installed as a .NET local tool (i.e., your `${PROJECT_ROOT}/.config/dotnet-tools.json` contains a reference to `cicee`), all `$ cicee ..arguments..` commands become `$ dotnet cicee ..arguments..`. Additionally, you may need to run `dotnet tool restore`, to ensure the tool is installed.
 
 ```bash
 $ cicee lib --help

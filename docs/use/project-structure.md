@@ -29,7 +29,7 @@ CICEE includes a template for continuous integration workflows. This template in
         * `ci-compose.sh` - Build the project's artifact composition. Intended for use in local debugging, build validation, or when another continuous integration tool will process the build output.
         * `ci-publish.sh` - Build and publish the project's artifact composition. Examples: creating and publishing a NuGet package, building and pushing a Docker image. Intended for use by a continuous integration build agent or similar infrastructure. Generally used upon the merge of a pre-release feature branch into development (e.g., `dev` or `develop` branch) or a release branch (e.g., into `main` or `trunk`).
         * `ci-validate.sh` - Build and validate the project's source. Intended for use during the validation of a pull request.
-  * `project-metadata.json` (or `package.json`) - _Not initialized by CICEE._ Defines metadata about the project. E.g., name, release version, and CI environment expectations. (NOTE: `project-metadata.json` is the canonical file containing this metadata. However, NPM's `package.json` will be read if `project-metadata.json` is unavailable.)
+  * `project-metadata.json` (or `package.json`) - Defines metadata about the project. E.g., name, release version, and CI environment expectations. (NOTE: `project-metadata.json` is the canonical file containing this metadata. However, NPM's `package.json` will be read if `project-metadata.json` is unavailable. _Initialized by [`init repository`][] and [`template init`][]._)
 
 ### Project Metadata
 
@@ -83,3 +83,6 @@ The following example shows an expected `project-metadata.json`.
 * `name` - **Required**. Variable name. E.g., `PROJECT_NAME`, `REMOTE_DEPENDENCY_URL`.
 * `required` - _Optional._ Is the variable required?
 * `secret` - _Optional._ Is the variable's value secret?
+
+[`init repository`]: ./initialize-repository.md
+[`template init`]: ./template-init.md

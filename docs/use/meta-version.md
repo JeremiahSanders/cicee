@@ -2,6 +2,8 @@
 
 Gets the `.version` property in a [project metadata][project-structure] file.
 
+> **Note:** When CICEE is installed as a .NET local tool (i.e., your `${PROJECT_ROOT}/.config/dotnet-tools.json` contains a reference to `cicee`), all `$ cicee ..arguments..` commands become `$ dotnet cicee ..arguments..`. Additionally, you may need to run `dotnet tool restore`, to ensure the tool is installed.
+
 ```bash
 $ cicee meta version --help
 Description:
