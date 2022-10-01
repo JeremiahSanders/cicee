@@ -50,29 +50,18 @@ Open a Bash terminal session **in the root directory of the project**.
 Execute [`cicee init repository`][cicee-init-repository].
 
 ```bash
-cicee init repository
+dotnet new tool-manifest && dotnet tool install --local cicee && dotnet cicee init repository
 ```
 
 This adds:
 
+* a .NET local tool installation of CICEE
 * a `Dockerfile` which will provide all the tools needed to perform the project's continuous integration tasks.
 * `docker-compose` files which define the continuous integration containerized execution environment.
 * a small, flexible continuous integration workflow template. Three initial workflows are provided:
   * `compose`: Create the project's distributable artifacts. For example, render SASS to CSS, compile source code, build docker images, compress zip archives, package for NPM, etc.
   * `publish`: Publish the project's distributable artifacts to their repositories. For example, push docker images, publish a package to NuGet, etc.
   * `validate`: Validate the current project for correctness, completeness, or other rules. **Supports automated checks which should be executed during pull request review.**
-
-> #### (Optional Alternative) Include CICEE Shell Library
->
-> CICEE's core runtime ability is `cicee exec`: executing a specified Docker `entrypoint` and `command` within the continuous integration containerized execution environment. However, that requires a `cicee` installation.
->
-> By installing the CICEE shell library, the same `cicee exec` process can be performed _without installing `cicee`_. For example, on a continuous integration build server.
->
-> Execute this alternative [`cicee init repository`][cicee-init-repository] command, which uses the `--ci-lib` option to include the CICEE CI library.
->
-> ```bash
-> cicee init repository --ci-lib
-> ```
 
 ### Step 2: _Try It Out_
 
@@ -81,12 +70,12 @@ Open a Bash terminal session **in the root directory of the project**.
 Execute [`cicee exec`][cicee-exec] and provide one of the CI workflow entry points.
 
 ```bash
-cicee exec --entrypoint ci/bin/validate.sh
+dotnet cicee exec --entrypoint ci/bin/validate.sh
 ```
 
 ### Next Step
 
-* Update [continuous integration configuration][project-structure]. This is normally done in `project-metadata.json` (which was created by `cicee template init`). However, _if there is no_ `project-metadata.json`, CICEE will read NPM's `package.json`, if present.
+* Update [continuous integration configuration][project-structure]. This is normally done in `project-metadata.json` (which was created by `cicee init repository`). However, _if there is no_ `project-metadata.json`, CICEE will read NPM's `package.json`, if present.
   * Update the project's name and description, if needed.
   * Update the current `Major.Minor.Patch` version.
   * Configure required environment variables and defaults.
