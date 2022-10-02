@@ -14,16 +14,31 @@ public static class CommandDependenciesExtensions
       string projectRoot
     )
   {
-    return await (await dependencies
-        .ProcessExecutor(
-          new ProcessStartInfo("dotnet") {WorkingDirectory = projectRoot, ArgumentList = {"new", "tool-manifest"}}
+    string GetDotnetToolManifestPath()
+    {
+      return dependencies.CombinePath(
+        dependencies.CombinePath(projectRoot, ".config"),
+        "dotnet-tools.json"
+      );
+    }
+
+    return await (await dependencies.DoesFileExist(GetDotnetToolManifestPath())
+        .BindAsync(async manifestExists => manifestExists
+          ? new ProcessExecResult()
+          : await dependencies
+            .ProcessExecutor(
+              new ProcessStartInfo("dotnet")
+              {
+                WorkingDirectory = projectRoot, ArgumentList = { "new", "tool-manifest" }
+              }
+            )
         )
       )
       .BindAsync<ProcessExecResult, (ProcessExecResult, ProcessExecResult)>(
         async manifestInstallResult => (await dependencies.ProcessExecutor(
             new ProcessStartInfo("dotnet")
             {
-              WorkingDirectory = projectRoot, ArgumentList = {"tool", "install", "--local", "cicee"}
+              WorkingDirectory = projectRoot, ArgumentList = { "tool", "install", "--local", "cicee" }
             }))
           .Map(ciceeInstallResult => (toolInstallResult: manifestInstallResult, ciceeInstallResult))
       );
