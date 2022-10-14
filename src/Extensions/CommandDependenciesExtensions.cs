@@ -1,3 +1,4 @@
+using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Cicee.CiEnv;
@@ -22,25 +23,31 @@ public static class CommandDependenciesExtensions
       );
     }
 
+    Result<bool> IsCiceeInstalled()
+    {
+      return dependencies.TryLoadFileString(GetDotnetToolManifestPath())
+        .Map(content => content.Contains("cicee", StringComparison.InvariantCultureIgnoreCase));
+    }
+
     return await (await dependencies.DoesFileExist(GetDotnetToolManifestPath())
         .BindAsync(async manifestExists => manifestExists
           ? new ProcessExecResult()
           : await dependencies
             .ProcessExecutor(
-              new ProcessStartInfo("dotnet")
-              {
-                WorkingDirectory = projectRoot, ArgumentList = { "new", "tool-manifest" }
-              }
+              new ProcessStartInfo("dotnet") {WorkingDirectory = projectRoot, ArgumentList = {"new", "tool-manifest"}}
             )
         )
       )
-      .BindAsync<ProcessExecResult, (ProcessExecResult, ProcessExecResult)>(
-        async manifestInstallResult => (await dependencies.ProcessExecutor(
+      .BindAsync(manifestInstallResult =>
+        IsCiceeInstalled().BindAsync<bool, (ProcessExecResult, ProcessExecResult)>(async isCiceeInstalled =>
+          (await dependencies.ProcessExecutor(
             new ProcessStartInfo("dotnet")
             {
-              WorkingDirectory = projectRoot, ArgumentList = { "tool", "install", "--local", "cicee" }
+              WorkingDirectory = projectRoot,
+              ArgumentList = {"tool", isCiceeInstalled ? "update" : "install", "--local", "cicee"}
             }))
           .Map(ciceeInstallResult => (toolInstallResult: manifestInstallResult, ciceeInstallResult))
+        )
       );
   }
 
