@@ -22,9 +22,8 @@ if [[ -z "$(dotnet tool list | grep cicee)" ]]; then
   # Install CICEE, to add the CI shell library.
   dotnet tool install --local cicee || echo -e "\nFailed to install CICEE.\n  Unexpected errors may occur.\n\n"
 else
-  # We have cicee installed locally.
-  # Ensure we're using the latest CI shell library scripts.
-  dotnet tool update --local cicee || echo -e "\nFailed to update CICEE.\n  Unexpected errors may occur.\n  Current CICEE version: $(dotnet cicee --version)\n\n"
+  # We have cicee installed locally; restore it.
+  dotnet tool restore
 fi
 
 #--
@@ -32,4 +31,5 @@ fi
 #   All .sh scripts in ci/libexec/workflows/ are sourced by CICEE's library.
 #   Below we only need to execute the workflow Bash shell functions (in ci/libexec/workflows/).
 #--
-dotnet cicee lib exec --project-root "${PROJECT_ROOT}" --command "ci-validate \&\& ci-compose"
+dotnet cicee lib exec --project-root "${PROJECT_ROOT}" --command "ci-validate" &&
+  dotnet cicee lib exec --project-root "${PROJECT_ROOT}" --command "ci-compose"
