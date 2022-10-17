@@ -324,7 +324,7 @@ function ci-env-display() {
     # Loop through the CI environment variables.
     for variableName in "${CIENV_VARIABLES[@]}"; do
       # If the variable is defined as "secret"...
-      if [[ "${CIENV_VARIABLES_SECRET[*]}" =~ ${variableName} ]]; then
+      if [[ -n "${CIENV_VARIABLES_SECRET:-}" && "${CIENV_VARIABLES_SECRET[*]}" =~ ${variableName} ]]; then
         # ... and if the variable has a value...
         if [[ -n "${!variableName:-}" ]]; then
           # ...record the value masked.
