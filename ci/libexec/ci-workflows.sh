@@ -43,8 +43,10 @@ source "$(dotnet run --project src --framework net6.0 -- lib)"
 #--
 ci-validate() {
   ci-dotnet-restore &&
+    printf "\nBeginning 'dotnet build'...\n\n" &&
     ci-dotnet-build \
       -p:GenerateDocumentationFile=true &&
+    printf "\nBeginning 'dotnet test'...\n\n" &&
     ci-dotnet-test
 }
 
@@ -52,10 +54,22 @@ ci-validate() {
 # Compose the project's artifacts, e.g., compiled binaries, Docker images.
 #--
 ci-compose() {
-  ci-dotnet-restore &&
-    ci-dotnet-publish \
-      --framework net6.0 \
+  printf "\nBeginning 'dotnet restore'...\n\n" &&
+    ci-dotnet-restore &&
+    printf "\nBeginning 'dotnet publish' targeting .NET 6...\n\n" &&
+    dotnet publish "${PROJECT_ROOT}/src" \
+      --configuration Release \
+      --output "${BUILD_UNPACKAGED_DIST}/net6.0" \
+      -p:Version="${PROJECT_VERSION_DIST}" \
+      --framework net6.0 &&
+    printf "\nBeginning 'dotnet publish' targeting .NET 7...\n\n" &&
+    dotnet publish "${PROJECT_ROOT}/src" \
+      --configuration Release \
+      --output "${BUILD_UNPACKAGED_DIST}/net7.0" \
+      -p:Version="${PROJECT_VERSION_DIST}" \
+      --framework net7.0 \
       -p:GenerateDocumentationFile=true &&
+    printf "\nBeginning 'dotnet pack'...\n\n" &&
     ci-dotnet-pack -p:GenerateDocumentationFile=true
 }
 
