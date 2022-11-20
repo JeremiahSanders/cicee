@@ -18,7 +18,7 @@ declare PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_LOCATION}/../.." && pwd)}"
 __initialize() {
   # Load the CICEE CI action library and project CI workflow library.
   # Then execute the ci-env-init, ci-env-display, and ci-env-require functions, provided by the CI action library.
-  source "$(dotnet run --project src --framework net6.0 -- lib)" &&
+  source "$(dotnet run --project src --framework net7.0 -- lib)" &&
     source "${PROJECT_ROOT}/ci/libexec/ci-workflows.sh" &&
     ci-env-init &&
     ci-env-display &&
