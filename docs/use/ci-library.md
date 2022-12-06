@@ -111,6 +111,16 @@ Contains functions which interact with the .NET CLI (dotnet) and its related uti
 | `NUGET_API_KEY` | NuGet source API key. Required for pushing NuGet packages.                                      |
 | `NUGET_SOURCE`  | NuGet source, e.g., `https://api.nuget.org/v3/index.json`. Required for pushing NuGet packages. |
 
+### SemVer Actions
+
+Contains functions which calculate [SemVer][] values.
+
+* `ci-semver-prerelease-minor` - Echos a calculated pre-release version number, e.g., `3.1.0-build-20230116-141103-sha-abc1234`, to standard output (via `echo`).
+  * Parameters:
+    1. Current project "production" version. Defaults to `0.0.0`.
+    2. Current Git commit hash. Defaults to `0000000`.
+    3. Current build date and time. Defaults to _current UTC_ date and time (in `YYYYMMDD-hhmmss` format). E.g., `20230116-141103`
+
 ### Utility Actions
 
 * `require-var` - Require that one or more variables are set. Required variables are provided as string arguments. E.g. "PROJECT_ROOT", "NPM_API_KEY".
@@ -181,3 +191,5 @@ The `CIENV_VARIABLES*` variables below are all derived from loading `.ciEnvironm
     * This file is assumed to NOT BE stored in version control. No consistency between environments is assumed, though patterns and templates are recommended.
     * Default location: `PROJECT_ROOT/ci/env.local.sh`
     * Additional paths: `PROJECT_ROOT/ci/env.sh`, `PROJECT_ROOT/ci/.env`, `PROJECT_ROOT/env.local.sh`, `PROJECT_ROOT/env.sh`, `PROJECT_ROOT/.env`
+
+[SemVer]: https://semver.org/

@@ -50,6 +50,9 @@
     <Content Include="lib\ci\bash\actions\docker.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <Content Include="lib\ci\bash\actions\semver.sh">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="lib\ci\bash\ci.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
