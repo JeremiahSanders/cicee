@@ -261,23 +261,7 @@ function ci-env-init() {
     if [[ "${RELEASE_ENVIRONMENT:-false}" = true ]]; then
       PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}}"
     else
-      local BUILD_DATE_TIME="$(TZ="utc" date "+%Y%m%d-%H%M%S")"
-      if [[ "${PROJECT_VERSION}" =~ ^[0-9]*\.[0-9]*\.[0-9]*$ ]]; then
-        # The version is in Major.Minor.Patch format.
-        # Calculate next release version. Assume next version is a minor (so we'll use 0 instead of current patch version).
-        IFS='.' read -ra PROJECT_VERSION_SEGMENTS <<<"${PROJECT_VERSION}"
-        local MAJOR="${PROJECT_VERSION_SEGMENTS[0]}"
-        local MINOR="${PROJECT_VERSION_SEGMENTS[1]}"
-        local PATCH="0"
-        # The $(()) converts ${MINOR} to a number.
-        local BUMPED_MINOR=$((${MINOR} + 1))
-        # NOTE: The "build" string starting the prerelease suffix is required for NuGet limitations to SemVer2 compatibility.
-        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${MAJOR}.${BUMPED_MINOR}.${PATCH}-build-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
-      else
-        # The version is not in Major.Minor.Patch format.
-        # NOTE: The "build" string starting the prerelease suffix is required for NuGet limitations to SemVer2 compatibility.
-        PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-${PROJECT_VERSION}-build-${BUILD_DATE_TIME}-sha-${CURRENT_GIT_HASH}}"
-      fi
+      PROJECT_VERSION_DIST="${PROJECT_VERSION_DIST:-$(ci-semver-prerelease-minor "${PROJECT_VERSION}" "${CURRENT_GIT_HASH}")}"
     fi
 
     export PROJECT_NAME
