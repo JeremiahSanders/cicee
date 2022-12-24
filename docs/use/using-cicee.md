@@ -32,22 +32,28 @@ Commands:
 * [`exec`][execute] - [Execute a command][execute] in a containerized execution environment.
 * [`init`][initialize] - [Initialize project CI containerization files][initialize]. Creates suggested cicee files.
 * [`lib`][lib] - Commands working with [CICEE shell script library][lib].
+  * [`exec`][lib-exec] - Execute a CI Command in the local environment.
 * `meta` - Commands working with project metadata.
+  * `cienv` (`cienvironment`) - Commands working with the CI environment in project metadata.
+    * [`var`][meta-cienv-variables] ([`variables`][meta-cienv-variables]) - Commands working with the CI environment variables in project metadata.
+      * [`add`][meta-cienv-variables] - Add a new CI environment variable.
+      * [`ls`][meta-cienv-variables] ([`list`][meta-cienv-variables]) - List the CI environment variables.
+      * [`rm`][meta-cienv-variables] ([`remove`][meta-cienv-variables]) - Remove a CI environment variable.
+      * [`update`][meta-cienv-variables] - Update a CI environment variable.
   * [`version`][meta-version] - Gets `.version` in project metadata.
     * [`bump`][meta-version-bump] - Bumps the `.version` in project metadata by a SemVer increment.
-* `template` - Commands working with project [continuous integration templates][template].
+* `template` - Commands working with project continuous integration templates.
   * [`init`][template-init] - Initialize a project repository with continuous integration workflow scripts.
   * [`lib`][template-lib] - Initialize project CI with CICEE execution library. Supports `cicee exec`-like behavior without CICEE installation.
 
-[docker-compose-command]: https://docs.docker.com/compose/compose-file/compose-file-v3/#command
-[docker-compose-entrypoint]: https://docs.docker.com/compose/compose-file/compose-file-v3/#entrypoint
 [env-display]: ./env-display.md
 [env-require]: ./env-require.md
 [execute]: ./execute.md
 [initialize]: ./initialize.md
+[lib-exec]: ./lib-exec.md
 [lib]: ./ci-library.md
-[meta-version]: ./meta-version.md
+[meta-cienv-variables]: ./meta-cienv-variables.md
 [meta-version-bump]: ./meta-version-bump.md
-[project's docker-compose file]: ../use/project-structure.md
+[meta-version]: ./meta-version.md
 [template-init]: ./template-init.md
 [template-lib]: ./template-lib.md
