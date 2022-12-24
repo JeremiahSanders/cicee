@@ -9,7 +9,7 @@ namespace Cicee.CiEnv;
 
 public static class ProjectEnvironmentHelpers
 {
-  private const string secretString = "***redacted***";
+  internal const string SecretString = "***redacted***";
 
   public static IReadOnlyDictionary<ProjectEnvironmentVariable, string> GetEnvironmentDisplay(
     Func<IReadOnlyDictionary<string, string>> getEnvironmentVariables,
@@ -25,7 +25,7 @@ public static class ProjectEnvironmentHelpers
       );
       var hasValue = !default(KeyValuePair<string, string>).Equals(possibleValue);
       return hasValue
-        ? variable.Secret ? secretString : possibleValue.Value
+        ? variable.Secret ? SecretString : possibleValue.Value
         : string.Empty;
     }
 
@@ -71,7 +71,7 @@ public static class ProjectEnvironmentHelpers
         var valueOrDefault = isPopulated || string.IsNullOrWhiteSpace(key.DefaultValue)
           ? value // When the value is populated or no default exists, display value. 
           // If there is a default, but no value, and it's a secret, show the secret placeholder, else the default. 
-          : $"<{(key.Secret ? secretString : key.DefaultValue)}>";
+          : $"<{(key.Secret ? SecretString : key.DefaultValue)}>";
         
         standardOutWrite(nameColor, $"  {key.Name.PadRight(width, paddingChar: ' ')}");
         standardOutWrite(arg1: null, ": ");
