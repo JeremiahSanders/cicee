@@ -22,7 +22,7 @@ public static class MetaVersionBumpHandling
     };
   }
 
-  private static string GetVersionString(this System.Version version)
+  internal static string GetVersionString(this System.Version version)
   {
     return version.ToString(fieldCount: 3);
   }
@@ -61,7 +61,7 @@ public static class MetaVersionBumpHandling
           .Bind(bumpedVersion =>
             TryIncrementVersionInProjectMetadata(bumpedVersion)
               .Map(jsonObject =>
-                (bumpedVersion, metadata with {Version = bumpedVersion.GetVersionString()}, jsonObject)
+                (bumpedVersion, metadata with { Version = bumpedVersion.GetVersionString() }, jsonObject)
               )
           )
       );
@@ -78,14 +78,11 @@ public static class MetaVersionBumpHandling
       (System.Version BumpedVersion, ProjectMetadata ProjectMetadata, JsonObject MetadataJson) tuple
     )
     {
+      var versionString = tuple.BumpedVersion.GetVersionString();
       return isDryRun
-        ? new Result<string>(tuple.BumpedVersion.GetVersionString())
-        : await Json.TrySerialize(tuple.MetadataJson)
-          .BindAsync(
-            async jsonString =>
-              (await dependencies.TryWriteFileStringAsync((projectMetadataPath, jsonString)))
-              .Map(_ => tuple.BumpedVersion.GetVersionString())
-          );
+        ? new Result<string>(versionString)
+        : (await ProjectMetadataManipulation.UpdateVersionInMetadata(dependencies, projectMetadataPath,
+          tuple.BumpedVersion)).Map(_ => versionString);
     }
 
     return TryBumpProjectVersion(
