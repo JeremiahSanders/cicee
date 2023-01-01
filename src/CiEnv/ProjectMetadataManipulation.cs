@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+using Cicee.Commands.Meta.Version.Bump;
 using Cicee.Dependencies;
 using LanguageExt.Common;
 
@@ -12,6 +13,30 @@ public static class ProjectMetadataManipulation
 {
   private const string ExpectedCiEnvVariablesNodeName = "variables";
   private const string ExpectedCiEnvNodeName = "ciEnvironment";
+
+  /// <summary>
+  ///   Replaces the current <see cref="ProjectMetadata.Version" /> in project metadata. Writes <paramref name="version" />
+  ///   in SemVer <c>Major.Minor.Patch</c> format.
+  /// </summary>
+  /// <param name="dependencies"></param>
+  /// <param name="projectMetadataPath"></param>
+  /// <param name="version"></param>
+  /// <returns></returns>
+  public static async Task<Result<Version>> UpdateVersionInMetadata(
+    CommandDependencies dependencies,
+    string projectMetadataPath,
+    Version version)
+  {
+    return (await ModifyMetadataJson(dependencies, projectMetadataPath,
+          jsonObject =>
+          {
+            jsonObject["version"] = version.GetVersionString();
+            return jsonObject;
+          }
+        )
+      )
+      .Map(_ => version);
+  }
 
   /// <summary>
   ///   Replaces the current <see cref="ProjectContinuousIntegrationEnvironmentDefinition.Variables" /> in project metadata.
