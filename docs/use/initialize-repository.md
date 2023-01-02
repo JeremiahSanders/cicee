@@ -21,7 +21,7 @@ Usage:
 
 Options:
   -p, --project-root <project-root> (REQUIRED)  Project repository root directory [default:
-                                                /c/code/TEMP_PROJECT_FOR_CICEE_TEST]
+                                                $(pwd)]
   -i, --image <image>                           Base CI image for $PROJECT_ROOT/ci/Dockerfile.
   -f, --force                                   Force writing files. Overwrites files which already exist. [default: False]
   -l, --ci-lib                                  Initialize project CI with CICEE execution library. Supports 'cicee

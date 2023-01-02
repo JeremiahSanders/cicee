@@ -1,4 +1,5 @@
 using System.CommandLine;
+using Cicee.Commands.Meta.CiEnv;
 using Cicee.Commands.Meta.Version;
 using Cicee.Dependencies;
 
@@ -10,6 +11,7 @@ public static class MetaCommand
   {
     var command = new Command("meta", "Commands interacting with project metadata.");
 
+    command.AddCommand(CiEnvironmentCommand.Create(dependencies));
     command.AddCommand(MetaVersionCommand.Create(dependencies));
 
     return command;

@@ -8,7 +8,7 @@ public static class EnvRequireCommand
 {
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectRoot = OptionalProjectRootOption(dependencies);
+    var projectRoot = ProjectRootOption.CreateOptional(dependencies);
     var file = ProjectMetadataFile(() =>
     {
       var possibleValue = ProjectMetadataOption.GetDefaultMetadataPathProvider(dependencies);
@@ -17,19 +17,12 @@ public static class EnvRequireCommand
     var command = new Command(
       "require",
       "Require that the environment contains all required variables.") { projectRoot, file };
-    command.SetHandler<string?, string?>(
+    command.SetHandler(
       (root, filePath) => EnvRequireEntrypoint.HandleAsync(dependencies, root, filePath),
       projectRoot,
       file
     );
     return command;
-  }
-
-  private static Option OptionalProjectRootOption(CommandDependencies dependencies)
-  {
-    var option = ProjectRootOption.Create(dependencies);
-    option.IsRequired = false;
-    return option;
   }
 
   private static Option<string?> ProjectMetadataFile(Func<string?> getDefaultValue)

@@ -81,7 +81,7 @@ dotnet cicee exec --entrypoint ci/bin/validate.sh
 * Update [continuous integration configuration][project-structure]. This is normally done in `project-metadata.json` (which was created by `cicee init repository`). However, _if there is no_ `project-metadata.json`, CICEE will read NPM's `package.json`, if present.
   * Update the project's name and description, if needed.
   * Update the current `Major.Minor.Patch` version.
-  * Configure required environment variables and defaults.
+  * Configure required environment variables and defaults. (Use the [`cicee meta cienv var` commands][meta-cienv-var] to easily view and modify this configuration.)
 * Set up the continuous integration workflow.
 
 ### Workflow Recipes
@@ -148,8 +148,8 @@ dotnet cicee exec --entrypoint ci/bin/validate.sh
 
 [ASP.NET Docker Image / Self-contained Command Line Tool Docker Image]: ./docs/recipes/dotnet/docker-image.md
 [cicee-exec]: docs/use/execute.md
-[cicee-init]: docs/use/initialize.md
 [cicee-init-repository]: docs/use/initialize-repository.md
+[cicee-init]: docs/use/initialize.md
 [cicee-lib]: docs/use/ci-library.md
 [cicee-template-init]: docs/use/template-init.md
 [cicee-template-lib]: docs/use/template-lib.md
@@ -166,6 +166,7 @@ dotnet cicee exec --entrypoint ci/bin/validate.sh
 [env-project-nuget-auth]: docs/recipes/env/project/nuget-private-source.md
 [How does CICEE work?]: docs/what/how-does-cicee-work.md
 [Installation or update]: docs/use/installation-or-update.md
+[meta-cienv-var]: docs/use/meta-cienv-variables.md
 [NuGet Library / .NET Tool]: ./docs/recipes/dotnet/nuget-library.md
 [project-structure]: docs/use/project-structure.md
 [publish-aws-s3-zip]: docs/recipes/aws/publish-s3-zip.md

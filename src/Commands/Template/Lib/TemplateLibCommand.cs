@@ -19,7 +19,7 @@ public static class TemplateLibCommand
         "lib",
         Description) { projectRoot, shell, force };
     command.SetHandler(
-      (string rootValue, LibraryShellTemplate shellValue, bool forceValue) =>
+      (string rootValue, LibraryShellTemplate? shellValue, bool forceValue) =>
         TemplateLibEntrypoint.HandleAsync(dependencies, rootValue, shellValue, forceValue),
       projectRoot,
       shell,
