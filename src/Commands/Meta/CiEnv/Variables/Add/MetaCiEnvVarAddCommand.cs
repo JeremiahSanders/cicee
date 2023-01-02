@@ -12,7 +12,7 @@ public static class MetaCiEnvVarAddCommand
   public static Command Create(CommandDependencies dependencies)
   {
     var projectMetadata = ProjectMetadataOption.Create(dependencies);
-    var name = VariablesOptions.CreateNameOption();
+    var name = VariablesOptions.CreateNameRequired();
     var description = CreateDescriptionOption();
     var required = CreateRequiredOption();
     var secret = CreateSecretOption();

@@ -12,7 +12,7 @@ public static class MetaCiEnvVarRemoveCommand
   public static Command Create(CommandDependencies dependencies)
   {
     var projectMetadata = ProjectMetadataOption.Create(dependencies);
-    var name = VariablesOptions.CreateNameOption();
+    var name = VariablesOptions.CreateNameRequired();
     var command = new Command(CommandName, CommandDescription) { projectMetadata, name };
     command.AddAlias(CommandAlias);
     command.SetHandler(MetaCiEnvVarRemoveEntrypoint.CreateHandler(dependencies), projectMetadata, name);
