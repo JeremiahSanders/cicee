@@ -12,7 +12,7 @@ public static class MetaCiEnvVarListCommand
   public static Command Create(CommandDependencies dependencies)
   {
     var projectMetadata = ProjectMetadataOption.Create(dependencies);
-    var name = VariablesOptions.CreateNameOption(isRequired: false, "Environment variable name 'contains' filter, case insensitive.");
+    var name = VariablesOptions.CreateNameOptional("Environment variable name 'contains' filter, case insensitive.");
     var command = new Command(CommandName, CommandDescription) { projectMetadata, name };
     command.AddAlias(CommandAlias);
 

@@ -7,18 +7,35 @@ namespace Cicee.Commands;
 
 internal static class ProjectRootOption
 {
+  private const string Description = "Project repository root directory";
+
+  private static string[] CreateAliases()
+  {
+    return new[] { "--project-root", "-p" };
+  }
+
   public static Option<string> Of(Func<string> getDefaultValue)
   {
     return new Option<string>(
-      new[] {"--project-root", "-p"},
+      CreateAliases(),
       getDefaultValue,
-      "Project repository root directory"
-    ) {IsRequired = true};
+      Description
+    ) { IsRequired = true };
   }
+
 
   public static Option<string> Create(CommandDependencies dependencies)
   {
     return Of(() => InferProjectRoot(dependencies));
+  }
+
+  public static Option<string?> CreateOptional(CommandDependencies dependencies)
+  {
+    return new Option<string?>(
+      CreateAliases(),
+      () => InferProjectRoot(dependencies),
+      Description
+    ) { IsRequired = false };
   }
 
   private static string InferProjectRoot(CommandDependencies dependencies)
