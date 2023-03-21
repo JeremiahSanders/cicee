@@ -31,5 +31,4 @@ fi
 #   All .sh scripts in ci/libexec/workflows/ are sourced by CICEE's library.
 #   Below we only need to execute the workflow Bash shell functions (in ci/libexec/workflows/).
 #--
-dotnet cicee lib exec --project-root "${PROJECT_ROOT}" --command "ci-compose" &&
-  dotnet cicee lib exec --project-root "${PROJECT_ROOT}" --command "ci-publish"
+dotnet cicee lib exec --project-root "${PROJECT_ROOT}" --command "ci-compose \&\& ci-publish"
