@@ -13,6 +13,7 @@ public static class LibExecEntrypoint
 {
   private const string ProjectRoot = "PROJECT_ROOT";
   private const string ProjectMetadata = "PROJECT_METADATA";
+  private const string ExecDir = "EXEC_DIR";
 
   private static Result<ProcessStartInfo> TryCreateProcessStartInfo(CommandDependencies dependencies,
     LibExecRequest request)
@@ -23,6 +24,13 @@ public static class LibExecEntrypoint
     var projectMetadata = request.Shell == LibraryShellTemplate.Bash
       ? Io.NormalizeToLinuxPath(request.MetadataPath)
       : request.MetadataPath;
+    var execDir = dependencies.TryGetCurrentDirectory().IfFail(projectRoot);
+
+    return request.Shell switch
+    {
+      LibraryShellTemplate.Bash => CreateBash(),
+      _ => new Result<ProcessStartInfo>(new BadRequestException($"Unsupported shell: {request.Shell}"))
+    };
 
     Dictionary<string, string> GetProcessEnvironment()
     {
@@ -30,6 +38,13 @@ public static class LibExecEntrypoint
         .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
       env[ProjectRoot] = projectRoot;
       env[ProjectMetadata] = projectMetadata;
+      env[ExecDir] = execDir;
+
+      var fallbacks = request.Metadata.CiEnvironment.Variables
+        .Where(IsDefaultNeeded)
+        .ToDictionary(variable => variable.Name, variable => variable.DefaultValue!);
+
+      return env.Concat(fallbacks).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
       bool IsDefaultNeeded(ProjectEnvironmentVariable variable)
       {
@@ -37,17 +52,6 @@ public static class LibExecEntrypoint
         return !string.IsNullOrWhiteSpace(variable.DefaultValue) &&
                !env.Keys.Any(key => key.Equals(variable.Name, StringComparison.InvariantCultureIgnoreCase));
       }
-
-      var fallbacks = request.Metadata.CiEnvironment.Variables
-        .Where(IsDefaultNeeded)
-        .ToDictionary(variable => variable.Name, variable => variable.DefaultValue!);
-
-      return env.Concat(fallbacks).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
-    }
-
-    Dictionary<string, string> GetRequiredEnvironment()
-    {
-      return new Dictionary<string, string> {{ProjectRoot, projectRoot}, {ProjectMetadata, projectMetadata}};
     }
 
     Result<ProcessStartInfo> CreateBash()
@@ -65,11 +69,10 @@ public static class LibExecEntrypoint
       );
     }
 
-    return request.Shell switch
+    Dictionary<string, string> GetRequiredEnvironment()
     {
-      LibraryShellTemplate.Bash => CreateBash(),
-      _ => new Result<ProcessStartInfo>(new BadRequestException($"Unsupported shell: {request.Shell}"))
-    };
+      return new Dictionary<string, string> {{ProjectRoot, projectRoot}, {ProjectMetadata, projectMetadata}};
+    }
   }
 
   public static Task<Result<LibExecResponse>> TryHandleAsync(CommandDependencies dependencies, LibExecRequest request)

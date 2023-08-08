@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck disable=SC1090
 # shellcheck disable=SC2155
 
 ###
@@ -18,6 +19,16 @@ RED='\033[0;31m'
 CYAN='\033[0;36m'
 PURPLE='\033[0;35m'
 UNCOLORED='\033[0m'
+
+# Initialize an empty string, for displaying script arguments.
+args=""
+
+# Loop over all arguments
+for arg in "$@"
+do
+    # Append each argument to the string, separated by a space
+    args+="$arg "
+done
 
 # Load project CI actions and workflows, if they exist
 if [[ -d "${PROJECT_ROOT:-}/ci/libexec/actions" ]]; then
@@ -40,10 +51,12 @@ fi
 # 1 - Execute ci-env-init, provided by the CICEE action library.
 # 2 - Execute ci-env-display, provided by the CICEE action library.
 # 3 - Execute ci-env-require, provided by the CICEE action library.
-# 4 - Execute the arguments passed to this script.
+# 4 - Change directory into the project root.
+# 5 - Execute the arguments passed to this script.
 
 ci-env-init &&
   ci-env-display &&
   ci-env-require &&
-  printf "\nCI execution command:\n  %s\n\n" "$@" &&
-  eval $@
+  printf "\nCI execution command:\n  %s\n\n" "${args}" &&
+  cd "${EXEC_DIR:-${PROJECT_ROOT}}"
+  eval "$@"
