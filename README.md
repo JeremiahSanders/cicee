@@ -32,6 +32,23 @@ CICEE users' most common use cases:
 * [What Files and Directories Does CICEE Require?][project-structure]
 * [Using `cicee`][using-cicee]
 
+> ### CICEE .NET Templates
+>
+> .NET _solution_ templates are available in the [`Cicee.Templates`][] NuGet package. These templates provide easy templates for repository initialization which follow CICEE conventions.
+>
+> To install/update, execute:
+>
+> ```bash
+> dotnet new install Cicee.Templates
+> ```
+>
+> As of [`Cicee.Templates`][] version `0.2.0`, the following templates are provided:
+>
+> * `cicee-classlib-package`: A `classlib`-based Package Solution
+>   * This template provides a base for creating libraries, distributed as NuGet packages. It includes: a source project, based upon the `classlib` template, a unit test project, based upon the `xunit` template, and CI scripts.
+> * `cicee-webapi-service`: A `webapi`-based Service Solution
+>   * This template provides a base for creating web APIs, distributed as Docker images. It includes: a source project, based upon the `webapi` template, unit test and integration test projects, based upon the `xunit` template, and CI scripts.
+
 ## Quickstart
 
 ### Step 0: Install CICEE
@@ -146,6 +163,7 @@ dotnet cicee exec --entrypoint ci/bin/validate.sh
     * Publish
       * [Copy zip archive to AWS S3][publish-aws-s3-zip]
 
+[`Cicee.Templates`]: https://www.nuget.org/packages/Cicee.Templates
 [ASP.NET Docker Image / Self-contained Command Line Tool Docker Image]: ./docs/recipes/dotnet/docker-image.md
 [cicee-exec]: docs/use/execute.md
 [cicee-init-repository]: docs/use/initialize-repository.md
