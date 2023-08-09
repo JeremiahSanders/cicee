@@ -33,7 +33,7 @@ The execution below illustrates running a _user-defined script_ named `validate-
 ```bash
 $ cicee exec -c ci/bin/validate-for-pr.sh 
 
--- cicee (v0.2.0) --
+-- cicee (v1.9.1) --
 
 Beginning exec...
 
@@ -45,7 +45,7 @@ CI Environment:
 CICEE Execution Environment:
   CI_COMMAND      : ci/bin/validate-for-pr.sh
   CI_EXEC_CONTEXT : /c/temp/test-proj-with-dockerfile/ci
-  LIB_ROOT        : /c/Users/USERNAME/.dotnet/tools/.store/cicee/0.2.0/cicee/0.2.0/tools/net5.0/any/lib
+  LIB_ROOT        : /c/Users/USERNAME/.dotnet/tools/.store/cicee/1.9.1/cicee/1.9.1/tools/net6.0/any/lib
   PROJECT_NAME    : example-project
   PROJECT_ROOT    : /c/temp/test-proj-with-dockerfile
 
@@ -55,20 +55,20 @@ __
   | Entrypoint   :
   | Command      : ci/bin/validate-for-pr.sh
   | Project Root : /c/temp/test-proj-with-dockerfile
-  | CICEE Library: /c/Users/USERNAME/.dotnet/tools/.store/cicee/0.2.0/cicee/0.2.0/tools/net5.0/any/lib
+  | CICEE Library: /c/Users/USERNAME/.dotnet/tools/.store/cicee/1.9.1/cicee/1.9.1/tools/net6.0/any/lib
   | Image        : Not applicable. Using Dockerfile.
 
 
 [+] Building 0.1s (5/5) FINISHED
- => [internal] load build definition from Dockerfile                                                                                                             0.0s 
- => => transferring dockerfile: 38B                                                                                                                              0.0s 
- => [internal] load .dockerignore                                                                                                                                0.0s 
- => => transferring context: 2B                                                                                                                                  0.0s 
- => [internal] load metadata for mcr.microsoft.com/vscode/devcontainers/universal:linux                                                                          0.0s 
- => CACHED [1/1] FROM mcr.microsoft.com/vscode/devcontainers/universal:linux                                                                                     0.0s 
- => exporting to image                                                                                                                                           0.0s 
- => => exporting layers                                                                                                                                          0.0s 
- => => writing image sha256:acc8b32d896f67bff99c08976f9bf5c4c46c55462dc17960fd1927ecec06e23c                                                                     0.0s 
+ => [internal] load build definition from Dockerfile                                                0.0s 
+ => => transferring dockerfile: 38B                                                                 0.0s 
+ => [internal] load .dockerignore                                                                   0.0s 
+ => => transferring context: 2B                                                                     0.0s 
+ => [internal] load metadata for mcr.microsoft.com/vscode/devcontainers/universal:linux             0.0s 
+ => CACHED [1/1] FROM mcr.microsoft.com/vscode/devcontainers/universal:linux                        0.0s 
+ => exporting to image                                                                              0.0s 
+ => => exporting layers                                                                             0.0s 
+ => => writing image sha256:acc8b32d896f67bff99c08976f9bf5c4c46c55462dc17960fd1927ecec06e23c        0.0s 
 WARNING: The CI_ENTRYPOINT variable is not set. Defaulting to a blank string.
 Pulling ci-exec ... done
 WARNING: The CI_ENTRYPOINT variable is not set. Defaulting to a blank string.

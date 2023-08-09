@@ -47,7 +47,6 @@ source "${LIB_ROOT}/ci/bash/ci.sh" && ci-env-init
 declare -r DOCKERCOMPOSE_DEPENDENCIES_CI="${PROJECT_ROOT}/ci/docker-compose.dependencies.yml"
 declare -r DOCKERCOMPOSE_DEPENDENCIES_ROOT="${PROJECT_ROOT}/docker-compose.ci.dependencies.yml"
 declare -r DOCKERCOMPOSE_CICEE="${LIB_ROOT}/docker-compose.yml"
-declare -r DOCKERCOMPOSE_CI_LIB="${LIB_ROOT}/docker-compose.ci-lib.yml"
 declare -r DOCKERCOMPOSE_PROJECT_CI="${PROJECT_ROOT}/ci/docker-compose.project.yml"
 declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project.yml"
 
@@ -70,11 +69,6 @@ else
 fi
 # Add CICEE
 COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_CICEE}")
-# - If we can read "${LIB_ROOT}/ci", then mount that volume
-if [[ -r "${LIB_ROOT}/ci" ]]; then
-    COMPOSE_FILE_ARGS+=("--file" "${DOCKERCOMPOSE_CI_LIB}")
-    printf "\nCICEE CI library mounting at: /opt/ci-lib\n\n"
-fi
 # - Import the ci-exec service image source (Dockerfile or image)
 if [[ -n "${CI_EXEC_IMAGE:-}" ]]; then
   COMPOSE_FILE_ARGS+=("--file" "${LIB_ROOT}/docker-compose.image.yml")
