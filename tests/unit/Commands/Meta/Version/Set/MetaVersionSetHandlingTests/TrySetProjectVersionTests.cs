@@ -1,26 +1,26 @@
 using System;
 using System.Collections.Generic;
 using Cicee.CiEnv;
-using Cicee.Commands.Meta.Version.Bump;
+using Cicee.Commands.Meta.Version.Set;
 using Cicee.Dependencies;
 using Jds.LanguageExt.Extras;
 using LanguageExt.Common;
 using Xunit;
 
-namespace Cicee.Tests.Unit.Commands.Meta.Version.Bump.MetaVersionBumpHandlingTests;
+namespace Cicee.Tests.Unit.Commands.Meta.Version.Set.MetaVersionSetHandlingTests;
 
-public class TryBumpProjectVersionTests
+public class TrySetProjectVersionTests
 {
   public static IEnumerable<object[]> CreateVersionTestCases()
   {
     object[] CreateTestCase(
       CommandDependencies dependencies,
       string projectMetadataPath,
-      SemVerIncrement semVerIncrement,
+      System.Version version,
       System.Version expectedVersion
     )
     {
-      return new object[] {dependencies, projectMetadataPath, semVerIncrement, expectedVersion};
+      return new object[] {dependencies, projectMetadataPath, version, expectedVersion};
     }
 
 
@@ -41,9 +41,9 @@ public class TryBumpProjectVersionTests
           : new Result<string>(new Exception("Not found"))
     };
 
-    yield return CreateTestCase(dependencies, arrangedMetadataPath, SemVerIncrement.Major, expectedMajor);
-    yield return CreateTestCase(dependencies, arrangedMetadataPath, SemVerIncrement.Minor, expectedMinor);
-    yield return CreateTestCase(dependencies, arrangedMetadataPath, SemVerIncrement.Patch, expectedPatch);
+    yield return CreateTestCase(dependencies, arrangedMetadataPath, expectedMajor, expectedMajor);
+    yield return CreateTestCase(dependencies, arrangedMetadataPath, expectedMinor, expectedMinor);
+    yield return CreateTestCase(dependencies, arrangedMetadataPath, expectedPatch, expectedPatch);
   }
 
   [Theory]
@@ -51,19 +51,19 @@ public class TryBumpProjectVersionTests
   public void ReturnsExpectedVersion(
     CommandDependencies dependencies,
     string projectMetadataPath,
-    SemVerIncrement semVerIncrement,
+    System.Version version,
     System.Version expectedVersion
   )
   {
-    var actualTuple = MetaVersionBumpHandling.TryBumpProjectVersion(
+    var actualTuple = MetaVersionSetHandling.TrySetProjectVersion(
         dependencies.TryLoadFileString,
         dependencies.EnsureFileExists,
         projectMetadataPath,
-        semVerIncrement
+        version
       )
       .IfFailThrow();
 
-    Assert.Equal(expectedVersion, actualTuple.BumpedVersion);
+    Assert.Equal(expectedVersion, actualTuple.Version);
     Assert.Equal(expectedVersion.ToString(fieldCount: 3), actualTuple.ProjectMetadata.Version);
   }
 }
