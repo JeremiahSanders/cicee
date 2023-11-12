@@ -1,5 +1,6 @@
 using System.CommandLine;
 using Cicee.Commands.Meta.Version.Bump;
+using Cicee.Commands.Meta.Version.Set;
 using Cicee.Dependencies;
 
 namespace Cicee.Commands.Meta.Version;
@@ -16,6 +17,7 @@ public static class MetaVersionCommand
     command.SetHandler(MetaVersionEntrypoint.CreateHandler(dependencies), projectMetadata);
 
     command.AddCommand(MetaVersionBumpCommand.Create(dependencies));
+    command.AddCommand(MetaVersionSetCommand.Create(dependencies));
 
     return command;
   }

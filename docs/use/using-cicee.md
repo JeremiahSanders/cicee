@@ -42,6 +42,7 @@ Commands:
       * [`update`][meta-cienv-variables] - Update a CI environment variable.
   * [`version`][meta-version] - Gets `.version` in project metadata.
     * [`bump`][meta-version-bump] - Bumps the `.version` in project metadata by a SemVer increment.
+    * [`set`][meta-version-set] - Sets the `.version` in project metadata to a SemVer version.
 * `template` - Commands working with project continuous integration templates.
   * [`init`][template-init] - Initialize a project repository with continuous integration workflow scripts.
   * [`lib`][template-lib] - Initialize project CI with CICEE execution library. Supports `cicee exec`-like behavior without CICEE installation.
@@ -54,6 +55,7 @@ Commands:
 [lib]: ./ci-library.md
 [meta-cienv-variables]: ./meta-cienv-variables.md
 [meta-version-bump]: ./meta-version-bump.md
+[meta-version-set]: ./meta-version-set.md
 [meta-version]: ./meta-version.md
 [template-init]: ./template-init.md
 [template-lib]: ./template-lib.md
