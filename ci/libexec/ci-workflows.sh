@@ -67,10 +67,18 @@ ci-compose() {
       --configuration Release \
       --output "${BUILD_UNPACKAGED_DIST}/net7.0" \
       -p:Version="${PROJECT_VERSION_DIST}" \
-      --framework net7.0 \
+      --framework net7.0 &&
+    printf "\nBeginning 'dotnet publish' targeting .NET 8...\n\n" &&
+    dotnet publish "${PROJECT_ROOT}/src" \
+      --configuration Release \
+      --output "${BUILD_UNPACKAGED_DIST}/net8.0" \
+      -p:Version="${PROJECT_VERSION_DIST}" \
+      --framework net8.0 \
       -p:GenerateDocumentationFile=true &&
+    printf "\nCompleted 'dotnet publish' targeting .NET 8.\n\n" &&
     printf "\nBeginning 'dotnet pack'...\n\n" &&
-    ci-dotnet-pack -p:GenerateDocumentationFile=true
+    ci-dotnet-pack -p:GenerateDocumentationFile=true &&
+    printf "\nCompleted 'dotnet pack'.\n\n"
 }
 
 #--
