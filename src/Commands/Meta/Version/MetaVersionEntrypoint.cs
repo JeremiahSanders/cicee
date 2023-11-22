@@ -9,6 +9,8 @@ public static class MetaVersionEntrypoint
 {
   public static Func<string, Task<int>> CreateHandler(CommandDependencies dependencies)
   {
+    return Handle;
+
     Task<int> Handle(string projectMetadataPath)
     {
       return MetaVersionHandling.HandleMetaVersionRequest(dependencies, projectMetadataPath)
@@ -20,7 +22,5 @@ public static class MetaVersionEntrypoint
         .ToExitCode()
         .AsTask();
     }
-
-    return Handle;
   }
 }
