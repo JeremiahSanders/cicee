@@ -84,6 +84,23 @@ else
   fi
 fi
 
+# Run docker compose and check that it returns exit code 0, telling us that `compose` is supported.
+_=$(docker compose)
+docker_compose_exit_code=$?
+# Define a `docker_compose_executable` variable for the compose entrypoint
+if [[ $docker_compose_exit_code -eq 0 ]]; then
+  # Docker CLI supports compose command
+  docker_compose_executable="docker compose"
+else
+  if command -v docker-compose &>/dev/null; then
+    # Docker CLI didn't support 'compose', but 'docker-compose' is defined
+    docker_compose_executable="docker-compose"
+  else
+    echo "Docker Compose is not detected. Cannot continue." &&
+      exit -1
+  fi
+fi
+
 __arrange() {
   __build_project_ci() {
     if [[ -f "${PROJECT_ROOT}/ci/Dockerfile" ]]; then
@@ -100,7 +117,7 @@ __arrange() {
       CI_EXEC_CONTEXT="${CI_EXEC_CONTEXT:-}" \
       CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
       CI_COMMAND="${CI_COMMAND:-}" \
-      docker-compose \
+      ${docker_compose_executable} \
       "${COMPOSE_FILE_ARGS[@]}" \
       pull \
       --ignore-pull-failures \
@@ -120,7 +137,7 @@ __act() {
     CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
     CI_COMMAND="${CI_COMMAND:-}" \
     COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
-    docker-compose \
+    ${docker_compose_executable} \
     "${COMPOSE_FILE_ARGS[@]}" \
     up \
     --abort-on-container-exit \
@@ -137,7 +154,7 @@ __cleanup() {
     CI_ENTRYPOINT="${CI_ENTRYPOINT:-}" \
     CI_COMMAND="${CI_COMMAND:-}" \
     COMPOSE_PROJECT_NAME="${PROJECT_NAME}" \
-    docker-compose \
+    ${docker_compose_executable} \
     "${COMPOSE_FILE_ARGS[@]}" \
     down \
     --volumes \
