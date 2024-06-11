@@ -14,7 +14,6 @@ CICEE also provides a [continuous integration shell function library][cicee-lib]
 
 * `bash`: bash shell
 * `docker`: Docker command-line interface
-* `docker-compose`: Docker Compose command-line interface (compose file version `3.7` support required)
 * `dotnet`: .NET SDK (`6.x`, `7.x`, and `8.x` supported)
 
 ## Why use CICEE?
