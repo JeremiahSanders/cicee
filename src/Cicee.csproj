@@ -11,7 +11,7 @@
   <PropertyGroup>
     <Authors>jds</Authors>
     <Company />
-    <Copyright>Copyright (c) 2023 Jeremiah Sanders</Copyright>
+    <Copyright>Copyright (c) 2024 Jeremiah Sanders</Copyright>
     <Description>Continuous Integration Containerized Execution Environment</Description>
     <PackageId>cicee</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -26,8 +26,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jds.LanguageExt.Extras" Version="0.6.0" />
-    <PackageReference Include="LanguageExt.Core" Version="4.4.3" />
+    <PackageReference Include="Jds.LanguageExt.Extras" Version="1.0.0" />
+    <PackageReference Include="LanguageExt.Core" Version="4.4.8" />
     <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
   </ItemGroup>
 

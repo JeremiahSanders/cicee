@@ -9,5 +9,5 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 # I.e., updates the project to use the current CICEE template.
 ###
 
-dotnet run --project src --framework net6.0 -- template init -f &&
+dotnet run --project src --framework net8.0 -- template init -f &&
   git checkout HEAD ci/libexec/ci-workflows.sh
