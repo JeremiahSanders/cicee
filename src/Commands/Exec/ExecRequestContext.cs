@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
 using Cicee.CiEnv;
@@ -11,4 +12,9 @@ public record ExecRequestContext(
   string? Command,
   string? Entrypoint,
   string? Dockerfile,
-  string? Image);
+  string? Image,
+  ExecInvocationHarness Harness,
+  string? CiDirectory,
+  IReadOnlyList<string> DockerComposeFiles,
+  string? LibRoot
+);

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 
 using Cicee.CiEnv;
 using Cicee.Commands.Exec;
+using Cicee.Commands.Exec.Handling;
 using Cicee.Dependencies;
 
 using Jds.LanguageExt.Extras;
@@ -31,7 +32,15 @@ public class CreateProcessStartInfo
       Command: "ls",
       Entrypoint: "-al",
       Dockerfile: "ci/Dockerfile",
-      Image: null
+      Image: null,
+      ExecInvocationHarness.Script,
+      CiDirectory: "/sample-project/ci/Dockerfile",
+      new[]
+      {
+        "/sample-project/ci/docker-compose.dependencies.yml",
+        "/sample-project/ci/docker-compose.project.yml"
+      },
+      LibRoot: null
     );
   }
 
@@ -76,7 +85,8 @@ public class CreateProcessStartInfo
   public void ReturnsExpectedProcessStartInfo(CommandDependencies dependencies, ExecRequestContext execRequestContext,
     Result<ProcessStartInfoResult> expectedResult)
   {
-    Result<ProcessStartInfoResult> actualResult = ExecHandling.CreateProcessStartInfo(dependencies, execRequestContext)
+    Result<ProcessStartInfoResult> actualResult = ScriptHarness
+      .CreateProcessStartInfo(dependencies, execRequestContext)
       .Map(
         result => new ProcessStartInfoResult(
           result.FileName,
@@ -124,5 +134,6 @@ public class CreateProcessStartInfo
   public record ProcessStartInfoResult(
     string FileName,
     string Arguments,
-    IReadOnlyDictionary<string, string> Environment);
+    IReadOnlyDictionary<string, string> Environment
+  );
 }

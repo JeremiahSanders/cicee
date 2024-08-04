@@ -4,6 +4,7 @@ using System.IO;
 
 using Cicee.CiEnv;
 using Cicee.Commands.Exec;
+using Cicee.Commands.Exec.Handling;
 using Cicee.Dependencies;
 
 using LanguageExt.Common;
@@ -32,7 +33,11 @@ public class TryCreateRequestContext
           new ProjectEnvironmentVariable
           {
             Name = $"VARIABLE_{Guid.NewGuid().ToString(format: "D").Replace(oldValue: "-", newValue: "_")}",
-            DefaultValue = Randomization.Boolean() ? string.Empty : Guid.NewGuid().ToString(),
+            DefaultValue = Randomization.Boolean()
+              ? string.Empty
+              : Guid
+                .NewGuid()
+                .ToString(),
             Description = $"Description {Guid.NewGuid():D}",
             Required = Randomization.Boolean(),
             Secret = Randomization.Boolean()
@@ -49,24 +54,40 @@ public class TryCreateRequestContext
       {
         string projectMetadataPath = combinePath(defaultProjectRoot, arg2: ".project-metadata.json");
         string ciDockerfilePath = combinePath(defaultProjectRoot, combinePath(arg1: "ci", arg2: "Dockerfile"));
+
         return file == projectMetadataPath || file == ciDockerfilePath;
       },
       TryLoadFileString = file =>
       {
         string projectMetadataPath = combinePath(defaultProjectRoot, arg2: ".project-metadata.json");
+
         return file == projectMetadataPath
           ? Json.TrySerialize(defaultProjectMetadata)
           : new Result<string>(new FileNotFoundException(file));
       }
     };
-    ExecRequest baseRequest = new(defaultProjectRoot, Command: "-al", Entrypoint: "ls", Image: null);
+    ExecRequest baseRequest = new(
+      defaultProjectRoot,
+      Command: "-al",
+      Entrypoint: "ls",
+      Image: null,
+      ExecInvocationHarness.Script
+    );
     ExecRequestContext baseResult = new(
       baseRequest.ProjectRoot,
       defaultProjectMetadata,
       baseRequest.Command,
       baseRequest.Entrypoint,
       combinePath(baseRequest.ProjectRoot, combinePath(arg1: "ci", arg2: "Dockerfile")),
-      Image: null
+      Image: null,
+      ExecInvocationHarness.Script,
+      combinePath(baseRequest.ProjectRoot, arg2: "ci"),
+      new[]
+      {
+        combinePath(baseRequest.ProjectRoot, combinePath(arg1: "ci", arg2: "docker-compose.dependencies.yml")),
+        combinePath(baseRequest.ProjectRoot, combinePath(arg1: "ci", arg2: "docker-compose.project.yml"))
+      },
+      LibRoot: null
     );
 
     CommandDependencies happyPathDependencies = baseDependencies;
@@ -94,7 +115,7 @@ public class TryCreateRequestContext
   public void ReturnsExpectedProcessStartInfo(CommandDependencies dependencies, ExecRequest execRequest,
     Result<ExecRequestContext> expectedResult)
   {
-    Result<ExecRequestContext> actualResult = ExecHandling.TryCreateRequestContext(dependencies, execRequest);
+    Result<ExecRequestContext> actualResult = IoContext.TryCreateRequestContext(dependencies, execRequest);
 
     Assertions.Results.Equal(expectedResult, actualResult);
   }

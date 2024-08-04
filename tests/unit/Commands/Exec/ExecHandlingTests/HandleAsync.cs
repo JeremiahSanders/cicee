@@ -35,7 +35,11 @@ public class HandleAsync
           new ProjectEnvironmentVariable
           {
             Name = $"VARIABLE_{Guid.NewGuid().ToString(format: "D").Replace(oldValue: "-", newValue: "_")}",
-            DefaultValue = Randomization.Boolean() ? string.Empty : Guid.NewGuid().ToString(),
+            DefaultValue = Randomization.Boolean()
+              ? string.Empty
+              : Guid
+                .NewGuid()
+                .ToString(),
             Description = $"Description {Guid.NewGuid():D}",
             Required = Randomization.Boolean(),
             Secret = Randomization.Boolean()
@@ -69,7 +73,13 @@ public class HandleAsync
       ),
       GetLibraryRootPath = () => defaultLibraryRoot
     };
-    ExecRequest baseRequest = new(defaultProjectRoot, Command: "-al", Entrypoint: "ls", Image: null);
+    ExecRequest baseRequest = new(
+      defaultProjectRoot,
+      Command: "-al",
+      Entrypoint: "ls",
+      Image: null,
+      ExecInvocationHarness.Script
+    );
     ExecResult baseResult = new(baseRequest);
 
     CommandDependencies happyPathDependencies = baseDependencies;
@@ -97,7 +107,7 @@ public class HandleAsync
   public async Task ReturnsExpectedResult(CommandDependencies dependencies, ExecRequest execRequest,
     Result<ExecResult> expectedResult)
   {
-    Result<ExecResult> actualResult = await ExecHandling.HandleAsync(dependencies, execRequest);
+    Result<ExecResult> actualResult = await ExecHandler.HandleAsync(dependencies, execRequest);
 
     Assertions.Results.Equal(expectedResult, actualResult);
   }
