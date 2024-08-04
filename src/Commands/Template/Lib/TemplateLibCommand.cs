@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Lib;
 using Cicee.Dependencies;
 
@@ -11,16 +12,20 @@ public static class TemplateLibCommand
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectRoot = ProjectRootOption.Create(dependencies);
-    var shell = ShellOption.CreateOptional();
-    var force = ForceOption.Create();
-    var command =
-      new Command(
-        "lib",
-        Description) { projectRoot, shell, force };
+    Option<string> projectRoot = ProjectRootOption.Create(dependencies);
+    Option<LibraryShellTemplate?> shell = ShellOption.CreateOptional();
+    Option<bool> force = ForceOption.Create();
+    Command command = new(name: "lib", Description)
+    {
+      projectRoot, shell, force
+    };
     command.SetHandler(
-      (string rootValue, LibraryShellTemplate? shellValue, bool forceValue) =>
-        TemplateLibEntrypoint.HandleAsync(dependencies, rootValue, shellValue, forceValue),
+      (rootValue, shellValue, forceValue) => TemplateLibEntrypoint.HandleAsync(
+        dependencies,
+        rootValue,
+        shellValue,
+        forceValue
+      ),
       projectRoot,
       shell,
       force

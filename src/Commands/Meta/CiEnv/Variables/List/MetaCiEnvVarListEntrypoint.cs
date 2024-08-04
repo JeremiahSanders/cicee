@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Cicee.CiEnv;
 using Cicee.Dependencies;
+
 using LanguageExt;
 
 namespace Cicee.Commands.Meta.CiEnv.Variables.List;
@@ -11,16 +14,15 @@ public static class MetaCiEnvVarListEntrypoint
 {
   public static Func<string, string?, Task<int>> CreateHandler(CommandDependencies dependencies)
   {
+    return Handle;
+
     Task<int> Handle(string projectMetadataPath, string? nameContains)
     {
       return MetaCiEnvVarListHandling.MetaCiEnvVarListRequest(dependencies, projectMetadataPath, nameContains)
-        .TapSuccess(variables => WriteVariablesToStandardOut(dependencies, variables))
-        .TapFailure(exception => dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage()))
-        .ToExitCode()
-        .AsTask();
+        .TapSuccess(variables => WriteVariablesToStandardOut(dependencies, variables)).TapFailure(
+          exception => dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage())
+        ).ToExitCode().AsTask();
     }
-
-    return Handle;
   }
 
   private static void WriteVariablesToStandardOut(CommandDependencies dependencies,
@@ -29,25 +31,25 @@ public static class MetaCiEnvVarListEntrypoint
     const ConsoleColor requiredSecret = ConsoleColor.Magenta;
     const ConsoleColor requiredPublic = ConsoleColor.DarkRed;
     const ConsoleColor optionalSecret = ConsoleColor.DarkCyan;
-    var varLengths = variables.Select(variable => variable.Name.Length).OrderByDescending(Prelude.identity)
+    List<int> varLengths = variables.Select(variable => variable.Name.Length).OrderByDescending(Prelude.identity)
       .ToList();
     const int minPadding = 4; // Length of "name"
     const int maxPadding = 30;
-    var longest = varLengths.FirstOrDefault();
-    var paddingLength = Math.Clamp(longest, minPadding, maxPadding);
+    int longest = varLengths.FirstOrDefault();
+    int paddingLength = Math.Clamp(longest, minPadding, maxPadding);
 
-    dependencies.StandardOutWriteLine("CI Environment Variables");
+    dependencies.StandardOutWriteLine(obj: "CI Environment Variables");
 
     dependencies.StandardOutWrite(arg1: null, "Name".PadRight(paddingLength));
-    dependencies.StandardOutWrite(arg1: null, "  Req Sec");
+    dependencies.StandardOutWrite(arg1: null, arg2: "  Req Sec");
     if (variables.Any(variable => !string.IsNullOrWhiteSpace(variable.Description)))
     {
-      dependencies.StandardOutWrite(arg1: null, " Description");
+      dependencies.StandardOutWrite(arg1: null, arg2: " Description");
     }
 
     dependencies.StandardOutWrite(arg1: null, Environment.NewLine);
 
-    foreach (var variable in variables.OrderBy(variable => variable.Name.ToUpperInvariant()))
+    foreach (ProjectEnvironmentVariable variable in variables.OrderBy(variable => variable.Name.ToUpperInvariant()))
     {
       ConsoleColor? color;
       if (variable.Required)
@@ -68,20 +70,20 @@ public static class MetaCiEnvVarListEntrypoint
 
       dependencies.StandardOutWrite(color, variable.Name.PadRight(paddingLength));
       // Extra spaces apply column padding
-      var requiredDisplay = variable.Required ? "*  " : "   ";
-      var secretDisplay = variable.Secret ? "* " : "  ";
-      dependencies.StandardOutWrite(arg1: null, "   "); // Gap between name and required
+      string requiredDisplay = variable.Required ? "*  " : "   ";
+      string secretDisplay = variable.Secret ? "* " : "  ";
+      dependencies.StandardOutWrite(arg1: null, arg2: "   "); // Gap between name and required
       dependencies.StandardOutWrite(variable.Required ? ConsoleColor.Red : null, requiredDisplay);
-      dependencies.StandardOutWrite(arg1: null, " "); // Gap between required and secret
+      dependencies.StandardOutWrite(arg1: null, arg2: " "); // Gap between required and secret
       dependencies.StandardOutWrite(variable.Secret ? ConsoleColor.DarkCyan : null, secretDisplay);
       dependencies.StandardOutWrite(arg1: null, $" {variable.Description}");
       if (!string.IsNullOrWhiteSpace(variable.DefaultValue))
       {
-        var prefix = string.IsNullOrWhiteSpace(variable.Description) ? "" : " ";
+        string prefix = string.IsNullOrWhiteSpace(variable.Description) ? "" : " ";
         dependencies.StandardOutWrite(arg1: null, $"{prefix}(Default: ");
-        var valueDisplay = variable.Secret ? ProjectEnvironmentHelpers.SecretString : variable.DefaultValue;
+        string? valueDisplay = variable.Secret ? ProjectEnvironmentHelpers.SecretString : variable.DefaultValue;
         dependencies.StandardOutWrite(arg1: null, valueDisplay);
-        dependencies.StandardOutWrite(arg1: null, ")");
+        dependencies.StandardOutWrite(arg1: null, arg2: ")");
       }
 
       dependencies.StandardOutWrite(arg1: null, Environment.NewLine);

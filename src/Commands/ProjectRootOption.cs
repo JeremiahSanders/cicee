@@ -1,5 +1,6 @@
 using System;
 using System.CommandLine;
+
 using Cicee.CiEnv;
 using Cicee.Dependencies;
 
@@ -11,16 +12,19 @@ internal static class ProjectRootOption
 
   private static string[] CreateAliases()
   {
-    return new[] { "--project-root", "-p" };
+    return new[]
+    {
+      "--project-root",
+      "-p"
+    };
   }
 
   public static Option<string> Of(Func<string> getDefaultValue)
   {
-    return new Option<string>(
-      CreateAliases(),
-      getDefaultValue,
-      Description
-    ) { IsRequired = true };
+    return new Option<string>(CreateAliases(), getDefaultValue, Description)
+    {
+      IsRequired = true
+    };
   }
 
 
@@ -31,11 +35,10 @@ internal static class ProjectRootOption
 
   public static Option<string?> CreateOptional(CommandDependencies dependencies)
   {
-    return new Option<string?>(
-      CreateAliases(),
-      () => InferProjectRoot(dependencies),
-      Description
-    ) { IsRequired = false };
+    return new Option<string?>(CreateAliases(), () => InferProjectRoot(dependencies), Description)
+    {
+      IsRequired = false
+    };
   }
 
   private static string InferProjectRoot(CommandDependencies dependencies)
@@ -47,9 +50,7 @@ internal static class ProjectRootOption
         dependencies.CombinePath,
         dependencies.TryGetParentDirectory,
         dependencies.TryGetCurrentDirectory
-      )
-      .Bind(dependencies.TryGetParentDirectory)
-      .BindFailure(_ => dependencies.TryGetCurrentDirectory())
+      ).Bind(dependencies.TryGetParentDirectory).BindFailure(_ => dependencies.TryGetCurrentDirectory())
       .IfFail(string.Empty);
   }
 }

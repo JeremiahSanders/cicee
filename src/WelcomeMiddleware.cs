@@ -22,6 +22,8 @@ public static class WelcomeMiddleware
 
   private static bool RequiresRawOutput(InvocationContext context)
   {
+    return IsLib() || IsMetaVersion();
+
     bool IsLib()
     {
       return context.ParseResult.Tokens.FirstOrDefault()?.Value == "lib";
@@ -29,12 +31,13 @@ public static class WelcomeMiddleware
 
     bool IsMetaVersion()
     {
-      return context.ParseResult.Tokens
-        .Select(token => token.Value)
-        .Take(count: 2)
-        .SequenceEqual(new[] { "meta", "version" });
+      return context.ParseResult.Tokens.Select(token => token.Value).Take(count: 2).SequenceEqual(
+        new[]
+        {
+          "meta",
+          "version"
+        }
+      );
     }
-
-    return IsLib() || IsMetaVersion();
   }
 }

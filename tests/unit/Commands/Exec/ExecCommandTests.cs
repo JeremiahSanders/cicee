@@ -1,8 +1,13 @@
 using System;
+using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Linq;
+
 using Cicee.Commands.Exec;
+using Cicee.Dependencies;
+
 using LanguageExt.Common;
+
 using Xunit;
 
 namespace Cicee.Tests.Unit.Commands.Exec;
@@ -14,39 +19,55 @@ public static class ExecCommandTests
     [Fact]
     public void ReturnsExpectedCommand()
     {
-      var expected = new CommandValues(
-        "exec",
-        "Execute a command in a containerized execution environment.",
+      CommandValues expected = new(
+        Name: "exec",
+        Description: "Execute a command in a containerized execution environment.",
         new[]
         {
           new OptionValues(
-            "project-root",
-            "Project repository root directory",
-            new[] {"--project-root", "-p"},
+            Name: "project-root",
+            Description: "Project repository root directory",
+            new[]
+            {
+              "--project-root",
+              "-p"
+            },
             IsRequired: true
           ),
           new OptionValues(
-            "command",
-            "Execution command",
-            new[] {"--command", "-c"},
+            Name: "command",
+            Description: "Execution command",
+            new[]
+            {
+              "--command",
+              "-c"
+            },
             IsRequired: false
           ),
           new OptionValues(
-            "entrypoint",
-            "Execution entrypoint",
-            new[] {"--entrypoint", "-e"},
+            Name: "entrypoint",
+            Description: "Execution entrypoint",
+            new[]
+            {
+              "--entrypoint",
+              "-e"
+            },
             IsRequired: false
           ),
           new OptionValues(
-            "image",
-            "Execution image. Overrides $PROJECT_ROOT/ci/Dockerfile.",
-            new[] {"--image", "-i"},
+            Name: "image",
+            Description: "Execution image. Overrides $PROJECT_ROOT/ci/Dockerfile.",
+            new[]
+            {
+              "--image",
+              "-i"
+            },
             IsRequired: false
           )
         }
       );
 
-      var actual = CommandValues.FromCommand(ExecCommand.Create(DependencyHelper.CreateMockDependencies()));
+      CommandValues actual = CommandValues.FromCommand(ExecCommand.Create(DependencyHelper.CreateMockDependencies()));
 
       Assert.Equal(expected, actual);
     }
@@ -54,21 +75,20 @@ public static class ExecCommandTests
     [Fact]
     public void InfersExpectedProjectRoot()
     {
-      var projectRoot = "/not/real/project";
-      var currentDirectory = $"{projectRoot}/nested/folder";
-      var metadataFile = $"{projectRoot}/package.json";
-      var dependencies = DependencyHelper.CreateMockDependencies() with
+      string projectRoot = "/not/real/project";
+      string currentDirectory = $"{projectRoot}/nested/folder";
+      string metadataFile = $"{projectRoot}/package.json";
+      CommandDependencies dependencies = DependencyHelper.CreateMockDependencies() with
       {
         TryGetCurrentDirectory = () => currentDirectory,
-        TryLoadFileString = path =>
-          path == metadataFile
-            ? new Result<string>(MockMetadata.GeneratePackageJson())
-            : new Result<string>(new Exception("path not arranged"))
+        TryLoadFileString = path => path == metadataFile
+          ? new Result<string>(MockMetadata.GeneratePackageJson())
+          : new Result<string>(new Exception(message: "path not arranged"))
       };
-      var command = ExecCommand.Create(dependencies);
-      var expected = projectRoot;
+      Command command = ExecCommand.Create(dependencies);
+      string expected = projectRoot;
 
-      var actual = (command.Options.Single(option => option.Name == "project-root") as IValueDescriptor)
+      object? actual = (command.Options.Single(option => option.Name == "project-root") as IValueDescriptor)
         .GetDefaultValue();
 
       Assert.Equal(expected, actual);

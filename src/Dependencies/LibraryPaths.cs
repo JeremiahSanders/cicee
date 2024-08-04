@@ -11,8 +11,8 @@ public static class LibraryPaths
   public static string Bash(CommandDependencies dependencies)
   {
     return dependencies.CombinePath(
-      dependencies.CombinePath(dependencies.GetLibraryRootPath(), "ci"),
-      "bash"
+      dependencies.CombinePath(dependencies.GetLibraryRootPath(), arg2: "ci"),
+      arg2: "bash"
     );
   }
 
@@ -21,7 +21,7 @@ public static class LibraryPaths
   /// </summary>
   public static string BashEntrypoint(CommandDependencies dependencies)
   {
-    return dependencies.CombinePath(Bash(dependencies), "ci.sh");
+    return dependencies.CombinePath(Bash(dependencies), arg2: "ci.sh");
   }
 
   public static string CiceeBash(CommandDependencies dependencies)

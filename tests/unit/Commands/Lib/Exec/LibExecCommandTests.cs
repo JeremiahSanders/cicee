@@ -1,8 +1,13 @@
 using System;
+using System.CommandLine;
 using System.CommandLine.Binding;
 using System.Linq;
+
 using Cicee.Commands.Lib.Exec;
+using Cicee.Dependencies;
+
 using LanguageExt.Common;
+
 using Xunit;
 
 namespace Cicee.Tests.Unit.Commands.Lib.Exec;
@@ -12,21 +17,20 @@ public class LibExecCommandTests
   [Fact]
   public void InfersExpectedProjectRoot()
   {
-    var projectRoot = "/not/real/project";
-    var currentDirectory = $"{projectRoot}/nested/folder";
-    var metadataFile = $"{projectRoot}/package.json";
-    var dependencies = DependencyHelper.CreateMockDependencies() with
+    string projectRoot = "/not/real/project";
+    string currentDirectory = $"{projectRoot}/nested/folder";
+    string metadataFile = $"{projectRoot}/package.json";
+    CommandDependencies dependencies = DependencyHelper.CreateMockDependencies() with
     {
       TryGetCurrentDirectory = () => currentDirectory,
-      TryLoadFileString = path =>
-        path == metadataFile
-          ? new Result<string>(MockMetadata.GeneratePackageJson())
-          : new Result<string>(new Exception("path not arranged"))
+      TryLoadFileString = path => path == metadataFile
+        ? new Result<string>(MockMetadata.GeneratePackageJson())
+        : new Result<string>(new Exception(message: "path not arranged"))
     };
-    var command = LibExecCommand.Create(dependencies);
-    var expected = projectRoot;
+    Command command = LibExecCommand.Create(dependencies);
+    string expected = projectRoot;
 
-    var actual = (command.Options.Single(option => option.Name == "project-root") as IValueDescriptor)
+    object? actual = (command.Options.Single(option => option.Name == "project-root") as IValueDescriptor)
       .GetDefaultValue();
 
     Assert.Equal(expected, actual);
@@ -35,21 +39,20 @@ public class LibExecCommandTests
   [Fact]
   public void InfersExpectedMetadataPath()
   {
-    var projectRoot = "/not/real/project";
-    var currentDirectory = $"{projectRoot}/nested/folder";
-    var metadataFile = $"{projectRoot}/package.json";
-    var dependencies = DependencyHelper.CreateMockDependencies() with
+    string projectRoot = "/not/real/project";
+    string currentDirectory = $"{projectRoot}/nested/folder";
+    string metadataFile = $"{projectRoot}/package.json";
+    CommandDependencies dependencies = DependencyHelper.CreateMockDependencies() with
     {
       TryGetCurrentDirectory = () => currentDirectory,
-      TryLoadFileString = path =>
-        path == metadataFile
-          ? new Result<string>(MockMetadata.GeneratePackageJson())
-          : new Result<string>(new Exception("path not arranged"))
+      TryLoadFileString = path => path == metadataFile
+        ? new Result<string>(MockMetadata.GeneratePackageJson())
+        : new Result<string>(new Exception(message: "path not arranged"))
     };
-    var command = LibExecCommand.Create(dependencies);
-    var expected = metadataFile;
+    Command command = LibExecCommand.Create(dependencies);
+    string expected = metadataFile;
 
-    var actual = (command.Options.Single(option => option.Name == "metadata") as IValueDescriptor)
+    object? actual = (command.Options.Single(option => option.Name == "metadata") as IValueDescriptor)
       .GetDefaultValue();
 
     Assert.Equal(expected, actual);

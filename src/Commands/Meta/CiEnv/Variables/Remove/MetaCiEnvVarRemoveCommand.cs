@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Dependencies;
 
 namespace Cicee.Commands.Meta.CiEnv.Variables.Remove;
@@ -11,9 +12,12 @@ public static class MetaCiEnvVarRemoveCommand
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectMetadata = ProjectMetadataOption.Create(dependencies);
-    var name = VariablesOptions.CreateNameRequired();
-    var command = new Command(CommandName, CommandDescription) { projectMetadata, name };
+    Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
+    Option<string> name = VariablesOptions.CreateNameRequired();
+    Command command = new(CommandName, CommandDescription)
+    {
+      projectMetadata, name
+    };
     command.AddAlias(CommandAlias);
     command.SetHandler(MetaCiEnvVarRemoveEntrypoint.CreateHandler(dependencies), projectMetadata, name);
 

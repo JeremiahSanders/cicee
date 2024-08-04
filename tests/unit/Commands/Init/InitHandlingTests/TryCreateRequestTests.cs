@@ -1,56 +1,54 @@
 using System.Collections.Generic;
-using Cicee.Commands;
+
 using Cicee.Commands.Init;
 using Cicee.Dependencies;
+
 using LanguageExt.Common;
+
 using Xunit;
 
-namespace Cicee.Tests.Unit.Commands.Init.InitHandlingTests
+namespace Cicee.Tests.Unit.Commands.Init.InitHandlingTests;
+
+public class TryCreateRequestTests
 {
-  public class TryCreateRequestTests
+  public static IEnumerable<object?[]> GenerateTestCases()
   {
-    public static IEnumerable<object?[]> GenerateTestCases()
+    CommandDependencies happyPathDependencies = DependencyHelper.CreateMockDependencies();
+    InitRequest happyPathRequest = new(ProjectRoot: "/media/cdrom/project", Image: null, OverwriteFiles: true);
+    Result<InitRequest> happyPathExpected = new(happyPathRequest);
+
+    return new[]
     {
-      var happyPathDependencies = DependencyHelper.CreateMockDependencies();
-      InitRequest happyPathRequest = new("/media/cdrom/project", Image: null, OverwriteFiles: true);
-      var happyPathExpected = new Result<InitRequest>(happyPathRequest);
-
-      object?[] CreateTestCase(
-        CommandDependencies dependencies,
-        string projectRoot,
-        string? image,
-        bool overwrite,
-        Result<InitRequest> expected
+      CreateTestCase(
+        happyPathDependencies,
+        happyPathRequest.ProjectRoot,
+        happyPathRequest.Image,
+        happyPathRequest.OverwriteFiles,
+        happyPathExpected
       )
-      {
-        return new object?[] {dependencies, projectRoot, image, overwrite, expected};
-      }
+    };
 
-      return new[]
+    object?[] CreateTestCase(CommandDependencies dependencies, string projectRoot, string? image, bool overwrite,
+      Result<InitRequest> expected)
+    {
+      return new object?[]
       {
-        CreateTestCase(
-          happyPathDependencies,
-          happyPathRequest.ProjectRoot,
-          happyPathRequest.Image,
-          happyPathRequest.OverwriteFiles,
-          happyPathExpected
-        )
+        dependencies,
+        projectRoot,
+        image,
+        overwrite,
+        expected
       };
     }
+  }
 
-    [Theory]
-    [MemberData(nameof(GenerateTestCases))]
-    public void ReturnsExpectedResult(
-      CommandDependencies dependencies,
-      string projectRoot,
-      string? image,
-      bool overwrite,
-      Result<InitRequest> expected
-    )
-    {
-      var actual = InitHandling.TryCreateRequest(dependencies, projectRoot, image, overwrite);
+  [Theory]
+  [MemberData(nameof(GenerateTestCases))]
+  public void ReturnsExpectedResult(CommandDependencies dependencies, string projectRoot, string? image, bool overwrite,
+    Result<InitRequest> expected)
+  {
+    Result<InitRequest> actual = InitHandling.TryCreateRequest(dependencies, projectRoot, image, overwrite);
 
-      Assertions.Results.Equal(expected, actual);
-    }
+    Assertions.Results.Equal(expected, actual);
   }
 }

@@ -2,10 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+
 using Cicee.CiEnv;
 using Cicee.Commands.Exec;
 using Cicee.Dependencies;
+
+using Jds.LanguageExt.Extras;
+
 using LanguageExt.Common;
+
 using Xunit;
 
 namespace Cicee.Tests.Unit.Commands.Exec.ExecHandlingTests;
@@ -15,7 +20,7 @@ public class CreateProcessStartInfo
   private static ExecRequestContext CreateExecRequestContext()
   {
     return new ExecRequestContext(
-      "/sample-project",
+      ProjectRoot: "/sample-project",
       new ProjectMetadata
       {
         CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition(),
@@ -23,92 +28,101 @@ public class CreateProcessStartInfo
         Title = "Sample Project",
         Version = "0.7.2"
       },
-      "ls",
-      "-al",
-      "ci/Dockerfile",
+      Command: "ls",
+      Entrypoint: "-al",
+      Dockerfile: "ci/Dockerfile",
       Image: null
     );
   }
 
   public static IEnumerable<object[]> GenerateTestCases()
   {
-    var baseDependencies = DependencyHelper.CreateMockDependencies();
-    var baseRequest = CreateExecRequestContext();
-    var isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-    var expectedExecutable = isWindows ? @"C:\Program Files\Git\bin\bash.exe" : "bash";
-    var baseExpectedResult = new ProcessStartInfoResult(
+    CommandDependencies baseDependencies = DependencyHelper.CreateMockDependencies();
+    ExecRequestContext baseRequest = CreateExecRequestContext();
+    bool isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    string expectedExecutable = isWindows ? @"C:\Program Files\Git\bin\bash.exe" : "bash";
+    ProcessStartInfoResult baseExpectedResult = new(
       expectedExecutable,
-      "-c",
+      Arguments: "-c",
       baseDependencies.GetEnvironmentVariables()
     );
 
-    var happyPathDependencies = baseDependencies;
-    var happyPathRequest = baseRequest;
-    var happyPathExpectedResult = baseExpectedResult with
+    CommandDependencies happyPathDependencies = baseDependencies;
+    ExecRequestContext happyPathRequest = baseRequest;
+    ProcessStartInfoResult happyPathExpectedResult = baseExpectedResult with
     {
       Arguments =
       "-c \"" +
-      $"{happyPathDependencies.CombinePath(happyPathDependencies.GetLibraryRootPath(), "cicee-exec.sh")}\"",
+      $"{happyPathDependencies.CombinePath(happyPathDependencies.GetLibraryRootPath(), arg2: "cicee-exec.sh")}\"",
       Environment = happyPathDependencies.GetEnvironmentVariables()
     };
-    var happyPathExpected = new Result<ProcessStartInfoResult>(happyPathExpectedResult);
+    Result<ProcessStartInfoResult> happyPathExpected = new(happyPathExpectedResult);
 
-    IEnumerable<object[]> cases = new[] {new object[] {happyPathDependencies, happyPathRequest, happyPathExpected}};
+    IEnumerable<object[]> cases = new[]
+    {
+      new object[]
+      {
+        happyPathDependencies,
+        happyPathRequest,
+        happyPathExpected
+      }
+    };
 
     return cases;
   }
 
   [Theory]
   [MemberData(nameof(GenerateTestCases))]
-  public void ReturnsExpectedProcessStartInfo(
-    CommandDependencies dependencies,
-    ExecRequestContext execRequestContext,
-    Result<ProcessStartInfoResult> expectedResult
-  )
+  public void ReturnsExpectedProcessStartInfo(CommandDependencies dependencies, ExecRequestContext execRequestContext,
+    Result<ProcessStartInfoResult> expectedResult)
   {
-    var actualResult = ExecHandling.CreateProcessStartInfo(dependencies, execRequestContext)
-      .Map(result => new ProcessStartInfoResult(
+    Result<ProcessStartInfoResult> actualResult = ExecHandling.CreateProcessStartInfo(dependencies, execRequestContext)
+      .Map(
+        result => new ProcessStartInfoResult(
           result.FileName,
           result.Arguments,
-          new Dictionary<string, string>(result.Environment.Map(kvp =>
-              new KeyValuePair<string, string>(kvp.Key, kvp.Value ?? string.Empty)
-            )
+          new Dictionary<string, string>(
+            result.Environment.Map(kvp => new KeyValuePair<string, string>(kvp.Key, kvp.Value ?? string.Empty))
           )
         )
       );
 
-    expectedResult.IfSucc(expected =>
-    {
-      actualResult.IfSucc(actual =>
+    expectedResult.IfSucc(
+      expected =>
       {
-        Assert.Equal(expected.FileName, actual.FileName);
-        Assert.Equal(expected.Arguments, actual.Arguments);
-        Assert.Equal(
-          expected.Environment,
-          // Selecting only those which are expected because actual keys will contain everything from the current test execution process (when ProcessStartInfo is created).
-          actual.Environment.Where(kvp => expected.Environment.Keys.Contains(kvp.Key)),
-          new KeyValuePairValueComparer<string, string>()
+        actualResult.IfSucc(
+          actual =>
+          {
+            Assert.Equal(expected.FileName, actual.FileName);
+            Assert.Equal(expected.Arguments, actual.Arguments);
+            Assert.Equal(
+              expected.Environment,
+              // Selecting only those which are expected because actual keys will contain everything from the current test execution process (when ProcessStartInfo is created).
+              actual.Environment.Where(kvp => expected.Environment.Keys.Contains(kvp.Key)),
+              new KeyValuePairValueComparer<string, string>()
+            );
+          }
         );
-      });
-      actualResult.IfFail(actualException =>
+        actualResult.IfFailThrow();
+      }
+    );
+    expectedResult.IfFail(
+      exception =>
       {
-        throw actualException;
-      });
-    });
-    expectedResult.IfFail(exception =>
-    {
-      actualResult.IfSucc(actual =>
-      {
-        throw new Exception("Should have failed");
-      });
-      actualResult.IfFail(actual =>
-      {
-        Assert.Equal(exception.GetType(), actual.GetType());
-        Assert.Equal(exception.Message, actual.Message);
-      });
-    });
+        actualResult.IfSucc(actual => throw new Exception(message: "Should have failed"));
+        actualResult.IfFail(
+          actual =>
+          {
+            Assert.Equal(exception.GetType(), actual.GetType());
+            Assert.Equal(exception.Message, actual.Message);
+          }
+        );
+      }
+    );
   }
 
-  public record ProcessStartInfoResult(string FileName, string Arguments,
+  public record ProcessStartInfoResult(
+    string FileName,
+    string Arguments,
     IReadOnlyDictionary<string, string> Environment);
 }

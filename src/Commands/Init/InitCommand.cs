@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Init.Repository;
 using Cicee.Dependencies;
 
@@ -9,19 +10,28 @@ public static class InitCommand
   private static Option<string?> ImageOption()
   {
     return new Option<string?>(
-      new[] { "--image", "-i" },
-      "Base CI image for $PROJECT_ROOT/ci/Dockerfile."
-    ) { IsRequired = false };
+      new[]
+      {
+        "--image",
+        "-i"
+      },
+      description: "Base CI image for $PROJECT_ROOT/ci/Dockerfile."
+    )
+    {
+      IsRequired = false
+    };
   }
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectRoot = ProjectRootOption.Create(dependencies);
-    var image = ImageOption();
-    var force = ForceOption.Create();
-    var command =
-      new Command("init", "Initialize project. Creates suggested CICEE files.") { projectRoot, image, force };
-    command.SetHandler<string, string?, bool>(
+    Option<string> projectRoot = ProjectRootOption.Create(dependencies);
+    Option<string?> image = ImageOption();
+    Option<bool> force = ForceOption.Create();
+    Command command = new(name: "init", description: "Initialize project. Creates suggested CICEE files.")
+    {
+      projectRoot, image, force
+    };
+    command.SetHandler(
       (root, imageName, forceValue) => InitEntrypoint.HandleAsync(dependencies, root, imageName, forceValue),
       projectRoot,
       image,

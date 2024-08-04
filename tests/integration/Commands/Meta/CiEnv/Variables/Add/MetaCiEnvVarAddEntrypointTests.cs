@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Cicee.CiEnv;
 using Cicee.Commands.Meta.CiEnv.Variables.Add;
 using Cicee.Dependencies;
 using Cicee.Tests.Unit;
 using Cicee.Tests.Unit.Commands;
+
 using Jds.LanguageExt.Extras;
+
 using LanguageExt;
 using LanguageExt.Common;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,62 +33,66 @@ public static class MetaCiEnvVarAddEntrypointTests
     private CommandDependencies CreateDependencies(List<(string FileName, string Content)> writeFileTargets,
       string knownMetadata, ProjectMetadata? projectMetadata)
     {
+      CommandDependencies dependencies = DependencyHelper.CreateMockDependencies() with
+      {
+        TryWriteFileStringAsync = TryWriteFileStringAsync,
+        TryLoadFileString = path => path == knownMetadata
+          ? new Result<string>(MockMetadata.GeneratePackageJson(projectMetadata))
+          : new Result<string>(new Exception(message: "Not found"))
+      };
+
+      return dependencies;
+
       Task<Result<(string FileName, string Content)>> TryWriteFileStringAsync((string FileName, string Content) arg)
       {
         writeFileTargets.Add(arg);
         return new Result<(string FileName, string Content)>(arg).AsTask();
       }
-
-      var dependencies = DependencyHelper.CreateMockDependencies() with
-      {
-        TryWriteFileStringAsync = TryWriteFileStringAsync,
-        TryLoadFileString = path =>
-          path == knownMetadata
-            ? new Result<string>(
-              MockMetadata.GeneratePackageJson(projectMetadata))
-            : new Result<string>(new Exception("Not found"))
-      };
-
-      return dependencies;
     }
 
     [Fact]
     public async Task GivenNewVariable_AddsVariable()
     {
       List<(string FileName, string Content)> writeFileTargets = new();
-      var knownMetadata = Guid.NewGuid().ToString("D");
-      var projectMetadata = new ProjectMetadata
+      string knownMetadata = Guid.NewGuid().ToString(format: "D");
+      ProjectMetadata projectMetadata = new()
       {
-        Name = Guid.NewGuid().ToString("N"),
+        Name = Guid.NewGuid().ToString(format: "N"),
         CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition
         {
           Variables = new[]
           {
             new ProjectEnvironmentVariable
             {
-              Name = Guid.NewGuid().ToString("D"), Required = true, Secret = false
+              Name = Guid.NewGuid().ToString(format: "D"), Required = true, Secret = false
             }
           }
         }
       };
-      var dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
-      var newVariable = new ProjectEnvironmentVariable
+      CommandDependencies dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
+      ProjectEnvironmentVariable newVariable = new()
       {
-        DefaultValue = Guid.NewGuid().ToString("D"),
-        Description = Guid.NewGuid().ToString("D"),
-        Name = Guid.NewGuid().ToString("D"),
+        DefaultValue = Guid.NewGuid().ToString(format: "D"),
+        Description = Guid.NewGuid().ToString(format: "D"),
+        Name = Guid.NewGuid().ToString(format: "D"),
         Required = true,
         Secret = false
       };
-      var expectedVariables = projectMetadata.CiEnvironment.Variables.Append(newVariable).ToArray();
-      var expected = projectMetadata with
+      ProjectEnvironmentVariable[] expectedVariables =
+        projectMetadata.CiEnvironment.Variables.Append(newVariable).ToArray();
+      ProjectMetadata expected = projectMetadata with
       {
-        CiEnvironment = projectMetadata.CiEnvironment with { Variables = expectedVariables }
+        CiEnvironment = projectMetadata.CiEnvironment with
+        {
+          Variables = expectedVariables
+        }
       };
 
       // Act
-      var handler = MetaCiEnvVarAddEntrypoint.CreateHandler(dependencies);
-      var exitCode = await handler(
+      Func<string, string, string, bool, bool, string?, Task<int>> handler = MetaCiEnvVarAddEntrypoint.CreateHandler(
+        dependencies
+      );
+      int exitCode = await handler(
         knownMetadata,
         newVariable.Name,
         newVariable.Description,
@@ -94,8 +102,8 @@ public static class MetaCiEnvVarAddEntrypointTests
       );
 
       // Assert
-      var (_, writtenContent) = writeFileTargets.Single(target => target.FileName == knownMetadata);
-      var actual = Json.TryDeserialize<ProjectMetadata>(writtenContent).IfFailThrow();
+      (_, string writtenContent) = writeFileTargets.Single(target => target.FileName == knownMetadata);
+      ProjectMetadata actual = Json.TryDeserialize<ProjectMetadata>(writtenContent).IfFailThrow();
       Assert.Equal(expected, actual);
       Assert.Equal(expected: 0, exitCode);
     }
@@ -104,34 +112,36 @@ public static class MetaCiEnvVarAddEntrypointTests
     public async Task GivenExistingVariable_Errors()
     {
       List<(string FileName, string Content)> writeFileTargets = new();
-      var knownMetadata = Guid.NewGuid().ToString("D");
-      var projectMetadata = new ProjectMetadata
+      string knownMetadata = Guid.NewGuid().ToString(format: "D");
+      ProjectMetadata projectMetadata = new()
       {
-        Name = Guid.NewGuid().ToString("N"),
+        Name = Guid.NewGuid().ToString(format: "N"),
         CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition
         {
           Variables = new[]
           {
             new ProjectEnvironmentVariable
             {
-              Name = Guid.NewGuid().ToString("D"), Required = true, Secret = false
+              Name = Guid.NewGuid().ToString(format: "D"), Required = true, Secret = false
             }
           }
         }
       };
-      var dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
-      var newVariable = new ProjectEnvironmentVariable
+      CommandDependencies dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
+      ProjectEnvironmentVariable newVariable = new()
       {
-        DefaultValue = Guid.NewGuid().ToString("D"),
-        Description = Guid.NewGuid().ToString("D"),
+        DefaultValue = Guid.NewGuid().ToString(format: "D"),
+        Description = Guid.NewGuid().ToString(format: "D"),
         Name = projectMetadata.CiEnvironment.Variables[0].Name,
         Required = true,
         Secret = false
       };
 
       // Act
-      var handler = MetaCiEnvVarAddEntrypoint.CreateHandler(dependencies);
-      var exitCode = await handler(
+      Func<string, string, string, bool, bool, string?, Task<int>> handler = MetaCiEnvVarAddEntrypoint.CreateHandler(
+        dependencies
+      );
+      int exitCode = await handler(
         knownMetadata,
         newVariable.Name,
         newVariable.Description,
