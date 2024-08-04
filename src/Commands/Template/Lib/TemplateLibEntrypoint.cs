@@ -1,7 +1,8 @@
-using System;
 using System.Threading.Tasks;
+
 using Cicee.Commands.Lib;
 using Cicee.Dependencies;
+
 using LanguageExt.Common;
 
 namespace Cicee.Commands.Template.Lib;
@@ -33,8 +34,8 @@ public static class TemplateLibEntrypoint
   public static async Task<Result<TemplateLibResult>> TryHandleAsync(CommandDependencies dependencies,
     string projectRoot, LibraryShellTemplate? shell, bool force)
   {
-    return await new Result<TemplateLibRequest>(
-        new TemplateLibRequest(projectRoot, shell, force))
-      .BindAsync(request => TemplateLibHandling.TryHandleRequest(dependencies, request));
+    return await new Result<TemplateLibRequest>(new TemplateLibRequest(projectRoot, shell, force)).BindAsync(
+      request => TemplateLibHandling.TryHandleRequest(dependencies, request)
+    );
   }
 }

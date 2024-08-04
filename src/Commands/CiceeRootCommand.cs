@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Env;
 using Cicee.Commands.Exec;
 using Cicee.Commands.Init;
@@ -13,8 +14,8 @@ internal static class CiceeRootCommand
 {
   public static RootCommand Create()
   {
-    var dependencies = CommandDependencies.Create();
-    var command = new RootCommand("cicee")
+    CommandDependencies dependencies = CommandDependencies.Create();
+    RootCommand command = new(description: "cicee")
     {
       EnvCommand.Create(dependencies),
       ExecCommand.Create(dependencies),

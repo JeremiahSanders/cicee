@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+
 using Cicee.Commands.Meta.Version.Bump;
 using Cicee.Dependencies;
+
 using LanguageExt.Common;
 
 namespace Cicee.CiEnv;
@@ -22,20 +24,18 @@ public static class ProjectMetadataManipulation
   /// <param name="projectMetadataPath"></param>
   /// <param name="version"></param>
   /// <returns></returns>
-  public static async Task<Result<Version>> UpdateVersionInMetadata(
-    CommandDependencies dependencies,
-    string projectMetadataPath,
-    Version version)
+  public static async Task<Result<Version>> UpdateVersionInMetadata(CommandDependencies dependencies,
+    string projectMetadataPath, Version version)
   {
-    return (await ModifyMetadataJson(dependencies, projectMetadataPath,
-          jsonObject =>
-          {
-            jsonObject["version"] = version.GetVersionString();
-            return jsonObject;
-          }
-        )
-      )
-      .Map(_ => version);
+    return (await ModifyMetadataJson(
+      dependencies,
+      projectMetadataPath,
+      jsonObject =>
+      {
+        jsonObject[propertyName: "version"] = version.GetVersionString();
+        return jsonObject;
+      }
+    )).Map(_ => version);
   }
 
   /// <summary>
@@ -46,63 +46,55 @@ public static class ProjectMetadataManipulation
   /// <param name="updatedVariables"></param>
   /// <returns></returns>
   public static async Task<Result<ProjectEnvironmentVariable[]>> UpdateVariablesInMetadata(
-    CommandDependencies dependencies,
-    string projectMetadataPath,
-    ProjectEnvironmentVariable[] updatedVariables
-  )
+    CommandDependencies dependencies, string projectMetadataPath, ProjectEnvironmentVariable[] updatedVariables)
   {
-    return (await ModifyMetadataJson(dependencies, projectMetadataPath,
-          jsonObject => UpsertCiEnvNode(jsonObject,
-            ciEnv => UpsertVariablesNode(ciEnv, currentVariables => VariablesToJsonArray(updatedVariables))
-          )
-        )
+    return (await ModifyMetadataJson(
+      dependencies,
+      projectMetadataPath,
+      jsonObject => UpsertCiEnvNode(
+        jsonObject,
+        ciEnv => UpsertVariablesNode(ciEnv, currentVariables => VariablesToJsonArray(updatedVariables))
       )
-      .Map(_ => updatedVariables);
+    )).Map(_ => updatedVariables);
   }
 
   private static JsonNode UpsertVariablesNode(JsonNode ciEnvNode, Func<JsonNode, JsonNode> variablesMutator)
   {
-    var variablesNodeName = GetCiEnvVariablesNodeName(ciEnvNode);
-    var envObject = ciEnvNode.AsObject();
-    var variables = envObject.ContainsKey(variablesNodeName) ? envObject[variablesNodeName]! : new JsonArray();
-    var variablesNode = variablesMutator(variables);
+    string variablesNodeName = GetCiEnvVariablesNodeName(ciEnvNode);
+    JsonObject envObject = ciEnvNode.AsObject();
+    JsonNode variables = envObject.ContainsKey(variablesNodeName) ? envObject[variablesNodeName]! : new JsonArray();
+    JsonNode variablesNode = variablesMutator(variables);
     ciEnvNode[variablesNodeName] = variablesNode;
     return ciEnvNode;
   }
 
   private static JsonObject UpsertCiEnvNode(JsonObject rootJsonObject, Func<JsonNode, JsonNode> ciEnvNodeMutator)
   {
-    var ciEnvNodeName = GetCiEnvNodeName(rootJsonObject);
-    var ciEnvNode = rootJsonObject.ContainsKey(ciEnvNodeName) ? rootJsonObject[ciEnvNodeName]! : new JsonObject();
+    string ciEnvNodeName = GetCiEnvNodeName(rootJsonObject);
+    JsonNode ciEnvNode = rootJsonObject.ContainsKey(ciEnvNodeName) ? rootJsonObject[ciEnvNodeName]! : new JsonObject();
     ciEnvNode = ciEnvNodeMutator(ciEnvNode);
     rootJsonObject[ciEnvNodeName] = ciEnvNode;
     return rootJsonObject;
   }
 
   private static async Task<Result<(string FileName, string Content, JsonObject MetadataJson)>> ModifyMetadataJson(
-    CommandDependencies dependencies,
-    string projectMetadataPath,
-    Func<JsonObject, JsonObject> mutator)
+    CommandDependencies dependencies, string projectMetadataPath, Func<JsonObject, JsonObject> mutator)
   {
     return await dependencies.TryLoadFileString(projectMetadataPath)
-      .MapSafe(content => JsonNode.Parse(content)!.AsObject())
-      .MapSafe(mutator)
-      .BindAsync(async metadataJson =>
-        await Json.TrySerialize(metadataJson)
-          .BindAsync(
-            async jsonString =>
-              (await dependencies.TryWriteFileStringAsync((projectMetadataPath, jsonString)))
-              .Map(tuple => (tuple.FileName, tuple.Content, metadataJson))
-          )
+      .MapSafe(content => JsonNode.Parse(content)!.AsObject()).MapSafe(mutator).BindAsync(
+        async metadataJson => await Json.TrySerialize(metadataJson).BindAsync(
+          async jsonString =>
+            (await dependencies.TryWriteFileStringAsync((projectMetadataPath, jsonString))).Map(
+              tuple => (tuple.FileName, tuple.Content, metadataJson)
+            )
+        )
       );
   }
 
   private static JsonArray VariablesToJsonArray(IEnumerable<ProjectEnvironmentVariable> updatedVariables)
   {
     return new JsonArray(
-      updatedVariables.Select(variable => new JsonObject(GetProperties(variable)))
-        .Cast<JsonNode>()
-        .ToArray()
+      updatedVariables.Select(variable => new JsonObject(GetProperties(variable))).Cast<JsonNode>().ToArray()
     );
   }
 
@@ -110,28 +102,27 @@ public static class ProjectMetadataManipulation
   {
     if (variable.DefaultValue != null)
     {
-      yield return new KeyValuePair<string, JsonNode?>("defaultValue", variable.DefaultValue);
+      yield return new KeyValuePair<string, JsonNode?>(key: "defaultValue", variable.DefaultValue);
     }
 
-    yield return new KeyValuePair<string, JsonNode?>("description", variable.Description);
-    yield return new KeyValuePair<string, JsonNode?>("name", variable.Name);
-    yield return new KeyValuePair<string, JsonNode?>("required", variable.Required);
-    yield return new KeyValuePair<string, JsonNode?>("secret", variable.Secret);
+    yield return new KeyValuePair<string, JsonNode?>(key: "description", variable.Description);
+    yield return new KeyValuePair<string, JsonNode?>(key: "name", variable.Name);
+    yield return new KeyValuePair<string, JsonNode?>(key: "required", variable.Required);
+    yield return new KeyValuePair<string, JsonNode?>(key: "secret", variable.Secret);
   }
 
   private static string GetCiEnvVariablesNodeName(JsonNode ciEnvironmentNode)
   {
-    var nodeObject = ciEnvironmentNode.AsObject();
-    return nodeObject.Select(item => item.Key)
-             .FirstOrDefault(key =>
-               key.Equals(ExpectedCiEnvVariablesNodeName, StringComparison.InvariantCultureIgnoreCase))
-           ?? ExpectedCiEnvVariablesNodeName;
+    JsonObject nodeObject = ciEnvironmentNode.AsObject();
+    return nodeObject.Select(item => item.Key).FirstOrDefault(
+      key => key.Equals(ExpectedCiEnvVariablesNodeName, StringComparison.InvariantCultureIgnoreCase)
+    ) ?? ExpectedCiEnvVariablesNodeName;
   }
 
   private static string GetCiEnvNodeName(JsonObject jsonObject)
   {
-    return jsonObject.Select(item => item.Key)
-             .FirstOrDefault(item => item.Equals(ExpectedCiEnvNodeName, StringComparison.InvariantCultureIgnoreCase))
-           ?? ExpectedCiEnvNodeName;
+    return jsonObject.Select(item => item.Key).FirstOrDefault(
+      item => item.Equals(ExpectedCiEnvNodeName, StringComparison.InvariantCultureIgnoreCase)
+    ) ?? ExpectedCiEnvNodeName;
   }
 }

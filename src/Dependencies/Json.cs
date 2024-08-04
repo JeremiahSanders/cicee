@@ -1,6 +1,7 @@
 using System;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+
 using LanguageExt;
 using LanguageExt.Common;
 
@@ -18,23 +19,23 @@ public static class Json
   ///     using <c>package.json</c>).
   ///   </para>
   /// </remarks>
-  internal static JsonSerializerOptions DefaultOptions { get; } =
-    new()
-    {
-      PropertyNameCaseInsensitive = true,
-      PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-      WriteIndented = true,
-      Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
+  internal static JsonSerializerOptions DefaultOptions { get; } = new()
+  {
+    PropertyNameCaseInsensitive = true,
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    WriteIndented = true,
+    Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
+  };
 
   public static Result<T> TryDeserialize<T>(string possibleJson)
   {
-    return Prelude.Try(() =>
+    return Prelude.Try(
+      () =>
       {
-        var deserialized = JsonSerializer.Deserialize<T>(possibleJson, DefaultOptions);
+        T? deserialized = JsonSerializer.Deserialize<T>(possibleJson, DefaultOptions);
         return deserialized ?? throw new Exception($"Failed to deserialize. Value:\n{possibleJson}");
-      })
-      .Try()!;
+      }
+    ).Try()!;
   }
 
   public static Result<string> TrySerialize<T>(T obj)

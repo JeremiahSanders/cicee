@@ -32,8 +32,7 @@ public record CommandValues(string Name, string? Description, IReadOnlyList<Opti
     return new CommandValues(
       command.Name,
       command.Description,
-      command.Options.Select(OptionValues.FromOption)
-        .ToArray()
+      command.Options.Select(OptionValues.FromOption).ToArray()
     );
   }
 }

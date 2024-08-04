@@ -2,14 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+
 using Cicee.CiEnv;
 using Cicee.Commands.Meta.CiEnv.Variables.Remove;
 using Cicee.Dependencies;
 using Cicee.Tests.Unit;
 using Cicee.Tests.Unit.Commands;
+
 using Jds.LanguageExt.Extras;
+
 using LanguageExt;
 using LanguageExt.Common;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -29,54 +33,53 @@ public static class MetaCiEnvVarRemoveEntrypointTests
     private CommandDependencies CreateDependencies(List<(string FileName, string Content)> writeFileTargets,
       string knownMetadata, ProjectMetadata? projectMetadata)
     {
+      CommandDependencies dependencies = DependencyHelper.CreateMockDependencies() with
+      {
+        TryWriteFileStringAsync = TryWriteFileStringAsync,
+        TryLoadFileString = path => path == knownMetadata
+          ? new Result<string>(MockMetadata.GeneratePackageJson(projectMetadata))
+          : new Result<string>(new Exception(message: "Not found"))
+      };
+
+      return dependencies;
+
       Task<Result<(string FileName, string Content)>> TryWriteFileStringAsync((string FileName, string Content) arg)
       {
         writeFileTargets.Add(arg);
         return new Result<(string FileName, string Content)>(arg).AsTask();
       }
-
-      var dependencies = DependencyHelper.CreateMockDependencies() with
-      {
-        TryWriteFileStringAsync = TryWriteFileStringAsync,
-        TryLoadFileString = path =>
-          path == knownMetadata
-            ? new Result<string>(
-              MockMetadata.GeneratePackageJson(projectMetadata))
-            : new Result<string>(new Exception("Not found"))
-      };
-
-      return dependencies;
     }
 
     [Fact]
     public async Task GivenNewVariable_Errors()
     {
       List<(string FileName, string Content)> writeFileTargets = new();
-      var knownMetadata = Guid.NewGuid().ToString("D");
-      var existing1 = new ProjectEnvironmentVariable
+      string knownMetadata = Guid.NewGuid().ToString(format: "D");
+      ProjectEnvironmentVariable existing1 = new()
       {
-        Name = Guid.NewGuid().ToString("D"), Required = true, Secret = false
+        Name = Guid.NewGuid().ToString(format: "D"), Required = true, Secret = false
       };
-      var existing2 = new ProjectEnvironmentVariable
+      ProjectEnvironmentVariable existing2 = new()
       {
-        Name = Guid.NewGuid().ToString("D"), Required = false, Secret = false
+        Name = Guid.NewGuid().ToString(format: "D"), Required = false, Secret = false
       };
-      var projectMetadata = new ProjectMetadata
+      ProjectMetadata projectMetadata = new()
       {
-        Name = Guid.NewGuid().ToString("N"),
+        Name = Guid.NewGuid().ToString(format: "N"),
         CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition
         {
-          Variables = new[] { existing1, existing2 }
+          Variables = new[]
+          {
+            existing1,
+            existing2
+          }
         }
       };
-      var dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
+      CommandDependencies dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
 
       // Act
-      var handler = MetaCiEnvVarRemoveEntrypoint.CreateHandler(dependencies);
-      var exitCode = await handler(
-        knownMetadata,
-        Guid.NewGuid().ToString()
-      );
+      Func<string, string, Task<int>> handler = MetaCiEnvVarRemoveEntrypoint.CreateHandler(dependencies);
+      int exitCode = await handler(knownMetadata, Guid.NewGuid().ToString());
 
       // Assert
       Assert.Empty(writeFileTargets);
@@ -87,39 +90,46 @@ public static class MetaCiEnvVarRemoveEntrypointTests
     public async Task GivenExistingVariable_RemovesVariable()
     {
       List<(string FileName, string Content)> writeFileTargets = new();
-      var knownMetadata = Guid.NewGuid().ToString("D");
-      var toRemove = new ProjectEnvironmentVariable
+      string knownMetadata = Guid.NewGuid().ToString(format: "D");
+      ProjectEnvironmentVariable toRemove = new()
       {
-        Name = Guid.NewGuid().ToString("D"), Required = true, Secret = false
+        Name = Guid.NewGuid().ToString(format: "D"), Required = true, Secret = false
       };
-      var toLeave = new ProjectEnvironmentVariable
+      ProjectEnvironmentVariable toLeave = new()
       {
-        Name = Guid.NewGuid().ToString("D"), Required = false, Secret = false
+        Name = Guid.NewGuid().ToString(format: "D"), Required = false, Secret = false
       };
-      var projectMetadata = new ProjectMetadata
+      ProjectMetadata projectMetadata = new()
       {
-        Name = Guid.NewGuid().ToString("N"),
+        Name = Guid.NewGuid().ToString(format: "N"),
         CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition
         {
-          Variables = new[] { toRemove, toLeave }
+          Variables = new[]
+          {
+            toRemove,
+            toLeave
+          }
         }
       };
-      var dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
+      CommandDependencies dependencies = CreateDependencies(writeFileTargets, knownMetadata, projectMetadata);
 
       // Act
-      var handler = MetaCiEnvVarRemoveEntrypoint.CreateHandler(dependencies);
-      var exitCode = await handler(
-        knownMetadata,
-        toRemove.Name
-      );
+      Func<string, string, Task<int>> handler = MetaCiEnvVarRemoveEntrypoint.CreateHandler(dependencies);
+      int exitCode = await handler(knownMetadata, toRemove.Name);
 
       // Assert
-      var expected = projectMetadata with
+      ProjectMetadata expected = projectMetadata with
       {
-        CiEnvironment = projectMetadata.CiEnvironment with { Variables = new[] { toLeave } }
+        CiEnvironment = projectMetadata.CiEnvironment with
+        {
+          Variables = new[]
+          {
+            toLeave
+          }
+        }
       };
-      var (_, writtenContent) = writeFileTargets.Single(target => target.FileName == knownMetadata);
-      var actual = Json.TryDeserialize<ProjectMetadata>(writtenContent).IfFailThrow();
+      (_, string writtenContent) = writeFileTargets.Single(target => target.FileName == knownMetadata);
+      ProjectMetadata actual = Json.TryDeserialize<ProjectMetadata>(writtenContent).IfFailThrow();
       Assert.Equal(expected, actual);
       Assert.Equal(expected: 0, exitCode);
     }

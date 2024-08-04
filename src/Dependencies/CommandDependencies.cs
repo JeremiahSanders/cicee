@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
+
 using LanguageExt.Common;
 
 namespace Cicee.Dependencies;
@@ -47,8 +48,7 @@ public record CommandDependencies(
   Func<DirectoryCopyRequest, Task<Result<DirectoryCopyResult>>> TryCopyDirectoryAsync,
   Func<Result<string>> TryGetCurrentDirectory,
   Func<string, Result<string>> TryGetParentDirectory,
-  Action<ConsoleColor?, string> StandardOutWrite
-)
+  Action<ConsoleColor?, string> StandardOutWrite)
 {
   /// <summary>
   ///   Initializes a new instance of <see cref="CommandDependencies" /> using the default environment providers.
@@ -98,7 +98,7 @@ public record CommandDependencies(
 
   public void StandardOutWriteAll(IEnumerable<(ConsoleColor? OptionalColor, string Value)> items)
   {
-    foreach (var tuple in items)
+    foreach ((ConsoleColor? OptionalColor, string Value) tuple in items)
     {
       StandardOutWrite(tuple.OptionalColor, tuple.Value);
     }

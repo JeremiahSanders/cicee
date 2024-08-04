@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Meta.Version.Bump;
 using Cicee.Commands.Meta.Version.Set;
 using Cicee.Dependencies;
@@ -12,8 +13,11 @@ public static class MetaVersionCommand
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectMetadata = ProjectMetadataOption.Create(dependencies);
-    var command = new Command(CommandName, CommandDescription) {projectMetadata};
+    Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
+    Command command = new(CommandName, CommandDescription)
+    {
+      projectMetadata
+    };
     command.SetHandler(MetaVersionEntrypoint.CreateHandler(dependencies), projectMetadata);
 
     command.AddCommand(MetaVersionBumpCommand.Create(dependencies));

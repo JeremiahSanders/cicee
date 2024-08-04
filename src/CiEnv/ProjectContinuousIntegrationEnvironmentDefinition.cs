@@ -1,31 +1,29 @@
 using System;
 using System.Linq;
 
-namespace Cicee.CiEnv
+namespace Cicee.CiEnv;
+
+public record ProjectContinuousIntegrationEnvironmentDefinition
 {
-  public record ProjectContinuousIntegrationEnvironmentDefinition
+  public ProjectEnvironmentVariable[] Variables { get; init; } = Array.Empty<ProjectEnvironmentVariable>();
+
+  public virtual bool Equals(ProjectContinuousIntegrationEnvironmentDefinition? other)
   {
-    public ProjectEnvironmentVariable[] Variables { get; init; } =
-      Array.Empty<ProjectEnvironmentVariable>();
-
-    public virtual bool Equals(ProjectContinuousIntegrationEnvironmentDefinition? other)
+    if (ReferenceEquals(objA: null, other))
     {
-      if (ReferenceEquals(objA: null, other))
-      {
-        return false;
-      }
-
-      if (ReferenceEquals(objA: this, other))
-      {
-        return true;
-      }
-
-      return Variables.SequenceEqual(other.Variables);
+      return false;
     }
 
-    public override int GetHashCode()
+    if (ReferenceEquals(this, other))
     {
-      return Variables.GetHashCode();
+      return true;
     }
+
+    return Variables.SequenceEqual(other.Variables);
+  }
+
+  public override int GetHashCode()
+  {
+    return Variables.GetHashCode();
   }
 }

@@ -19,10 +19,8 @@ public record OptionValues(string Name, string? Description, IReadOnlyCollection
       return true;
     }
 
-    return Name == other.Name
-           && Description == other.Description
-           && Aliases.SequenceEqual(other.Aliases)
-           && IsRequired == other.IsRequired;
+    return Name == other.Name && Description == other.Description && Aliases.SequenceEqual(other.Aliases) &&
+           IsRequired == other.IsRequired;
   }
 
   public override int GetHashCode()

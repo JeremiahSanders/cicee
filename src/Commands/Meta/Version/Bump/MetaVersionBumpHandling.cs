@@ -1,9 +1,11 @@
 using System;
 using System.Text.Json.Nodes;
 using System.Threading.Tasks;
+
 using Cicee.CiEnv;
 using Cicee.Commands.Exec;
 using Cicee.Dependencies;
+
 using LanguageExt;
 using LanguageExt.Common;
 
@@ -28,69 +30,57 @@ public static class MetaVersionBumpHandling
   }
 
   public static Result<(System.Version BumpedVersion, ProjectMetadata ProjectMetadata, JsonObject MetadataJson)>
-    TryBumpProjectVersion(
-      Func<string, Result<string>> tryLoadFileString,
-      Func<string, Result<string>> ensureFileExists,
-      string projectMetadataPath,
-      SemVerIncrement semVerIncrement
-    )
+    TryBumpProjectVersion(Func<string, Result<string>> tryLoadFileString, Func<string, Result<string>> ensureFileExists,
+      string projectMetadataPath, SemVerIncrement semVerIncrement)
   {
+    return ProjectMetadataLoader.TryLoadFromFile(ensureFileExists, tryLoadFileString, projectMetadataPath).Bind(
+      metadata => Prelude.Try(() => new System.Version(metadata.Version)).Try()
+        .MapFailure(
+          exception => new ExecutionException($"Could not parse version '{metadata.Version}'.", exitCode: 1, exception)
+        ).Map(version => version.BumpVersion(semVerIncrement)).Bind(
+          bumpedVersion => TryIncrementVersionInProjectMetadata(bumpedVersion).Map(
+            jsonObject => (bumpedVersion, metadata with
+            {
+              Version = bumpedVersion.GetVersionString()
+            }, jsonObject)
+          )
+        )
+    );
+
     Result<JsonObject> TryIncrementVersionInProjectMetadata(System.Version incrementedVersion)
     {
-      return tryLoadFileString(projectMetadataPath)
-        .MapSafe(content =>
+      return tryLoadFileString(projectMetadataPath).MapSafe(
+        content =>
         {
-          var jsonObject = JsonNode.Parse(content)!.AsObject();
-          jsonObject["version"] = incrementedVersion.GetVersionString();
+          JsonObject jsonObject = JsonNode.Parse(content)!.AsObject();
+          jsonObject[propertyName: "version"] = incrementedVersion.GetVersionString();
           return jsonObject;
-        });
-    }
-
-    return ProjectMetadataLoader.TryLoadFromFile(
-        ensureFileExists,
-        tryLoadFileString,
-        projectMetadataPath
-      )
-      .Bind(metadata =>
-        Prelude.Try(() => new System.Version(metadata.Version))
-          .Try()
-          .MapFailure(exception =>
-            new ExecutionException($"Could not parse version '{metadata.Version}'.", exitCode: 1, exception)
-          )
-          .Map(version => version.BumpVersion(semVerIncrement))
-          .Bind(bumpedVersion =>
-            TryIncrementVersionInProjectMetadata(bumpedVersion)
-              .Map(jsonObject =>
-                (bumpedVersion, metadata with { Version = bumpedVersion.GetVersionString() }, jsonObject)
-              )
-          )
+        }
       );
+    }
   }
 
-  public static Task<Result<string>> Handle(
-    CommandDependencies dependencies,
-    string projectMetadataPath,
-    bool isDryRun,
-    SemVerIncrement semVerIncrement
-  )
+  public static Task<Result<string>> Handle(CommandDependencies dependencies, string projectMetadataPath, bool isDryRun,
+    SemVerIncrement semVerIncrement)
   {
+    return TryBumpProjectVersion(
+      dependencies.TryLoadFileString,
+      dependencies.EnsureFileExists,
+      projectMetadataPath,
+      semVerIncrement
+    ).BindAsync(ConditionallyModifyProjectMetadata);
+
     async Task<Result<string>> ConditionallyModifyProjectMetadata(
-      (System.Version BumpedVersion, ProjectMetadata ProjectMetadata, JsonObject MetadataJson) tuple
-    )
+      (System.Version BumpedVersion, ProjectMetadata ProjectMetadata, JsonObject MetadataJson) tuple)
     {
-      var versionString = tuple.BumpedVersion.GetVersionString();
+      string versionString = tuple.BumpedVersion.GetVersionString();
       return isDryRun
         ? new Result<string>(versionString)
-        : (await ProjectMetadataManipulation.UpdateVersionInMetadata(dependencies, projectMetadataPath,
-          tuple.BumpedVersion)).Map(_ => versionString);
+        : (await ProjectMetadataManipulation.UpdateVersionInMetadata(
+          dependencies,
+          projectMetadataPath,
+          tuple.BumpedVersion
+        )).Map(_ => versionString);
     }
-
-    return TryBumpProjectVersion(
-        dependencies.TryLoadFileString,
-        dependencies.EnsureFileExists,
-        projectMetadataPath,
-        semVerIncrement
-      )
-      .BindAsync(ConditionallyModifyProjectMetadata);
   }
 }

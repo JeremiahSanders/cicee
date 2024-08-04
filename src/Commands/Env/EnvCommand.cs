@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Env.Display;
 using Cicee.Commands.Env.Require;
 using Cicee.Dependencies;
@@ -9,7 +10,7 @@ public class EnvCommand
 {
   public static Command Create(CommandDependencies dependencies)
   {
-    return new Command("env", "Commands which interact with the current environment.")
+    return new Command(name: "env", description: "Commands which interact with the current environment.")
     {
       EnvRequireCommand.Create(dependencies), EnvDisplayCommand.Create(dependencies)
     };

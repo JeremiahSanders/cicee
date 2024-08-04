@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Meta.CiEnv.Variables;
 using Cicee.Dependencies;
 
@@ -12,7 +13,7 @@ public static class CiEnvironmentCommand
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var command = new Command(CommandName, CommandDescription);
+    Command command = new(CommandName, CommandDescription);
     command.AddAlias(CommandAlias);
 
     command.AddCommand(VariablesCommand.Create(dependencies));

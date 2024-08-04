@@ -1,12 +1,11 @@
 using System;
 
-namespace Cicee.Commands
+namespace Cicee.Commands;
+
+internal static class ExceptionExtensions
 {
-  internal static class ExceptionExtensions
+  public static string ToExecutionFailureMessage(this Exception exception)
   {
-    public static string ToExecutionFailureMessage(this Exception exception)
-    {
-      return $"Execution failed!\nReason: {exception.Message}";
-    }
+    return $"Execution failed!\nReason: {exception.Message}";
   }
 }

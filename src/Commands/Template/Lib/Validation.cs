@@ -1,30 +1,28 @@
 using System.Threading.Tasks;
-using Cicee.CiEnv;
+
 using Cicee.Commands.Lib;
 using Cicee.Dependencies;
+
 using LanguageExt.Common;
 
-namespace Cicee.Commands.Template.Lib
+namespace Cicee.Commands.Template.Lib;
+
+public static class Validation
 {
-  public static class Validation
+  public static async Task<Result<TemplateLibContext>> ValidateRequestAsync(CommandDependencies dependencies,
+    TemplateLibRequest request)
   {
-    public static async Task<Result<TemplateLibContext>> ValidateRequestAsync(
-      CommandDependencies dependencies,
-      TemplateLibRequest request
-    )
-    {
-      var (projectRoot, shell, overwriteFiles) = request;
-      return await dependencies.EnsureDirectoryExists(projectRoot)
-        .BindAsync(async validatedProjectRoot =>
-          (await Cicee.Commands.Lib.Validation.ValidateRequestAsync(dependencies, new LibRequest(shell)))
-          .Map(libContext => new TemplateLibContext(
-              validatedProjectRoot,
-              libContext.ShellTemplate,
-              libContext.LibPath,
-              overwriteFiles
-            )
+    (string projectRoot, LibraryShellTemplate? shell, bool overwriteFiles) = request;
+    return await dependencies.EnsureDirectoryExists(projectRoot).BindAsync(
+      async validatedProjectRoot =>
+        (await Commands.Lib.Validation.ValidateRequestAsync(dependencies, new LibRequest(shell))).Map(
+          libContext => new TemplateLibContext(
+            validatedProjectRoot,
+            libContext.ShellTemplate,
+            libContext.LibPath,
+            overwriteFiles
           )
-        );
-    }
+        )
+    );
   }
 }
