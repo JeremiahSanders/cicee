@@ -20,8 +20,10 @@ public static class IoContext
     );
   }
 
-  public static ExecRequestContext DisplayExecContext(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  public static ExecRequestContext DisplayExecContext(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext
+  )
   {
     DisplayProjectEnvironmentValues();
     DisplayExecEnvironmentValues();
@@ -58,7 +60,8 @@ public static class IoContext
     }
   }
 
-  public static Result<ExecRequestContext> TryCreateRequestContext(CommandDependencies dependencies,
+  public static Result<ExecRequestContext> TryCreateRequestContext(
+    CommandDependencies dependencies,
     ExecRequest request)
   {
     return dependencies
@@ -128,6 +131,34 @@ public static class IoContext
         }
       );
 
+    IEnumerable<string> EnumerateIfExists(string pathToCheck, string? fallback = null)
+    {
+      return dependencies
+        .EnsureFileExists(pathToCheck)
+        .BindFailure(
+          exception => fallback != null ? dependencies.EnsureFileExists(fallback) : new Result<string>(exception)
+        )
+        .Map(
+          value => (IEnumerable<string>)new[]
+          {
+            value
+          }
+        )
+        .IfFail(Enumerable.Empty<string>());
+    }
+
+    IEnumerable<string> EnumerateChildFileIfExists(
+      string directory,
+      string fileName,
+      string? fallbackDirectory = null,
+      string? fallbackFileName = null)
+    {
+      return EnumerateIfExists(
+        dependencies.CombinePath(directory, fileName),
+        fallbackFileName == null ? null : dependencies.CombinePath(fallbackDirectory ?? directory, fallbackFileName)
+      );
+    }
+
     string[] GetDockerComposeFiles()
     {
       /*
@@ -137,12 +168,67 @@ declare -r DOCKERCOMPOSE_CICEE="${LIB_ROOT}/docker-compose.yml"
 declare -r DOCKERCOMPOSE_PROJECT_CI="${PROJECT_ROOT}/ci/docker-compose.project.yml"
 declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project.yml"
        */
-      throw new NotImplementedException();
+      string ciceeLibRoot = dependencies.GetLibraryRootPath();
+      string projectRoot = request.ProjectRoot;
+      string ciRoot = dependencies.CombinePath(projectRoot, HandlingConstants.CiDirectoryName);
+
+      IEnumerable<string> composeFiles = ArraySegment<string>.Empty;
+// Use project docker-compose as the primary file (by loading it first). Affects docker container name generation.
+      composeFiles = composeFiles.Concat(
+        EnumerateChildFileIfExists(
+          ciRoot,
+          fileName: "docker-compose.project.yml",
+          projectRoot,
+          fallbackFileName: "docker-compose.ci.project.yml"
+        )
+      );
+// Add dependencies
+      composeFiles = composeFiles.Concat(
+        EnumerateChildFileIfExists(
+          ciRoot,
+          fileName: "docker-compose.dependencies.yml",
+          projectRoot,
+          fallbackFileName: "docker-compose.ci.dependencies.yml"
+        )
+      );
+// Add CICEE
+      composeFiles = composeFiles.Concat(
+        new[]
+        {
+          dependencies.CombinePath(ciceeLibRoot, arg2: "docker-compose.yml")
+        }
+      );
+// - Import the ci-exec service image source (Dockerfile or image)
+      composeFiles = composeFiles.Concat(
+        string.IsNullOrWhiteSpace(request.Image)
+          ? new[]
+          {
+            dependencies.CombinePath(ciceeLibRoot, arg2: "docker-compose.dockerfile.yml")
+          }
+          : new[]
+          {
+            dependencies.CombinePath(ciceeLibRoot, arg2: "docker-compose.image.yml")
+          }
+      );
+// Re-add project, to load project settings last (to override all other dependencies, e.g., CICEE defaults).
+      composeFiles = composeFiles.Concat(
+        EnumerateChildFileIfExists(
+          ciRoot,
+          fileName: "docker-compose.project.yml",
+          projectRoot,
+          fallbackFileName: "docker-compose.ci.project.yml"
+        )
+      );
+
+
+      return composeFiles.ToArray();
     }
   }
 
-  public static Result<ExecRequestContext> ValidateContext(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  public static Result<ExecRequestContext> ValidateContext(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext
+  )
   {
     return RequireStartupCommand(execRequestContext)
       .Bind(RequireProjectRoot);

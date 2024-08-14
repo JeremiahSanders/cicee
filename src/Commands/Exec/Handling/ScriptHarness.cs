@@ -10,13 +10,16 @@ namespace Cicee.Commands.Exec.Handling;
 
 public static class ScriptHarness
 {
-  public static Result<ProcessStartInfo> CreateProcessStartInfo(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  public static Result<ProcessStartInfo> CreateProcessStartInfo(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext
+  )
   {
     string ciceeExecPath = dependencies.CombinePath(
       dependencies.GetLibraryRootPath(),
       HandlingConstants.CiceeExecScriptName
     );
+
     return dependencies
       .EnsureFileExists(ciceeExecPath)
       .MapFailure(

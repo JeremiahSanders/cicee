@@ -19,7 +19,7 @@ namespace Cicee.Dependencies;
 /// <param name="StandardErrorWriteLine"></param>
 /// <param name="TryLoadFileString"></param>
 /// <param name="ProcessExecutor"></param>
-/// <param name="GetLibraryRootPath"></param>
+/// <param name="GetLibraryRootPath">Gets the CICEE assembly's <c>lib</c> content directory path.</param>
 /// <param name="CopyTemplateToPath"></param>
 /// <param name="DoesFileExist"></param>
 /// <param name="GetInitTemplatesDirectoryPath"></param>

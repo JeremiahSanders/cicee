@@ -6,8 +6,10 @@ namespace Cicee.Commands.Exec.Handling;
 
 public static class IoEnvironment
 {
-  public static IReadOnlyDictionary<string, string> GetExecEnvironment(CommandDependencies dependencies,
-    ExecRequestContext context)
+  public static IReadOnlyDictionary<string, string> GetExecEnvironment(
+    CommandDependencies dependencies,
+    ExecRequestContext context
+  )
   {
     Dictionary<string, string> environment = new()
     {

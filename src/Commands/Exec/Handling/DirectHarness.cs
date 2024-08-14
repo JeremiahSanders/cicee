@@ -11,8 +11,10 @@ namespace Cicee.Commands.Exec.Handling;
 
 public static class DirectHarness
 {
-  public static Task<ExecRequestContext> InvokeDockerCommandsAsync(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  public static Task<ExecRequestContext> InvokeDockerCommandsAsync(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext
+  )
   {
     return Prelude
       .TryAsync(() => Arrange(dependencies, execRequestContext))
@@ -21,8 +23,10 @@ public static class DirectHarness
       .IfFail(exception => Cleanup(dependencies, execRequestContext, exception));
   }
 
-  private static Task<ExecRequestContext> Arrange(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  private static Task<ExecRequestContext> Arrange(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext
+  )
   {
     return Prelude
       .TryAsync(ConditionallyBuildProjectCi)
@@ -37,7 +41,6 @@ public static class DirectHarness
           dependencies,
           execRequestContext,
           (commandDependencies, context) => DockerBuild(
-            commandDependencies,
             context,
             execRequestContext.Dockerfile!,
             execRequestContext.CiDirectory!
@@ -47,30 +50,44 @@ public static class DirectHarness
 
     Task<ExecRequestContext> PullDependencies()
     {
-      return ExecuteCommandRequiringSuccess(dependencies, execRequestContext, DockerComposePull);
+      return ExecuteCommandRequiringSuccess(
+        dependencies,
+        execRequestContext,
+        (dependencies1, execRequestContext1) => DockerComposePull(execRequestContext1)
+      );
     }
   }
 
-  private static async Task<ExecRequestContext> Act(CommandDependencies dependencies,
+  private static async Task<ExecRequestContext> Act(
+    CommandDependencies dependencies,
     ExecRequestContext execRequestContext)
   {
-    return await ExecuteCommandRequiringSuccess(dependencies, execRequestContext, DockerComposeUp);
+    return await ExecuteCommandRequiringSuccess(
+      dependencies,
+      execRequestContext,
+      (dependencies1, execRequestContext1) => DockerComposeUp(execRequestContext1)
+    );
   }
 
-  private static async Task<ExecRequestContext> Cleanup(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext, Exception? exception = null)
+  private static async Task<ExecRequestContext> Cleanup(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext,
+    Exception? exception = null
+  )
   {
     ExecRequestContext result = await ExecuteCommandRequiringSuccess(
       dependencies,
       execRequestContext,
-      DockerComposeDown
+      (dependencies1, execRequestContext1) => DockerComposeDown(execRequestContext1)
     );
 
     return exception != null ? Prelude.raise<ExecRequestContext>(exception) : result;
   }
 
-  private static ProcessStartInfo SetEnvironmentFromContext(this ProcessStartInfo command,
-    ExecRequestContext execRequestContext)
+  private static ProcessStartInfo SetEnvironmentFromContext(
+    this ProcessStartInfo command,
+    ExecRequestContext execRequestContext
+  )
   {
     command.Environment[HandlingConstants.LibRoot] = execRequestContext.LibRoot ?? string.Empty;
     command.Environment[HandlingConstants.CiExecContext] = execRequestContext.CiDirectory ?? string.Empty;
@@ -80,8 +97,11 @@ public static class DirectHarness
     return command;
   }
 
-  private static ProcessStartInfo DockerBuild(CommandDependencies commandDependencies, ExecRequestContext context,
-    string verifiedCiFilePath, string verifiedCiDirectory)
+  private static ProcessStartInfo DockerBuild(
+    ExecRequestContext context,
+    string verifiedCiFilePath,
+    string verifiedCiDirectory
+  )
   {
     /*
 __build_project_ci() {
@@ -95,13 +115,15 @@ fi
 }
  */
     return new ProcessStartInfo(
-      HandlingConstants.DockerCommand,
-      $"build --pull --rm --file \"{verifiedCiFilePath}\" \"{verifiedCiDirectory}\""
-    );
+        HandlingConstants.DockerCommand,
+        $"build --pull --rm --file \"{verifiedCiFilePath}\" \"{verifiedCiDirectory}\""
+      )
+      .SetEnvironmentFromContext(context);
   }
 
-  private static ProcessStartInfo DockerComposePull(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  private static ProcessStartInfo DockerComposePull(
+    ExecRequestContext execRequestContext
+  )
   {
     /*
 __pull_dependencies() {
@@ -121,13 +143,15 @@ __pull_dependencies() {
     string composeFiles = string.Join(separator: " ", execRequestContext.DockerComposeFiles);
 
     return new ProcessStartInfo(
-      HandlingConstants.DockerCommand,
-      $"compose {composeFiles} pull --ignore-pull-failures --include-deps {HandlingConstants.DockerComposeServiceCiExec}"
-    ).SetEnvironmentFromContext(execRequestContext);
+        HandlingConstants.DockerCommand,
+        $"compose {composeFiles} pull --ignore-pull-failures --include-deps {HandlingConstants.DockerComposeServiceCiExec}"
+      )
+      .SetEnvironmentFromContext(execRequestContext);
   }
 
-  private static ProcessStartInfo DockerComposeUp(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  private static ProcessStartInfo DockerComposeUp(
+    ExecRequestContext execRequestContext
+  )
   {
     /*
   # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
@@ -148,13 +172,15 @@ __pull_dependencies() {
     string composeFiles = string.Join(separator: " ", execRequestContext.DockerComposeFiles);
 
     return new ProcessStartInfo(
-      HandlingConstants.DockerCommand,
-      $"compose {composeFiles} up --abort-on-container-exit --build --renew-anon-volumes --remove-orphans {HandlingConstants.DockerComposeServiceCiExec}"
-    ).SetEnvironmentFromContext(execRequestContext);
+        HandlingConstants.DockerCommand,
+        $"compose {composeFiles} up --abort-on-container-exit --build --renew-anon-volumes --remove-orphans {HandlingConstants.DockerComposeServiceCiExec}"
+      )
+      .SetEnvironmentFromContext(execRequestContext);
   }
 
-  private static ProcessStartInfo DockerComposeDown(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext)
+  private static ProcessStartInfo DockerComposeDown(
+    ExecRequestContext execRequestContext
+  )
   {
     /*
   # Explicit empty string default applied to prevent Docker Compose from reporting that it is defaulting to empty strings.
@@ -172,13 +198,17 @@ __pull_dependencies() {
     string composeFiles = string.Join(separator: " ", execRequestContext.DockerComposeFiles);
 
     return new ProcessStartInfo(
-      HandlingConstants.DockerCommand,
-      $"compose {composeFiles} down --volumes --remove-orphans"
-    ).SetEnvironmentFromContext(execRequestContext);
+        HandlingConstants.DockerCommand,
+        $"compose {composeFiles} down --volumes --remove-orphans"
+      )
+      .SetEnvironmentFromContext(execRequestContext);
   }
 
-  private static async Task<ExecRequestContext> ExecuteCommandRequiringSuccess(CommandDependencies dependencies,
-    ExecRequestContext execRequestContext, Func<CommandDependencies, ExecRequestContext, ProcessStartInfo> creatorFunc)
+  private static async Task<ExecRequestContext> ExecuteCommandRequiringSuccess(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext,
+    Func<CommandDependencies, ExecRequestContext, ProcessStartInfo> creatorFunc
+  )
   {
     ProcessStartInfo dockerComposeDownRequest = creatorFunc(dependencies, execRequestContext);
     Result<ProcessExecResult> result = await dependencies.ProcessExecutor(dockerComposeDownRequest);
