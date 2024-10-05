@@ -48,20 +48,21 @@ public class HandleAsync
       }
     };
 
-    Func<string, string, string> combinePath = (path1, path2) => $"{path1}/{path2}";
     CommandDependencies baseDependencies = DependencyHelper.CreateMockDependencies() with
     {
       DoesFileExist = file =>
       {
-        string ciEnvPath = combinePath(defaultProjectRoot, combinePath(arg1: "ci", arg2: "ci.env"));
-        string projectMetadataPath = combinePath(defaultProjectRoot, arg2: ".project-metadata.json");
-        string ciceeExecPath = combinePath(defaultLibraryRoot, arg2: "cicee-exec.sh");
-        string ciDockerfilePath = combinePath(defaultProjectRoot, combinePath(arg1: "ci", arg2: "Dockerfile"));
+        string ciEnvPath = CombinePath(defaultProjectRoot, CombinePath(path1: "ci", path2: "ci.env"));
+        string projectMetadataPath = CombinePath(defaultProjectRoot, path2: ".project-metadata.json");
+        string ciceeExecPath = CombinePath(defaultLibraryRoot, path2: "cicee-exec.sh");
+        string ciDockerfilePath = CombinePath(defaultProjectRoot, CombinePath(path1: "ci", path2: "Dockerfile"));
+
         return file == ciEnvPath || file == projectMetadataPath || file == ciceeExecPath || file == ciDockerfilePath;
       },
       TryLoadFileString = file =>
       {
-        string projectMetadataPath = combinePath(defaultProjectRoot, arg2: ".project-metadata.json");
+        string projectMetadataPath = CombinePath(defaultProjectRoot, path2: ".project-metadata.json");
+
         return file == projectMetadataPath
           ? Json.TrySerialize(defaultProjectMetadata)
           : new Result<string>(new FileNotFoundException(file));
@@ -73,23 +74,39 @@ public class HandleAsync
       ),
       GetLibraryRootPath = () => defaultLibraryRoot
     };
-    ExecRequest baseRequest = new(
+    ExecRequest baseScriptHandlingRequest = new(
       defaultProjectRoot,
       Command: "-al",
       Entrypoint: "ls",
       Image: null,
       ExecInvocationHarness.Script
     );
-    ExecResult baseResult = new(baseRequest);
+    ExecResult baseScriptHandlingResult = new(baseScriptHandlingRequest);
+
+    ExecRequest baseDirectHandlingRequest = baseScriptHandlingRequest with
+    {
+      Harness = ExecInvocationHarness.Direct
+    };
+    ExecResult baseDirectHandlingResult = new(baseDirectHandlingRequest);
 
     CommandDependencies happyPathDependencies = baseDependencies;
-    ExecRequest happyPathRequest = baseRequest;
-    Result<ExecResult> happyPathResult = new(baseResult);
+
+    ExecRequest happyPathScriptHandlingRequest = baseScriptHandlingRequest;
+    Result<ExecResult> happyPathScriptHandlingResult = new(baseScriptHandlingResult);
+
+    ExecRequest happyPathDirectHandlingRequest = baseDirectHandlingRequest;
+    ExecResult happyPathDirectHandlingResult = baseDirectHandlingResult;
 
     return new[]
     {
-      TestCase(happyPathDependencies, happyPathRequest, happyPathResult)
+      TestCase(happyPathDependencies, happyPathScriptHandlingRequest, happyPathScriptHandlingResult),
+      TestCase(happyPathDependencies, happyPathDirectHandlingRequest, happyPathDirectHandlingResult)
     };
+
+    string CombinePath(string path1, string path2)
+    {
+      return $"{path1}/{path2}";
+    }
 
     object[] TestCase(CommandDependencies dependencies, ExecRequest request, Result<ExecResult> expected)
     {
@@ -104,7 +121,9 @@ public class HandleAsync
 
   [Theory]
   [MemberData(nameof(GenerateTestCases))]
-  public async Task ReturnsExpectedResult(CommandDependencies dependencies, ExecRequest execRequest,
+  public async Task ReturnsExpectedResult(
+    CommandDependencies dependencies,
+    ExecRequest execRequest,
     Result<ExecResult> expectedResult)
   {
     Result<ExecResult> actualResult = await ExecHandler.HandleAsync(dependencies, execRequest);

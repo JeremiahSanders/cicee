@@ -48,7 +48,8 @@ public record CommandDependencies(
   Func<DirectoryCopyRequest, Task<Result<DirectoryCopyResult>>> TryCopyDirectoryAsync,
   Func<Result<string>> TryGetCurrentDirectory,
   Func<string, Result<string>> TryGetParentDirectory,
-  Action<ConsoleColor?, string> StandardOutWrite)
+  Action<ConsoleColor?, string> StandardOutWrite
+)
 {
   /// <summary>
   ///   Initializes a new instance of <see cref="CommandDependencies" /> using the default environment providers.
@@ -108,5 +109,15 @@ public record CommandDependencies(
   {
     StandardOutWriteAll(items);
     StandardOutWrite(arg1: null, Environment.NewLine);
+  }
+
+  public void LogDebug(string message, ConsoleColor? color = null)
+  {
+    StandardOutWriteAsLine(
+      new[]
+      {
+        ((ConsoleColor?)(color ?? ConsoleColor.Magenta), message)
+      }
+    );
   }
 }
