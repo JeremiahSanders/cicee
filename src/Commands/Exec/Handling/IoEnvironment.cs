@@ -8,16 +8,18 @@ public static class IoEnvironment
 {
   public static IReadOnlyDictionary<string, string> GetExecEnvironment(
     CommandDependencies dependencies,
-    ExecRequestContext context
+    ExecRequestContext context,
+    bool forcePathsToLinux
   )
   {
     Dictionary<string, string> environment = new()
     {
-      [HandlingConstants.CiExecContext] =
-        Io.NormalizeToLinuxPath(dependencies.CombinePath(context.ProjectRoot, HandlingConstants.CiDirectoryName)),
+      [HandlingConstants.CiExecContext] = ConditionalConvert(
+        dependencies.CombinePath(context.ProjectRoot, HandlingConstants.CiDirectoryName)
+      ),
       [HandlingConstants.ProjectName] = context.ProjectMetadata.Name,
-      [HandlingConstants.ProjectRoot] = Io.NormalizeToLinuxPath(context.ProjectRoot),
-      [HandlingConstants.LibRoot] = Io.NormalizeToLinuxPath(dependencies.GetLibraryRootPath())
+      [HandlingConstants.ProjectRoot] = ConditionalConvert(context.ProjectRoot),
+      [HandlingConstants.LibRoot] = ConditionalConvert(dependencies.GetLibraryRootPath())
     };
 
     ConditionallyAdd(HandlingConstants.CiCommand, context.Command);
@@ -32,6 +34,11 @@ public static class IoEnvironment
       {
         environment[key] = possibleValue!;
       }
+    }
+
+    string ConditionalConvert(string path)
+    {
+      return forcePathsToLinux ? path : Io.NormalizeToLinuxPath(path);
     }
   }
 }

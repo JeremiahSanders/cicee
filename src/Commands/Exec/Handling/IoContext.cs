@@ -54,7 +54,7 @@ public static class IoContext
     void DisplayExecEnvironmentValues()
     {
       IReadOnlyDictionary<string, string> environmentDisplay =
-        IoEnvironment.GetExecEnvironment(dependencies, execRequestContext);
+        IoEnvironment.GetExecEnvironment(dependencies, execRequestContext, forcePathsToLinux: false);
       dependencies.StandardOutWriteLine(obj: "CICEE Execution Environment:");
       WriteEnvironmentVariables(environmentDisplay);
     }

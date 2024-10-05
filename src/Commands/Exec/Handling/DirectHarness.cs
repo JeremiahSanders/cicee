@@ -97,21 +97,34 @@ public static class DirectHarness
     return exception != null ? Prelude.raise<ExecRequestContext>(exception) : result;
   }
 
-  private static ProcessStartInfo SetEnvironmentFromContext(
-    this ProcessStartInfo command,
-    ExecRequestContext execRequestContext
-  )
-  {
-    command.Environment[HandlingConstants.ProjectRoot] = execRequestContext.ProjectRoot;
-    command.Environment[HandlingConstants.ProjectName] = execRequestContext.ProjectMetadata.Name;
-
-    command.Environment[HandlingConstants.LibRoot] = execRequestContext.LibRoot ?? string.Empty;
-    command.Environment[HandlingConstants.CiExecContext] = execRequestContext.CiDirectory ?? string.Empty;
-    command.Environment[HandlingConstants.CiEntrypoint] = execRequestContext.Entrypoint ?? string.Empty;
-    command.Environment[HandlingConstants.CiCommand] = execRequestContext.Command ?? string.Empty;
-
-    return command;
-  }
+  // private static IEnumerable<KeyValuePair<string,string>> GetContextEnvironmentVariables(
+  //   this ExecRequestContext execRequestContext
+  // )
+  // {
+  //   yield return new KeyValuePair<string, string>(HandlingConstants.CiExecContext, execRequestContext.CiDirectory ?? string.Empty);
+  //   yield return new KeyValuePair<string, string>(HandlingConstants.ProjectName, execRequestContext.ProjectMetadata.Name);
+  //   yield return new KeyValuePair<string, string>(HandlingConstants.ProjectRoot, execRequestContext.ProjectRoot);
+  //   yield return new KeyValuePair<string, string>(HandlingConstants.LibRoot, execRequestContext.LibRoot ?? string.Empty);
+  //
+  //   yield return new KeyValuePair<string, string>(HandlingConstants.CiEntrypoint, execRequestContext.Entrypoint ?? string.Empty);
+  //   yield return new KeyValuePair<string, string>(HandlingConstants.CiCommand, execRequestContext.Command ?? string.Empty);
+  // }
+  //
+  // private static ProcessStartInfo SetEnvironmentFromContext(
+  //   this ProcessStartInfo command,
+  //   ExecRequestContext execRequestContext
+  // )
+  // {
+  //   command.Environment[HandlingConstants.ProjectRoot] = execRequestContext.ProjectRoot;
+  //   command.Environment[HandlingConstants.ProjectName] = execRequestContext.ProjectMetadata.Name;
+  //
+  //   command.Environment[HandlingConstants.LibRoot] = execRequestContext.LibRoot ?? string.Empty;
+  //   command.Environment[HandlingConstants.CiExecContext] = execRequestContext.CiDirectory ?? string.Empty;
+  //   command.Environment[HandlingConstants.CiEntrypoint] = execRequestContext.Entrypoint ?? string.Empty;
+  //   command.Environment[HandlingConstants.CiCommand] = execRequestContext.Command ?? string.Empty;
+  //
+  //   return command;
+  // }
 
   private static ProcessStartInfo DockerCommand(
     ExecRequestContext context,
@@ -119,18 +132,27 @@ public static class DirectHarness
     string command)
   {
     // IReadOnlyDictionary<string, string> requiredEnvironment, IReadOnlyDictionary<string, string> ambientEnvironment,
-    ProcessStartInfo info = new ProcessStartInfo(HandlingConstants.DockerCommand, command)
+    ProcessStartInfo info = new(HandlingConstants.DockerCommand, command)
+    {
+      WorkingDirectory = context.ProjectRoot,
+      UseShellExecute = false,
+      Environment =
       {
-        WorkingDirectory = context.ProjectRoot, UseShellExecute = false
+        [HandlingConstants.DockerComposeProjectName] = context.ProjectMetadata.Name
       }
-      .SetEnvironmentFromContext(context);
+    };
+    // var contextEnvironment = context.GetContextEnvironmentVariables();      
+    // .SetEnvironmentFromContext(context);
 
-    IReadOnlyDictionary<string, string> environment = IoEnvironment.GetExecEnvironment(dependencies, context);
+    IReadOnlyDictionary<string, string> environment = IoEnvironment.GetExecEnvironment(
+      dependencies,
+      context,
+      forcePathsToLinux: false
+    );
     foreach (KeyValuePair<string, string> keyValuePair in environment)
     {
       info.Environment[keyValuePair.Key] = keyValuePair.Value;
     }
-
 
     return info;
   }
@@ -263,14 +285,19 @@ __pull_dependencies() {
   {
     ProcessStartInfo processStartInfo = creatorFunc(dependencies, execRequestContext);
     dependencies.LogDebug($"Preparing to execute: {processStartInfo.FileName} {processStartInfo.Arguments}");
+    // dependencies.LogDebug($"  Execution environment:{Environment.NewLine}{string.Join(Environment.NewLine, processStartInfo.Environment.Select(kvp=>$"    {kvp.Key}={kvp.Value}"))}");
 
     Result<ProcessExecResult> result = await dependencies.ProcessExecutor(processStartInfo);
 
     string? resultDisplay = result
       .Map(_ => "successfully")
-      .IfFail(exception => $"in failure: {exception}");
+      .IfFail(
+        exception => exception is ExecutionException executionException
+          ? $"in failure: {executionException.Message}"
+          : $"in failure: {exception}"
+      );
 
-    dependencies.LogDebug($"Completed execution {resultDisplay}.");
+    dependencies.LogDebug($"Completed execution {resultDisplay}.", result.IsFaulted ? ConsoleColor.Red : null);
 
     ProcessExecResult success = result.IfFailThrow();
     success.RequireExitCodeZero();

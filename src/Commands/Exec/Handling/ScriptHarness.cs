@@ -33,7 +33,7 @@ public static class ScriptHarness
           string ciceeExecLinuxPath = Io.NormalizeToLinuxPath(validatedCiceeExecPath);
 
           return ProcessHelpers.TryCreateBashProcessStartInfo(
-            IoEnvironment.GetExecEnvironment(dependencies, execRequestContext),
+            IoEnvironment.GetExecEnvironment(dependencies, execRequestContext, true),
             new Dictionary<string, string>(),
             ciceeExecLinuxPath
           );

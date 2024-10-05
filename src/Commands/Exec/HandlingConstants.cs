@@ -23,4 +23,5 @@ internal static class HandlingConstants
 
   public const string DockerCommand = "docker";
   public const string DockerComposeArgument = "compose";
+  public const string DockerComposeProjectName = "COMPOSE_PROJECT_NAME";
 }
