@@ -54,7 +54,10 @@ ci-validate() {
 # Compose the project's artifacts, e.g., compiled binaries, Docker images.
 #--
 ci-compose() {
-  printf "\nBeginning 'dotnet restore'...\n\n" &&
+  rm -rfv \
+    "${PROJECT_ROOT}/build" &&
+    printf "\n\nBuild artifacts cleaned.\n\n\n" &&
+    printf "\nBeginning 'dotnet restore'...\n\n" &&
     ci-dotnet-restore &&
     printf "\nBeginning 'dotnet publish' targeting .NET 6...\n\n" &&
     dotnet publish "${PROJECT_ROOT}/src" \
