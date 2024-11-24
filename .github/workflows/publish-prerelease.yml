@@ -11,7 +11,7 @@ jobs:
 
     steps:
       - name: Checkout latest commit
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Execute publish script - Publish project artifacts
         run: bin/cicee-exec-publish.sh
         env:
