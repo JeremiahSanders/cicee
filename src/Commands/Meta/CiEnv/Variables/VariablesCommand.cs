@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Meta.CiEnv.Variables.Add;
 using Cicee.Commands.Meta.CiEnv.Variables.List;
 using Cicee.Commands.Meta.CiEnv.Variables.Remove;
@@ -15,7 +16,7 @@ public static class VariablesCommand
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var command = new Command(CommandName, CommandDescription);
+    Command command = new(CommandName, CommandDescription);
     command.AddAlias(CommandAlias);
 
     command.AddCommand(MetaCiEnvVarAddCommand.Create(dependencies));

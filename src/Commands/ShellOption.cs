@@ -1,29 +1,32 @@
 using System.CommandLine;
+
 using Cicee.Commands.Lib;
 
 namespace Cicee.Commands;
 
 public static class ShellOption
 {
-  private static readonly string[] Aliases = {"--shell", "-s"};
+  private static readonly string[] Aliases =
+  {
+    "--shell",
+    "-s"
+  };
 
   public static Option<LibraryShellTemplate?> CreateOptional()
   {
-    var option = new Option<LibraryShellTemplate?>(
-      Aliases,
-      () => LibraryShellTemplate.Bash,
-      "Shell template."
-    ) {IsRequired = false};
+    Option<LibraryShellTemplate?> option = new(Aliases, () => LibraryShellTemplate.Bash, description: "Shell template.")
+    {
+      IsRequired = false
+    };
     return option;
   }
 
   public static Option<LibraryShellTemplate> CreateRequired()
   {
-    var option = new Option<LibraryShellTemplate>(
-      Aliases,
-      () => LibraryShellTemplate.Bash,
-      "Shell template."
-    ) {IsRequired = true};
+    Option<LibraryShellTemplate> option = new(Aliases, () => LibraryShellTemplate.Bash, description: "Shell template.")
+    {
+      IsRequired = true
+    };
     return option;
   }
 }

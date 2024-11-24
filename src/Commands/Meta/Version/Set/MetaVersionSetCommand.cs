@@ -1,6 +1,7 @@
 using System.CommandLine;
 using System.CommandLine.Parsing;
 using System.Linq;
+
 using Cicee.Dependencies;
 
 namespace Cicee.Commands.Meta.Version.Set;
@@ -12,24 +13,40 @@ public static class MetaVersionSetCommand
 
   private static Option<System.Version> IncrementOption()
   {
-    return new Option<System.Version>(new[] {"--version", "-v"},
-      "New version in SemVer 2.0 release format. E.g., '2.3.1'.") {IsRequired = true};
+    return new Option<System.Version>(
+      new[]
+      {
+        "--version",
+        "-v"
+      },
+      description: "New version in SemVer 2.0 release format. E.g., '2.3.1'."
+    )
+    {
+      IsRequired = true
+    };
   }
 
   private static Option<System.Version?> CreateVersionOption()
   {
     return new Option<System.Version?>(
-      new[] {"--version", "-v"},
+      new[]
+      {
+        "--version",
+        "-v"
+      },
       ParseArgument,
       isDefault: true,
-      "New version in SemVer 2.0 release format. E.g., '2.3.1'."
-    ) {IsRequired = true};
+      description: "New version in SemVer 2.0 release format. E.g., '2.3.1'."
+    )
+    {
+      IsRequired = true
+    };
 
     System.Version? ParseArgument(ArgumentResult result)
     {
-      var initialTokenValue = result.Tokens.Count > 0 ? result.Tokens[index: 0].Value : string.Empty;
-      var tokenValue = initialTokenValue;
-      var countOfPeriods = tokenValue.Count(c => c == '.');
+      string initialTokenValue = result.Tokens.Count > 0 ? result.Tokens[index: 0].Value : string.Empty;
+      string tokenValue = initialTokenValue;
+      int countOfPeriods = tokenValue.Count(c => c == '.');
 
       if (tokenValue != string.Empty)
       {
@@ -48,7 +65,7 @@ public static class MetaVersionSetCommand
         }
       }
 
-      if (System.Version.TryParse(tokenValue, out var version))
+      if (System.Version.TryParse(tokenValue, out System.Version? version))
       {
         return version;
       }
@@ -61,10 +78,13 @@ public static class MetaVersionSetCommand
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectMetadata = ProjectMetadataOption.Create(dependencies);
-    var dryRun = DryRunOption.Create();
-    var versionOption = CreateVersionOption();
-    var command = new Command(CommandName, CommandDescription) {projectMetadata, dryRun, versionOption};
+    Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
+    Option<bool> dryRun = DryRunOption.Create();
+    Option<System.Version?> versionOption = CreateVersionOption();
+    Command command = new(CommandName, CommandDescription)
+    {
+      projectMetadata, dryRun, versionOption
+    };
     command.SetHandler(MetaVersionSetEntrypoint.CreateHandler(dependencies), projectMetadata, dryRun, versionOption);
 
     return command;

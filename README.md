@@ -14,7 +14,7 @@ CICEE also provides a [continuous integration shell function library][cicee-lib]
 
 * `bash`: bash shell
 * `docker`: Docker command-line interface
-* `dotnet`: .NET SDK (`6.x`, `7.x`, and `8.x` supported)
+* `dotnet`: .NET SDK (`6.x`, `7.x`, `8.x`, and `9.x` supported)
 
 ## Why use CICEE?
 

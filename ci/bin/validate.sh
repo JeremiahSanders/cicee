@@ -16,9 +16,19 @@ declare SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
 declare PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${SCRIPT_LOCATION}/../.." && pwd)}"
 
 __initialize() {
+  local targetFramework="net8.0"
+  # Publish the application so we can work with CICEE similarly to other projects
+  #   NOTE: Previous implementations used `dotnet run -- lib`. This stopped working.
+  #     When using `dotnet run` the raw output to STDOUT is prefixed with invisible control characters. Those characters trigger file not found responses from `source <path>`.
+  #     However, if the DLL is executed with `dotnet <dll>` then the output of STDOUT lacks the control characters and it can be loaded with `source`.
+  dotnet publish "${PROJECT_ROOT}/src" --framework "${targetFramework}"
   # Load the CICEE CI action library and project CI workflow library.
   # Then execute the ci-env-init, ci-env-display, and ci-env-require functions, provided by the CI action library.
-  source "$(dotnet run --project src --framework net7.0 -- lib)" &&
+  local ciLibPath="$(dotnet "${PROJECT_ROOT}/src/bin/Release/${targetFramework}/publish/cicee.dll" lib)"
+  
+  printf "Loading CI library entry point: %s\n" "${ciLibPath}" &&
+    source "${ciLibPath}" &&
+    printf "Loading CI workflows: %s\n\n" "${PROJECT_ROOT}/ci/libexec/ci-workflows.sh" &&
     source "${PROJECT_ROOT}/ci/libexec/ci-workflows.sh" &&
     ci-env-init &&
     ci-env-display &&

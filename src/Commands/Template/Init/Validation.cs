@@ -1,35 +1,35 @@
 using Cicee.CiEnv;
 using Cicee.Dependencies;
+
 using LanguageExt.Common;
 
-namespace Cicee.Commands.Template.Init
+namespace Cicee.Commands.Template.Init;
+
+public static class Validation
 {
-  public static class Validation
+  public static Result<TemplateInitContext> ValidateRequestExecution(CommandDependencies dependencies,
+    TemplateInitRequest request)
   {
-    public static Result<TemplateInitContext> ValidateRequestExecution(CommandDependencies dependencies,
-      TemplateInitRequest request)
-    {
-      return dependencies.EnsureDirectoryExists(request.ProjectRoot)
-        .Map(validatedProjectRoot =>
-          {
-            var (metadataFilePath, projectMetadata) = ProjectMetadataLoader.TryFindProjectMetadata(
-                dependencies.EnsureDirectoryExists,
-                dependencies.EnsureFileExists, dependencies.TryLoadFileString, dependencies.CombinePath,
-                validatedProjectRoot)
-              .IfFail(_ => (
-                  FilePath: dependencies.CombinePath(validatedProjectRoot,
-                    ProjectMetadataLoader.DefaultMetadataFileName),
-                  ProjectMetadata: ProjectMetadataLoader.InferProjectMetadata(dependencies, validatedProjectRoot)
-                )
-              );
-            return new TemplateInitContext
-            (validatedProjectRoot,
-              request.OverwriteFiles,
-              request.MetadataFile ?? metadataFilePath,
-              projectMetadata
-            );
-          }
+    return dependencies.EnsureDirectoryExists(request.ProjectRoot).Map(
+      validatedProjectRoot =>
+      {
+        (string metadataFilePath, ProjectMetadata projectMetadata) = ProjectMetadataLoader.TryFindProjectMetadata(
+          dependencies.EnsureDirectoryExists,
+          dependencies.EnsureFileExists,
+          dependencies.TryLoadFileString,
+          dependencies.CombinePath,
+          validatedProjectRoot
+        ).IfFail(
+          _ => (FilePath: dependencies.CombinePath(validatedProjectRoot, ProjectMetadataLoader.DefaultMetadataFileName),
+            ProjectMetadata: ProjectMetadataLoader.InferProjectMetadata(dependencies, validatedProjectRoot))
         );
-    }
+        return new TemplateInitContext(
+          validatedProjectRoot,
+          request.OverwriteFiles,
+          request.MetadataFile ?? metadataFilePath,
+          projectMetadata
+        );
+      }
+    );
   }
 }

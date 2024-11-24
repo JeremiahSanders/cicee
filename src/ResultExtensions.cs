@@ -1,21 +1,20 @@
-using System;
-using System.Threading.Tasks;
 using Cicee.Commands.Exec;
-using LanguageExt;
+
 using LanguageExt.Common;
 
-namespace Cicee
+namespace Cicee;
+
+internal static class ResultExtensions
 {
-  internal static class ResultExtensions
+  public static int ToExitCode<T>(this Result<T> result, int failureCode = 1)
   {
-    public static int ToExitCode<T>(this Result<T> result, int failureCode = 1)
-    {
-      return result.Match(_ => 0, exception =>
-        exception switch
-        {
-          ExecutionException executionException => executionException.ExitCode,
-          _ => failureCode
-        });
-    }
+    return result.Match(
+      _ => 0,
+      exception => exception switch
+      {
+        ExecutionException executionException => executionException.ExitCode,
+        _ => failureCode
+      }
+    );
   }
 }

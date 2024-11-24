@@ -5,12 +5,13 @@
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
-    <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;net7.0;net8.0;net9.0</TargetFrameworks>
+    <PackageTags>ci docker bash</PackageTags>
   </PropertyGroup>
 
   <PropertyGroup>
     <Authors>jds</Authors>
-    <Company />
+    <Company/>
     <Copyright>Copyright (c) 2024 Jeremiah Sanders</Copyright>
     <Description>Continuous Integration Containerized Execution Environment</Description>
     <PackageId>cicee</PackageId>
@@ -26,9 +27,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Jds.LanguageExt.Extras" Version="1.0.0" />
-    <PackageReference Include="LanguageExt.Core" Version="4.4.8" />
-    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="Jds.LanguageExt.Extras" Version="1.0.0"/>
+    <PackageReference Include="LanguageExt.Core" Version="4.4.8"/>
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1"/>
   </ItemGroup>
 
   <ItemGroup>
@@ -72,7 +73,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  
+
   <ItemGroup>
     <Content Include="templates\init\libexec\workflows\ci-compose.sh">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
@@ -85,7 +86,7 @@
     </Content>
     <Content Include="templates\init\Template.Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>  
+    </Content>
     <Content Include="templates\init\Default.Dockerfile">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -102,7 +103,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
-  
+
   <ItemGroup>
     <None Include=".\README.md">
       <Pack>True</Pack>

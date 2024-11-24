@@ -1,7 +1,6 @@
-namespace Cicee.Commands.Lib
+namespace Cicee.Commands.Lib;
+
+public enum LibraryShellTemplate
 {
-  public enum LibraryShellTemplate
-  {
-    Bash = 0
-  }
+  Bash = 0
 }

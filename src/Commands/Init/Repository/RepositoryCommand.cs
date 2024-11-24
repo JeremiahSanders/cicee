@@ -1,4 +1,5 @@
 using System.CommandLine;
+
 using Cicee.Commands.Lib;
 using Cicee.Commands.Template.Lib;
 using Cicee.Dependencies;
@@ -10,40 +11,62 @@ public static class RepositoryCommand
   private static Option<string?> ImageOption()
   {
     return new Option<string?>(
-      new[] { "--image", "-i" },
-      "Base CI image for $PROJECT_ROOT/ci/Dockerfile."
-    ) { IsRequired = false };
+      new[]
+      {
+        "--image",
+        "-i"
+      },
+      description: "Base CI image for $PROJECT_ROOT/ci/Dockerfile."
+    )
+    {
+      IsRequired = false
+    };
   }
 
   private static Option<bool> InitCiLibOption()
   {
     return new Option<bool>(
-      new[] { "--ci-lib", "-l" },
+      new[]
+      {
+        "--ci-lib",
+        "-l"
+      },
       () => false,
       TemplateLibCommand.Description
-    ) { IsRequired = false };
+    )
+    {
+      IsRequired = false
+    };
   }
 
   public static Command Create(CommandDependencies dependencies)
   {
-    var projectRoot = ProjectRootOption.Create(dependencies);
-    var image = ImageOption();
-    var force = ForceOption.Create();
-    var initCiLib = InitCiLibOption();
-    var shell = ShellOption.CreateOptional();
-    var command =
-      new Command("repository",
-        "Initialize project repository. Creates suggested CICEE files and continuous integration scripts. Optionally includes CICEE CI library.")
-      {
-        projectRoot,
-        image,
-        force,
-        initCiLib,
-        shell
-      };
-    command.SetHandler<string, string?, bool, bool, LibraryShellTemplate?>(
-      (root, imageName, forceValue, initValue, shellValue) =>
-        RepositoryEntrypoint.HandleAsync(dependencies, root, imageName, forceValue, initValue, shellValue),
+    Option<string> projectRoot = ProjectRootOption.Create(dependencies);
+    Option<string?> image = ImageOption();
+    Option<bool> force = ForceOption.Create();
+    Option<bool> initCiLib = InitCiLibOption();
+    Option<LibraryShellTemplate?> shell = ShellOption.CreateOptional();
+    Command command = new(
+      name: "repository",
+      description:
+      "Initialize project repository. Creates suggested CICEE files and continuous integration scripts. Optionally includes CICEE CI library."
+    )
+    {
+      projectRoot,
+      image,
+      force,
+      initCiLib,
+      shell
+    };
+    command.SetHandler(
+      (root, imageName, forceValue, initValue, shellValue) => RepositoryEntrypoint.HandleAsync(
+        dependencies,
+        root,
+        imageName,
+        forceValue,
+        initValue,
+        shellValue
+      ),
       projectRoot,
       image,
       force,

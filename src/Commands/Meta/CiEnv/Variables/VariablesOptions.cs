@@ -11,16 +11,29 @@ internal static class VariablesOptions
 
   private static string[] CreateNameAliases()
   {
-    return new[] { NameOptionName, NameOptionShort };
+    return new[]
+    {
+      NameOptionName,
+      NameOptionShort
+    };
   }
 
   public static Option<string?> CreateDefaultValueOption()
   {
-    const string OptionVerbose = "--defaultValue";
-    const string OptionName = "--default";
-    const string OptionShort = "-v";
-    const string OptionDescription = "Default environment variable value.";
-    return new Option<string?>(new[] { OptionVerbose, OptionName, OptionShort }, () => null, OptionDescription);
+    const string optionVerbose = "--defaultValue";
+    const string optionName = "--default";
+    const string optionShort = "-v";
+    const string optionDescription = "Default environment variable value.";
+    return new Option<string?>(
+      new[]
+      {
+        optionVerbose,
+        optionName,
+        optionShort
+      },
+      () => null,
+      optionDescription
+    );
   }
 
   private static void ValidateRequiredName(OptionResult result)
@@ -33,15 +46,19 @@ internal static class VariablesOptions
 
   public static Option<string> CreateNameRequired(string? description = null)
   {
-    var option =
-      new Option<string>(CreateNameAliases(), description ?? NameOptionDescription) { IsRequired = true };
+    Option<string> option = new(CreateNameAliases(), description ?? NameOptionDescription)
+    {
+      IsRequired = true
+    };
     option.AddValidator(ValidateRequiredName);
     return option;
   }
 
   public static Option<string?> CreateNameOptional(string? description = null)
   {
-    return new Option<string?>(CreateNameAliases(), () => null,
-      description ?? NameOptionDescription) { IsRequired = false };
+    return new Option<string?>(CreateNameAliases(), () => null, description ?? NameOptionDescription)
+    {
+      IsRequired = false
+    };
   }
 }

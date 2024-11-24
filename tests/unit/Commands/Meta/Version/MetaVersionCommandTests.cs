@@ -1,4 +1,8 @@
+using System.CommandLine;
+
 using Cicee.Commands.Meta.Version;
+using Cicee.Dependencies;
+
 using Xunit;
 
 namespace Cicee.Tests.Unit.Commands.Meta.Version;
@@ -10,23 +14,27 @@ public static class MetaVersionCommandTests
     [Fact]
     public void WhenExecutedFromChildDirectory_ReturnsExpectedCommand()
     {
-      var expected = new CommandValues(
+      CommandValues expected = new(
         MetaVersionCommand.CommandName,
         MetaVersionCommand.CommandDescription,
         new[]
         {
           new OptionValues(
-            "metadata",
-            "Project metadata file path.",
-            new[] {"--metadata", "-m"},
+            Name: "metadata",
+            Description: "Project metadata file path.",
+            new[]
+            {
+              "--metadata",
+              "-m"
+            },
             IsRequired: true
           )
         }
       );
-      var dependencies = DependencyHelper.CreateMockDependencies();
-      var command = MetaVersionCommand.Create(dependencies);
+      CommandDependencies dependencies = DependencyHelper.CreateMockDependencies();
+      Command command = MetaVersionCommand.Create(dependencies);
 
-      var actual = CommandValues.FromCommand(command);
+      CommandValues actual = CommandValues.FromCommand(command);
 
       Assert.Equal(expected, actual);
     }
