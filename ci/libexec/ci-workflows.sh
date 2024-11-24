@@ -79,6 +79,14 @@ ci-compose() {
       --framework net8.0 \
       -p:GenerateDocumentationFile=true &&
     printf "\nCompleted 'dotnet publish' targeting .NET 8.\n\n" &&
+    printf "\nBeginning 'dotnet publish' targeting .NET 9...\n\n" &&
+    dotnet publish "${PROJECT_ROOT}/src" \
+      --configuration Release \
+      --output "${BUILD_UNPACKAGED_DIST}/net9.0" \
+      -p:Version="${PROJECT_VERSION_DIST}" \
+      --framework net9.0 \
+      -p:GenerateDocumentationFile=true &&
+    printf "\nCompleted 'dotnet publish' targeting .NET 9.\n\n" &&
     printf "\nBeginning 'dotnet pack'...\n\n" &&
     ci-dotnet-pack -p:GenerateDocumentationFile=true &&
     printf "\nCompleted 'dotnet pack'.\n\n"
