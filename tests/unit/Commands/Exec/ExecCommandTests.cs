@@ -63,6 +63,27 @@ public static class ExecCommandTests
               "-i"
             },
             IsRequired: false
+          ),
+          new OptionValues(
+            Name: "harness",
+            Description:
+            "Invocation harness. Determines if CICEE directly invokes Docker commands or uses a shell script to invoke Docker commands.",
+            new[]
+            {
+              "--harness",
+              "-h"
+            },
+            IsRequired: false
+          ),
+          new OptionValues(
+            Name: "verbosity",
+            Description: "Execution progress verbosity. Only applicable when using 'Direct' harness.",
+            new[]
+            {
+              "--verbosity",
+              "-v"
+            },
+            IsRequired: false
           )
         }
       );

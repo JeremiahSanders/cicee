@@ -51,28 +51,73 @@ public static class ExecCommand
     };
   }
 
+  private static Option<ExecInvocationHarness> InvocationHarnessOption()
+  {
+    return new Option<ExecInvocationHarness>(
+      new[]
+      {
+        "--harness",
+        "-h"
+      },
+      () => ExecInvocationHarness.Script,
+      description:
+      "Invocation harness. Determines if CICEE directly invokes Docker commands or uses a shell script to invoke Docker commands."
+    )
+    {
+      IsRequired = false
+    };
+  }
+
+  private static Option<ExecVerbosity> VerbosityOption()
+  {
+    return new Option<ExecVerbosity>(
+      new[]
+      {
+        "--verbosity",
+        "-v"
+      },
+      () => ExecVerbosity.Normal,
+      description:
+      "Execution progress verbosity. Only applicable when using 'Direct' harness."
+    )
+    {
+      IsRequired = false
+    };
+  }
+
   public static Command Create(CommandDependencies dependencies)
   {
     Option<string> projectRoot = ProjectRootOption.Create(dependencies);
     Option<string> serviceCommand = ServiceCommandOption();
     Option<string?> serviceEntrypoint = ServiceEntrypointOption();
     Option<string?> image = ImageOption();
+    Option<ExecInvocationHarness> harness = InvocationHarnessOption();
+    Option<ExecVerbosity> verbosity = VerbosityOption();
     Command command = new(name: "exec", description: "Execute a command in a containerized execution environment.")
     {
-      projectRoot, serviceCommand, serviceEntrypoint, image
+      projectRoot,
+      serviceCommand,
+      serviceEntrypoint,
+      image,
+      harness,
+      verbosity
     };
-    command.SetHandler<string, string?, string?, string?>(
-      (rootValue, commandValue, entrypointValue, imageValue) => ExecEntrypoint.HandleAsync(
+    command.SetHandler<string, string?, string?, string?, ExecInvocationHarness, ExecVerbosity>(
+      (rootValue, commandValue, entrypointValue, imageValue, harnessValue, verbosityValue) => ExecEntrypoint.HandleAsync(
         dependencies,
         rootValue,
         commandValue,
         entrypointValue,
-        imageValue
+        imageValue,
+        harnessValue,
+        verbosityValue
       ),
       projectRoot,
       serviceCommand,
       serviceEntrypoint,
-      image
+      image,
+      harness,
+      verbosity
     );
     return command;
   }
