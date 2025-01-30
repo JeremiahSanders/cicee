@@ -5,11 +5,14 @@ using System.Runtime.InteropServices;
 
 using Cicee.CiEnv;
 using Cicee.Commands.Exec;
+using Cicee.Commands.Exec.Handling;
 using Cicee.Dependencies;
 
 using Jds.LanguageExt.Extras;
 
 using LanguageExt.Common;
+
+using Shouldly;
 
 using Xunit;
 
@@ -19,19 +22,31 @@ public class CreateProcessStartInfo
 {
   private static ExecRequestContext CreateExecRequestContext()
   {
+    ProjectMetadata metadata = new()
+    {
+      CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition(),
+      Name = "sample-project",
+      Title = "Sample Project",
+      Version = "0.7.2"
+    };
+
     return new ExecRequestContext(
       ProjectRoot: "/sample-project",
-      new ProjectMetadata
-      {
-        CiEnvironment = new ProjectContinuousIntegrationEnvironmentDefinition(),
-        Name = "sample-project",
-        Title = "Sample Project",
-        Version = "0.7.2"
-      },
+      metadata,
       Command: "ls",
       Entrypoint: "-al",
       Dockerfile: "ci/Dockerfile",
-      Image: null
+      Image: null,
+      ExecInvocationHarness.Script,
+      ExecVerbosity.Normal,
+      CiDirectory: "/sample-project/ci/Dockerfile",
+      new[]
+      {
+        "/sample-project/ci/docker-compose.dependencies.yml",
+        "/sample-project/ci/docker-compose.project.yml"
+      },
+      LibRoot: null,
+      IoContext.CreateCiDockerfileImageTag(metadata.Name)
     );
   }
 
@@ -54,7 +69,7 @@ public class CreateProcessStartInfo
       Arguments =
       "-c \"" +
       $"{happyPathDependencies.CombinePath(happyPathDependencies.GetLibraryRootPath(), arg2: "cicee-exec.sh")}\"",
-      Environment = happyPathDependencies.GetEnvironmentVariables()
+      Environment = IoEnvironment.GetExecEnvironment(happyPathDependencies, happyPathRequest, forcePathsToLinux: false)
     };
     Result<ProcessStartInfoResult> happyPathExpected = new(happyPathExpectedResult);
 
@@ -73,10 +88,13 @@ public class CreateProcessStartInfo
 
   [Theory]
   [MemberData(nameof(GenerateTestCases))]
-  public void ReturnsExpectedProcessStartInfo(CommandDependencies dependencies, ExecRequestContext execRequestContext,
+  public void ReturnsExpectedProcessStartInfo(
+    CommandDependencies dependencies,
+    ExecRequestContext execRequestContext,
     Result<ProcessStartInfoResult> expectedResult)
   {
-    Result<ProcessStartInfoResult> actualResult = ExecHandling.CreateProcessStartInfo(dependencies, execRequestContext)
+    Result<ProcessStartInfoResult> actualResult = ScriptHarness
+      .CreateProcessStartInfo(dependencies, execRequestContext)
       .Map(
         result => new ProcessStartInfoResult(
           result.FileName,
@@ -93,14 +111,15 @@ public class CreateProcessStartInfo
         actualResult.IfSucc(
           actual =>
           {
-            Assert.Equal(expected.FileName, actual.FileName);
-            Assert.Equal(expected.Arguments, actual.Arguments);
-            Assert.Equal(
-              expected.Environment,
-              // Selecting only those which are expected because actual keys will contain everything from the current test execution process (when ProcessStartInfo is created).
-              actual.Environment.Where(kvp => expected.Environment.Keys.Contains(kvp.Key)),
-              new KeyValuePairValueComparer<string, string>()
-            );
+            actual.FileName.ShouldBe(expected.FileName);
+            actual.Arguments.ShouldBe(expected.Arguments);
+            // Selecting only those which are expected because actual keys will contain everything from the current test execution process (when ProcessStartInfo is created).
+            var actualFilteredEnvironment = actual
+              .Environment.Where(kvp => expected.Environment.Keys.Contains(kvp.Key))
+              .OrderBy(kvp => kvp.Key)
+              .ToList();
+            var expectedEnv = expected.Environment.OrderBy(kvp => kvp.Key).ToList();
+            actualFilteredEnvironment.ShouldBeEquivalentTo(expectedEnv);
           }
         );
         actualResult.IfFailThrow();
@@ -124,5 +143,6 @@ public class CreateProcessStartInfo
   public record ProcessStartInfoResult(
     string FileName,
     string Arguments,
-    IReadOnlyDictionary<string, string> Environment);
+    IReadOnlyDictionary<string, string> Environment
+  );
 }

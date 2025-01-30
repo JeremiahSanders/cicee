@@ -2,6 +2,8 @@ using System;
 
 using LanguageExt.Common;
 
+using Shouldly;
+
 using Xunit;
 
 namespace Cicee.Tests.Unit;
@@ -18,7 +20,7 @@ public static class Assertions
           actualResult.IfSucc(
             actual =>
             {
-              Assert.Equal(expected, actual);
+              actual.ShouldBeEquivalentTo(expected);
             }
           );
           _ = actualResult.IfFail(
@@ -33,8 +35,8 @@ public static class Assertions
           actualResult.IfFail(
             actual =>
             {
-              Assert.Equal(exception.GetType(), actual.GetType());
-              Assert.Equal(exception.Message, actual.Message);
+              actual.ShouldBeOfType(exception.GetType());
+              actual.Message.ShouldBe(exception.Message);
             }
           );
         }

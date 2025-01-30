@@ -54,6 +54,9 @@ public static class Io
     }
   }
 
+  /// <summary>
+  ///   Gets the CICEE assembly's <c>lib</c> content directory path.
+  /// </summary>
   public static string GetLibraryRootPath()
   {
     string executionPath = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
