@@ -7,7 +7,7 @@ namespace Cicee.Commands.Lib;
 
 public static class LibCommand
 {
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<LibraryShellTemplate?> shellOption = ShellOption.CreateOptional();
     Command command = new(

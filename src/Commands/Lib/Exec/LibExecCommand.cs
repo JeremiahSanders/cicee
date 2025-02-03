@@ -26,7 +26,7 @@ public static class LibExecCommand
     };
   }
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<LibraryShellTemplate> shellOption = ShellOption.CreateRequired();
     Option<string> commandOption = ShellCommandOption();

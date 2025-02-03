@@ -12,8 +12,12 @@ namespace Cicee.Commands.Meta.CiEnv.Variables.Update;
 
 public static class MetaCiEnvVarUpdateHandling
 {
-  internal static ProjectEnvironmentVariable With(this ProjectEnvironmentVariable currentVariable, string? description,
-    bool? required, bool? secret, string? defaultValue)
+  internal static ProjectEnvironmentVariable With(
+    this ProjectEnvironmentVariable currentVariable,
+    string? description,
+    bool? required,
+    bool? secret,
+    string? defaultValue)
   {
     return currentVariable with
     {
@@ -25,33 +29,44 @@ public static class MetaCiEnvVarUpdateHandling
   }
 
   public static async Task<Result<ProjectEnvironmentVariable[]>> MetaCiEnvVarUpdateRequest(
-    CommandDependencies dependencies, string projectMetadataPath, string name,
-    Func<ProjectEnvironmentVariable, ProjectEnvironmentVariable> mutator, bool isDryRun = false)
+    ICommandDependencies dependencies,
+    string projectMetadataPath,
+    string name,
+    Func<ProjectEnvironmentVariable, ProjectEnvironmentVariable> mutator,
+    bool isDryRun = false)
   {
     string comparisonName = name.ToUpperInvariant();
+
     return await ProjectMetadataLoader
-      .TryLoadFromFile(dependencies.EnsureFileExists, dependencies.TryLoadFileString, projectMetadataPath).Map(
+      .TryLoadFromFile(dependencies.EnsureFileExists, dependencies.TryLoadFileString, projectMetadataPath)
+      .Map(
         metadata => metadata.CiEnvironment.Variables.Fold(
           (Matches: Enumerable.Empty<ProjectEnvironmentVariable>(),
             AllVariables: Enumerable.Empty<ProjectEnvironmentVariable>()),
           (enumerables, variable) =>
           {
-            bool isMatch = variable.Name.ToUpperInvariant().Equals(comparisonName);
+            bool isMatch = variable
+              .Name.ToUpperInvariant()
+              .Equals(comparisonName);
             ProjectEnvironmentVariable toAdd = isMatch ? mutator(variable) : variable;
+
             return isMatch
               ? (enumerables.Matches.Append(toAdd), enumerables.AllVariables.Append(toAdd))
               : (enumerables.Matches, enumerables.AllVariables.Append(variable));
           }
         )
-      ).Map(
+      )
+      .Map(
         enumerables => new
         {
           Matches = enumerables.Matches.ToArray(), AllVariables = enumerables.AllVariables.ToArray()
         }
-      ).Filter(
+      )
+      .Filter(
         variables => variables.Matches.Any(),
         _ => new ExecutionException($"Variable \"{name}\" does not exist.", exitCode: 1)
-      ).BindAsync(
+      )
+      .BindAsync(
         async variables =>
         {
           return isDryRun

@@ -11,7 +11,7 @@ namespace Cicee.Dependencies;
 
 public static class FileCopyHelpers
 {
-  public static Task<Result<IReadOnlyCollection<FileCopyResult>>> TryWriteFiles(CommandDependencies dependencies,
+  public static Task<Result<IReadOnlyCollection<FileCopyResult>>> TryWriteFiles(ICommandDependencies dependencies,
     IReadOnlyCollection<FileCopyRequest> files, IReadOnlyDictionary<string, string> templateValues, bool overwriteFiles)
   {
     return files.Fold(

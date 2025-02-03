@@ -10,8 +10,8 @@ namespace Cicee.Commands.Exec.Handling;
 
 public static class ScriptHarness
 {
-  public static Result<ProcessStartInfo> CreateProcessStartInfo(
-    CommandDependencies dependencies,
+  public static Result<ProcessExecRequest> CreateProcessStartInfo(
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {

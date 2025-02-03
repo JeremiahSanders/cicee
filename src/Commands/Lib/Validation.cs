@@ -9,7 +9,7 @@ namespace Cicee.Commands.Lib;
 
 public static class Validation
 {
-  public static Task<Result<LibContext>> ValidateRequestAsync(CommandDependencies dependencies, LibRequest request)
+  public static Task<Result<LibContext>> ValidateRequestAsync(ICommandDependencies dependencies, LibRequest request)
   {
     return request.Shell switch
     {

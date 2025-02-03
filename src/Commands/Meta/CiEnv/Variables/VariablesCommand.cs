@@ -14,7 +14,7 @@ public static class VariablesCommand
   public const string CommandDescription = "Commands related to the project's CI environment variables.";
   public const string CommandAlias = "var";
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Command command = new(CommandName, CommandDescription);
     command.AddAlias(CommandAlias);

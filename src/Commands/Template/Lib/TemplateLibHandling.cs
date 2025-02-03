@@ -12,109 +12,120 @@ namespace Cicee.Commands.Template.Lib;
 
 public static class TemplateLibHandling
 {
-  private static DirectoryCopyRequest CreateLibraryDirectoryCopyRequest(CommandDependencies dependencies,
+  private static DirectoryCopyRequest CreateLibraryDirectoryCopyRequest(
+    ICommandDependencies dependencies,
     TemplateLibContext request)
   {
     string ciPath = dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName);
     string ciLibPath = dependencies.CombinePath(ciPath, Conventions.CiLibDirectoryName);
+
     return new DirectoryCopyRequest(dependencies.GetLibraryRootPath(), ciLibPath, request.OverwriteFiles);
   }
 
-  private static IReadOnlyCollection<FileCopyRequest> CreateCiceeExecCopyRequests(CommandDependencies dependencies,
+  private static IReadOnlyCollection<FileCopyRequest> CreateCiceeExecCopyRequests(
+    ICommandDependencies dependencies,
     TemplateLibContext request)
   {
     return Array.Empty<FileCopyRequest>();
   }
 
   private static async Task<Result<(string CiceeExecEntrypoint, IReadOnlyCollection<FileCopyResult> FileCopyResults)>>
-    CopyCiceeExec(CommandDependencies dependencies, TemplateLibRequest request,
+    CopyCiceeExec(
+      ICommandDependencies dependencies,
+      TemplateLibRequest request,
       IReadOnlyCollection<FileCopyRequest> fileCopyRequests)
   {
     return (await FileCopyHelpers.TryWriteFiles(
-      dependencies,
-      fileCopyRequests,
-      GetTemplateValues(request),
-      request.OverwriteFiles
-    )).TapFailure(
-      exception => dependencies.StandardOutWriteLine(
-        $"Failed to write CICEE execution scripts.\nError: {exception.GetType()}\nMessage: {exception.Message}"
+        dependencies,
+        fileCopyRequests,
+        GetTemplateValues(request),
+        request.OverwriteFiles
+      ))
+      .TapFailure(
+        exception => dependencies.StandardOutWriteLine(
+          $"Failed to write CICEE execution scripts.\nError: {exception.GetType()}\nMessage: {exception.Message}"
+        )
       )
-    ).TapSuccess(
-      results =>
-      {
-        dependencies.StandardOutWriteLine(obj: "CICEE execution script initialization complete.");
-        dependencies.StandardOutWriteLine(obj: "Files:");
-        foreach (FileCopyResult result in results)
+      .TapSuccess(
+        results =>
         {
-          dependencies.StandardOutWriteLine(
-            $"  {(result.Written ? "Copied " : "Skipped")} {result.Request.DestinationPath}"
-          );
+          dependencies.StandardOutWriteLine(text: "CICEE execution script initialization complete.");
+          dependencies.StandardOutWriteLine(text: "Files:");
+          foreach (FileCopyResult result in results)
+          {
+            dependencies.StandardOutWriteLine(
+              $"  {(result.Written ? "Copied " : "Skipped")} {result.Request.DestinationPath}"
+            );
+          }
         }
-      }
-    ).Map(
-      results => (
-        dependencies.CombinePath(
+      )
+      .Map(
+        results => (
           dependencies.CombinePath(
-            dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName),
-            Conventions.CiLibDirectoryName
-          ),
-          arg2: "cicee-exec.sh"
-        ), results)
-    );
+            dependencies.CombinePath(
+              dependencies.CombinePath(request.ProjectRoot, Conventions.CiDirectoryName),
+              Conventions.CiLibDirectoryName
+            ),
+            suffix: "cicee-exec.sh"
+          ), results)
+      );
   }
 
   private static async Task<Result<(string CiLibEntrypoint, DirectoryCopyResult CiLibDirectoryCopyResult)>>
-    CopyCiLibrary(CommandDependencies dependencies, DirectoryCopyRequest request)
+    CopyCiLibrary(ICommandDependencies dependencies, DirectoryCopyRequest request)
   {
-    dependencies.StandardOutWriteLine(obj: "Copying CICEE CI action library...");
+    dependencies.StandardOutWriteLine(text: "Copying CICEE CI action library...");
     dependencies.StandardOutWriteLine($"  Source     : {request.SourceDirectoryPath}");
     dependencies.StandardOutWriteLine($"  Destination: {request.DestinationDirectoryPath}");
 
-    return (await dependencies.TryCopyDirectoryAsync(request)).TapFailure(
-      exception => dependencies.StandardErrorWriteLine(
-        $"Failed to copy CICEE CI action library.\nError: {exception.GetType()}\nMessage: {exception.Message}"
+    return (await dependencies.TryCopyDirectoryAsync(request))
+      .TapFailure(
+        exception => dependencies.StandardErrorWriteLine(
+          $"Failed to copy CICEE CI action library.\nError: {exception.GetType()}\nMessage: {exception.Message}"
+        )
       )
-    ).TapSuccess(
-      results =>
-      {
-        dependencies.StandardOutWriteLine(obj: "CICEE CI action library initialized.");
+      .TapSuccess(
+        results =>
+        {
+          dependencies.StandardOutWriteLine(text: "CICEE CI action library initialized.");
 
-        dependencies.StandardOutWriteLine(obj: "Directories created:");
-        if (results.CreatedDirectories.Count == 0)
-        {
-          dependencies.StandardOutWriteLine(obj: "  None");
-          dependencies.StandardOutWriteLine(obj: "");
-        }
-        else
-        {
-          foreach ((string SourceDirectory, string DestinationDirectory) createdTuple in results.CreatedDirectories)
+          dependencies.StandardOutWriteLine(text: "Directories created:");
+          if (results.CreatedDirectories.Count == 0)
           {
-            dependencies.StandardOutWriteLine($"  {createdTuple.DestinationDirectory}");
+            dependencies.StandardOutWriteLine(text: "  None");
+            dependencies.StandardOutWriteLine(text: "");
+          }
+          else
+          {
+            foreach ((string SourceDirectory, string DestinationDirectory) createdTuple in results.CreatedDirectories)
+            {
+              dependencies.StandardOutWriteLine($"  {createdTuple.DestinationDirectory}");
+            }
+
+            dependencies.StandardOutWriteLine(text: "");
           }
 
-          dependencies.StandardOutWriteLine(obj: "");
-        }
-
-        dependencies.StandardOutWriteLine(obj: "Files copied:");
-        if (results.CopiedFiles.Count == 0)
-        {
-          dependencies.StandardOutWriteLine(obj: "  None");
-          dependencies.StandardOutWriteLine(obj: "");
-        }
-        else
-        {
-          foreach ((string SourceFile, string DestinationFile) copiedTuple in results.CopiedFiles)
+          dependencies.StandardOutWriteLine(text: "Files copied:");
+          if (results.CopiedFiles.Count == 0)
           {
-            dependencies.StandardOutWriteLine($"  {copiedTuple.DestinationFile}");
+            dependencies.StandardOutWriteLine(text: "  None");
+            dependencies.StandardOutWriteLine(text: "");
           }
+          else
+          {
+            foreach ((string SourceFile, string DestinationFile) copiedTuple in results.CopiedFiles)
+            {
+              dependencies.StandardOutWriteLine($"  {copiedTuple.DestinationFile}");
+            }
 
-          dependencies.StandardOutWriteLine(obj: "");
+            dependencies.StandardOutWriteLine(text: "");
+          }
         }
-      }
-    ).Map(
-      directoryCopyResult => (dependencies.CombinePath(directoryCopyResult.DestinationDirectoryPath, arg2: "ci.sh"),
-        directoryCopyResult)
-    );
+      )
+      .Map(
+        directoryCopyResult => (dependencies.CombinePath(directoryCopyResult.DestinationDirectoryPath, suffix: "ci.sh"),
+          directoryCopyResult)
+      );
   }
 
   private static IReadOnlyDictionary<string, string> GetTemplateValues(TemplateLibRequest request)
@@ -122,17 +133,20 @@ public static class TemplateLibHandling
     return new Dictionary<string, string>();
   }
 
-  public static async Task<Result<TemplateLibResult>> TryHandleRequest(CommandDependencies dependencies,
+  public static async Task<Result<TemplateLibResult>> TryHandleRequest(
+    ICommandDependencies dependencies,
     TemplateLibRequest request)
   {
-    dependencies.StandardOutWriteLine(obj: "Initializing project with CICEE execution library...\n");
+    dependencies.StandardOutWriteLine(text: "Initializing project with CICEE execution library...\n");
     Result<TemplateLibContext> validationResult = await Validation.ValidateRequestAsync(dependencies, request);
+
     return (await validationResult
       .TapFailure(
         exception => dependencies.StandardOutWriteLine(
           $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"
         )
-      ).BindAsync(
+      )
+      .BindAsync(
         async validatedRequest => await (await CopyCiLibrary(
           dependencies,
           CreateLibraryDirectoryCopyRequest(dependencies, validatedRequest)
@@ -160,7 +174,7 @@ public static class TemplateLibHandling
       )).TapSuccess(result => DisplayNextSteps(dependencies, result));
   }
 
-  private static void DisplayNextSteps(CommandDependencies dependencies, TemplateLibResult libResult)
+  private static void DisplayNextSteps(ICommandDependencies dependencies, TemplateLibResult libResult)
   {
     string shellSteps = libResult.ShellTemplate switch
     {

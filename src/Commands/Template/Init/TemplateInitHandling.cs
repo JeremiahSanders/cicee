@@ -12,7 +12,8 @@ namespace Cicee.Commands.Template.Init;
 
 public static class TemplateInitHandling
 {
-  private static IReadOnlyCollection<FileCopyRequest> GetFiles(CommandDependencies dependencies,
+  private static IReadOnlyCollection<FileCopyRequest> GetFiles(
+    ICommandDependencies dependencies,
     TemplateInitContext request)
   {
     string templatesBinPath = dependencies.CombinePath(
@@ -34,27 +35,28 @@ public static class TemplateInitHandling
       ciLibExecPath,
       Conventions.CiLibExecWorkflowsDirectoryName
     );
+
     return new[]
     {
       new FileCopyRequest(
-        dependencies.CombinePath(templatesLibExecWorkflowsPath, arg2: "ci-compose.sh"),
-        dependencies.CombinePath(ciLibExecWorkflowsPath, arg2: "ci-compose.sh")
+        dependencies.CombinePath(templatesLibExecWorkflowsPath, suffix: "ci-compose.sh"),
+        dependencies.CombinePath(ciLibExecWorkflowsPath, suffix: "ci-compose.sh")
       ),
       new FileCopyRequest(
-        dependencies.CombinePath(templatesLibExecWorkflowsPath, arg2: "ci-publish.sh"),
-        dependencies.CombinePath(ciLibExecWorkflowsPath, arg2: "ci-publish.sh")
+        dependencies.CombinePath(templatesLibExecWorkflowsPath, suffix: "ci-publish.sh"),
+        dependencies.CombinePath(ciLibExecWorkflowsPath, suffix: "ci-publish.sh")
       ),
       new FileCopyRequest(
-        dependencies.CombinePath(templatesLibExecWorkflowsPath, arg2: "ci-validate.sh"),
-        dependencies.CombinePath(ciLibExecWorkflowsPath, arg2: "ci-validate.sh")
+        dependencies.CombinePath(templatesLibExecWorkflowsPath, suffix: "ci-validate.sh"),
+        dependencies.CombinePath(ciLibExecWorkflowsPath, suffix: "ci-validate.sh")
       ),
       new FileCopyRequest(
-        dependencies.CombinePath(templatesBinPath, arg2: "publish.sh"),
-        dependencies.CombinePath(ciBinPath, arg2: "publish.sh")
+        dependencies.CombinePath(templatesBinPath, suffix: "publish.sh"),
+        dependencies.CombinePath(ciBinPath, suffix: "publish.sh")
       ),
       new FileCopyRequest(
-        dependencies.CombinePath(templatesBinPath, arg2: "validate.sh"),
-        dependencies.CombinePath(ciBinPath, arg2: "validate.sh")
+        dependencies.CombinePath(templatesBinPath, suffix: "validate.sh"),
+        dependencies.CombinePath(ciBinPath, suffix: "validate.sh")
       )
     };
   }
@@ -65,18 +67,23 @@ public static class TemplateInitHandling
   }
 
 
-  public static async Task<Result<TemplateInitResult>> TryHandleRequest(CommandDependencies dependencies,
+  public static async Task<Result<TemplateInitResult>> TryHandleRequest(
+    ICommandDependencies dependencies,
     TemplateInitRequest request)
   {
-    dependencies.StandardOutWriteLine(obj: "Initializing project...\n");
+    dependencies.StandardOutWriteLine(text: "Initializing project...\n");
+
     return await
-      (await (await Validation.ValidateRequestExecution(dependencies, request)
+      (await (await Validation
+        .ValidateRequestExecution(dependencies, request)
         .TapFailure(
           exception => dependencies.StandardOutWriteLine(
             $"Request cannot be completed.\nError: {exception.GetType()}\nMessage: {exception.Message}"
           )
-        ).BindAsync(
-          async context => (await dependencies.TryAddCiceeLocalToolAsync(context.ProjectRoot)).Map(_ => context)
+        )
+        .BindAsync(
+          async context => (await dependencies.TryAddCiceeLocalToolAsync(context.ProjectRoot))
+            .Map(_ => context)
             .TapFailure(
               exception => dependencies.StandardErrorWriteLine(
                 $"Failed to install CICEE as a .NET local tool.\nError: {exception.GetType()}\nMessage: {exception.Message}"
@@ -91,14 +98,16 @@ public static class TemplateInitHandling
             GetFiles(dependencies, validatedRequest),
             GetTemplateValues(request),
             validatedRequest.OverwriteFiles
-          )).TapFailure(
+          ))
+          .TapFailure(
             exception => dependencies.StandardOutWriteLine(
               $"Failed to write files.\nError: {exception.GetType()}\nMessage: {exception.Message}"
             )
-          ).TapSuccess(
+          )
+          .TapSuccess(
             results =>
             {
-              dependencies.StandardOutWriteLine(obj: "Initialization complete.");
+              dependencies.StandardOutWriteLine(text: "Initialization complete.");
               dependencies.StandardOutWriteAsLine(
                 new[]
                 {
@@ -107,7 +116,7 @@ public static class TemplateInitHandling
                 }
               );
               dependencies.StandardOutWriteLine(string.Empty);
-              dependencies.StandardOutWriteLine(obj: "Files:");
+              dependencies.StandardOutWriteLine(text: "Files:");
               foreach (FileCopyResult result in results)
               {
                 dependencies.StandardOutWriteAsLine(
@@ -121,12 +130,13 @@ public static class TemplateInitHandling
                 );
               }
             }
-          ).Map(_ => new TemplateInitResult(validatedRequest.ProjectRoot, validatedRequest.OverwriteFiles))
+          )
+          .Map(_ => new TemplateInitResult(validatedRequest.ProjectRoot, validatedRequest.OverwriteFiles))
           .TapSuccess(result => DisplayNextSteps(dependencies, result))
       );
   }
 
-  private static void DisplayNextSteps(CommandDependencies dependencies, TemplateInitResult initResult)
+  private static void DisplayNextSteps(ICommandDependencies dependencies, TemplateInitResult initResult)
   {
     string ciPath = dependencies.CombinePath(initResult.ProjectRoot, Conventions.CiDirectoryName);
     string ciBinPath = dependencies.CombinePath(ciPath, Conventions.CiBinDirectoryName);
@@ -207,6 +217,7 @@ Next steps:
 ";
 
     dependencies.StandardOutWriteLine(nextSteps);
+
     return;
 
     void WriteColorizedNode(ConsoleColor titleColor, string title, string description)

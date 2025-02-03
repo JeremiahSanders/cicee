@@ -11,7 +11,7 @@ namespace Cicee.Commands.Init.Repository;
 
 public static class RepositoryEntrypoint
 {
-  public static async Task<Result<RepositoryResult>> TryHandleAsync(CommandDependencies dependencies,
+  public static async Task<Result<RepositoryResult>> TryHandleAsync(ICommandDependencies dependencies,
     string projectRoot, string? image, bool force, bool initCiLib, LibraryShellTemplate? shell)
   {
     return await (await InitEntrypoint.TryHandleAsync(dependencies, projectRoot, image, force)).BindAsync(
@@ -29,7 +29,7 @@ public static class RepositoryEntrypoint
     );
   }
 
-  public static async Task<int> HandleAsync(CommandDependencies dependencies, string projectRoot, string? image,
+  public static async Task<int> HandleAsync(ICommandDependencies dependencies, string projectRoot, string? image,
     bool force, bool initCiLib, LibraryShellTemplate? shell)
   {
     return (await TryHandleAsync(dependencies, projectRoot, image, force, initCiLib, shell)).ToExitCode();

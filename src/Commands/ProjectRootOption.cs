@@ -28,12 +28,12 @@ internal static class ProjectRootOption
   }
 
 
-  public static Option<string> Create(CommandDependencies dependencies)
+  public static Option<string> Create(ICommandDependencies dependencies)
   {
     return Of(() => InferProjectRoot(dependencies));
   }
 
-  public static Option<string?> CreateOptional(CommandDependencies dependencies)
+  public static Option<string?> CreateOptional(ICommandDependencies dependencies)
   {
     return new Option<string?>(CreateAliases(), () => InferProjectRoot(dependencies), Description)
     {
@@ -41,16 +41,19 @@ internal static class ProjectRootOption
     };
   }
 
-  private static string InferProjectRoot(CommandDependencies dependencies)
+  private static string InferProjectRoot(ICommandDependencies dependencies)
   {
-    return ProjectMetadataLoader.InferProjectMetadataPath(
+    return ProjectMetadataLoader
+      .InferProjectMetadataPath(
         dependencies.EnsureDirectoryExists,
         dependencies.EnsureFileExists,
         dependencies.TryLoadFileString,
         dependencies.CombinePath,
         dependencies.TryGetParentDirectory,
         dependencies.TryGetCurrentDirectory
-      ).Bind(dependencies.TryGetParentDirectory).BindFailure(_ => dependencies.TryGetCurrentDirectory())
+      )
+      .Bind(dependencies.TryGetParentDirectory)
+      .BindFailure(_ => dependencies.TryGetCurrentDirectory())
       .IfFail(string.Empty);
   }
 }

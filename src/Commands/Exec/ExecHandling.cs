@@ -10,9 +10,9 @@ namespace Cicee.Commands.Exec;
 
 public class ExecHandler
 {
-  private readonly CommandDependencies _dependencies;
+  private readonly ICommandDependencies _dependencies;
 
-  public ExecHandler(CommandDependencies dependencies)
+  public ExecHandler(ICommandDependencies dependencies)
   {
     _dependencies = dependencies;
   }
@@ -22,7 +22,7 @@ public class ExecHandler
     return HandleAsync(_dependencies, request);
   }
 
-  public static async Task<Result<ExecResult>> HandleAsync(CommandDependencies dependencies, ExecRequest request)
+  public static async Task<Result<ExecResult>> HandleAsync(ICommandDependencies dependencies, ExecRequest request)
   {
     DisplayRequest(dependencies, request);
 
@@ -33,15 +33,16 @@ public class ExecHandler
       .BindAsync(execContext => TryExecute(dependencies, execContext))).Map(context => new ExecResult(request));
   }
 
-  private static void DisplayRequest(CommandDependencies dependencies, ExecRequest request)
+  private static void DisplayRequest(ICommandDependencies dependencies, ExecRequest request)
   {
-    dependencies.StandardOutWriteLine(obj: "Beginning exec...\n");
+    dependencies.StandardOutWriteLine(text: "Beginning exec...\n");
     dependencies.StandardOutWriteLine($"Project root: {request.ProjectRoot}");
     dependencies.StandardOutWriteLine($"Entrypoint  : {request.Entrypoint}");
     dependencies.StandardOutWriteLine($"Command     : {request.Command}");
   }
 
-  private static Task<Result<ExecRequestContext>> TryExecute(CommandDependencies dependencies,
+  private static Task<Result<ExecRequestContext>> TryExecute(
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext)
   {
     return execRequestContext.Harness is ExecInvocationHarness.Direct ? HandleDirectAsync() : HandleScriptAsync();

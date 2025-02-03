@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -13,13 +12,12 @@ namespace Cicee.Commands.Exec.Handling;
 
 public static class DirectHarness
 {
-  
   /// <summary>
-  ///   Executes <see cref="Cicee.Dependencies.CommandDependencies.LogDebug" /> when
+  ///   Executes <see cref="Cicee.Dependencies.CommandDependenciesExtensions.LogDebug" /> when
   ///   <see cref="ExecRequestContext.WorkflowQuiet" /> is <c>false</c>.
   /// </summary>
   private static void MaybeLogDebug(
-    this CommandDependencies dependencies,
+    this ICommandDependencies dependencies,
     ExecRequestContext context,
     string message,
     ConsoleColor? color = null)
@@ -31,7 +29,7 @@ public static class DirectHarness
   }
 
   public static Task<ExecRequestContext> InvokeDockerCommandsAsync(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -59,7 +57,7 @@ public static class DirectHarness
   }
 
   private static Task<ExecRequestContext> Arrange(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -97,7 +95,7 @@ public static class DirectHarness
   }
 
   private static async Task<ExecRequestContext> Act(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext)
   {
     return await ExecuteCommandRequiringSuccess(
@@ -108,7 +106,7 @@ public static class DirectHarness
   }
 
   private static async Task<ExecRequestContext> Cleanup(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext,
     Exception? exception = null
   )
@@ -127,13 +125,15 @@ public static class DirectHarness
     return exception != null ? Prelude.raise<ExecRequestContext>(exception) : composeDownResult;
   }
 
-  private static ProcessStartInfo DockerCommand(
+  private static ProcessExecRequest DockerCommand(
     ExecRequestContext context,
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     string command)
   {
-    ProcessStartInfo info = new(HandlingConstants.DockerCommand, command)
+    ProcessExecRequest info = new()
     {
+      FileName = HandlingConstants.DockerCommand,
+      Arguments = command,
       WorkingDirectory = context.ProjectRoot,
       UseShellExecute = false,
       Environment =
@@ -146,7 +146,7 @@ public static class DirectHarness
 
     return info;
 
-    ProcessStartInfo ApplyExecEnvironment(ProcessStartInfo initialInfo)
+    ProcessExecRequest ApplyExecEnvironment(ProcessExecRequest initialInfo)
     {
       IReadOnlyDictionary<string, string> execEnvironment = IoEnvironment.GetExecEnvironment(
         dependencies,
@@ -162,8 +162,8 @@ public static class DirectHarness
     }
   }
 
-  private static ProcessStartInfo DockerBuild(
-    CommandDependencies dependencies,
+  private static ProcessExecRequest DockerBuild(
+    ICommandDependencies dependencies,
     ExecRequestContext context,
     string verifiedCiFilePath,
     string verifiedCiDirectory,
@@ -181,8 +181,8 @@ public static class DirectHarness
     );
   }
 
-  private static ProcessStartInfo DockerComposePull(
-    CommandDependencies dependencies,
+  private static ProcessExecRequest DockerComposePull(
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -216,8 +216,8 @@ __pull_dependencies() {
     );
   }
 
-  private static ProcessStartInfo DockerComposeUp(
-    CommandDependencies dependencies,
+  private static ProcessExecRequest DockerComposeUp(
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -249,8 +249,8 @@ __pull_dependencies() {
     );
   }
 
-  private static ProcessStartInfo DockerCiImageRemove(
-    CommandDependencies dependencies,
+  private static ProcessExecRequest DockerCiImageRemove(
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -261,8 +261,8 @@ __pull_dependencies() {
     );
   }
 
-  private static ProcessStartInfo DockerComposeDown(
-    CommandDependencies dependencies,
+  private static ProcessExecRequest DockerComposeDown(
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -292,12 +292,12 @@ __pull_dependencies() {
   }
 
   private static async Task<ExecRequestContext> ExecuteCommandRequiringSuccess(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext,
-    Func<CommandDependencies, ExecRequestContext, ProcessStartInfo> creatorFunc
+    Func<ICommandDependencies, ExecRequestContext, ProcessExecRequest> creatorFunc
   )
   {
-    ProcessStartInfo processStartInfo = creatorFunc(dependencies, execRequestContext);
+    ProcessExecRequest processStartInfo = creatorFunc(dependencies, execRequestContext);
     dependencies.MaybeLogDebug(
       execRequestContext,
       $"Preparing to execute: {processStartInfo.FileName} {processStartInfo.Arguments}"

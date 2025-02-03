@@ -128,7 +128,7 @@ public static class ProcessHelpers
   ///   Arguments which will be passed to <c>bash</c>, in the form of: <c>-c \"${ARGUMENTS}\"</c>
   /// </param>
   /// <returns></returns>
-  public static Result<ProcessStartInfo> TryCreateBashProcessStartInfo(
+  public static Result<ProcessExecRequest> TryCreateBashProcessStartInfo(
     IReadOnlyDictionary<string, string> requiredEnvironment,
     IReadOnlyDictionary<string, string> ambientEnvironment,
     string arguments)
@@ -140,7 +140,10 @@ public static class ProcessHelpers
       .Map(
         validatedProcessArguments =>
         {
-          ProcessStartInfo startInfo = new(bashPath, validatedProcessArguments);
+          ProcessExecRequest startInfo = new()
+          {
+            FileName = bashPath, Arguments = validatedProcessArguments
+          };
           foreach (KeyValuePair<string, string> keyValuePair in ambientEnvironment)
           {
             startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;

@@ -85,7 +85,7 @@ public static class ExecCommand
     };
   }
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectRoot = ProjectRootOption.Create(dependencies);
     Option<string> serviceCommand = ServiceCommandOption();

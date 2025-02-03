@@ -25,30 +25,41 @@ public static class ProjectMetadataOption
     };
   }
 
-  public static LanguageExt.Option<string> GetDefaultMetadataPathProvider(CommandDependencies dependencies)
+  public static LanguageExt.Option<string> GetDefaultMetadataPathProvider(ICommandDependencies dependencies)
   {
-    return ProjectMetadataLoader.InferProjectMetadataPath(
-      dependencies.EnsureDirectoryExists,
-      dependencies.EnsureFileExists,
-      dependencies.TryLoadFileString,
-      dependencies.CombinePath,
-      dependencies.TryGetParentDirectory,
-      dependencies.TryGetCurrentDirectory
-    ).Match(Prelude.Some, _ => Prelude.None).BiBind(Prelude.Some, GetDefaultFileName);
+    return ProjectMetadataLoader
+      .InferProjectMetadataPath(
+        dependencies.EnsureDirectoryExists,
+        dependencies.EnsureFileExists,
+        dependencies.TryLoadFileString,
+        dependencies.CombinePath,
+        dependencies.TryGetParentDirectory,
+        dependencies.TryGetCurrentDirectory
+      )
+      .Match(Prelude.Some, _ => Prelude.None)
+      .BiBind(Prelude.Some, GetDefaultFileName);
 
     Option<string> GetDefaultFileName()
     {
-      return dependencies.TryGetCurrentDirectory().Map(
-        currentDirectory => ProjectMetadataLoader.CreateDefaultMetadataFileName(
-          dependencies.CombinePath,
-          currentDirectory
+      return dependencies
+        .TryGetCurrentDirectory()
+        .Map(
+          currentDirectory => ProjectMetadataLoader.CreateDefaultMetadataFileName(
+            dependencies.CombinePath,
+            currentDirectory
+          )
         )
-      ).Map(Prelude.Some).IfFail(Prelude.None);
+        .Map(Prelude.Some)
+        .IfFail(Prelude.None);
     }
   }
 
-  public static System.CommandLine.Option<string> Create(CommandDependencies dependencies, bool isRequired = true)
+  public static System.CommandLine.Option<string> Create(ICommandDependencies dependencies, bool isRequired = true)
   {
-    return Of(() => GetDefaultMetadataPathProvider(dependencies).IfNone(string.Empty), isRequired);
+    return Of(
+      () => GetDefaultMetadataPathProvider(dependencies)
+        .IfNone(string.Empty),
+      isRequired
+    );
   }
 }

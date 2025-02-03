@@ -39,7 +39,7 @@ public static class RepositoryCommand
     };
   }
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectRoot = ProjectRootOption.Create(dependencies);
     Option<string?> image = ImageOption();

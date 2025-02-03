@@ -13,19 +13,24 @@ public static class MetaCiEnvVarAddHandling
 {
   private static bool DoesNotContainVariable(ProjectMetadata metadata, ProjectEnvironmentVariable variable)
   {
-    return !metadata.CiEnvironment.Variables.Select(ciVariable => ciVariable.Name.ToUpperInvariant())
+    return !metadata
+      .CiEnvironment.Variables.Select(ciVariable => ciVariable.Name.ToUpperInvariant())
       .Contains(variable.Name.ToUpperInvariant());
   }
 
   public static async Task<Result<ProjectEnvironmentVariable[]>> MetaCiEnvVarAddRequest(
-    CommandDependencies dependencies, string projectMetadataPath, ProjectEnvironmentVariable variable,
+    ICommandDependencies dependencies,
+    string projectMetadataPath,
+    ProjectEnvironmentVariable variable,
     bool isDryRun = false)
   {
     return await ProjectMetadataLoader
-      .TryLoadFromFile(dependencies.EnsureFileExists, dependencies.TryLoadFileString, projectMetadataPath).Filter(
+      .TryLoadFromFile(dependencies.EnsureFileExists, dependencies.TryLoadFileString, projectMetadataPath)
+      .Filter(
         metadata => DoesNotContainVariable(metadata, variable),
         _ => new ExecutionException($"Variable \"{variable.Name}\" already exists.", exitCode: 1)
-      ).BindAsync(
+      )
+      .BindAsync(
         async metadata =>
         {
           ProjectEnvironmentVariable[] newVariables =
@@ -33,7 +38,10 @@ public static class MetaCiEnvVarAddHandling
             variable
           };
           ProjectEnvironmentVariable[] updatedVariables =
-            metadata.CiEnvironment.Variables.Append(newVariables).ToArray();
+            metadata
+              .CiEnvironment.Variables.Append(newVariables)
+              .ToArray();
+
           return isDryRun
             ? new Result<ProjectEnvironmentVariable[]>(updatedVariables)
             : await ProjectMetadataManipulation.UpdateVariablesInMetadata(

@@ -49,8 +49,101 @@ public record CommandDependencies(
   Func<Result<string>> TryGetCurrentDirectory,
   Func<string, Result<string>> TryGetParentDirectory,
   Action<ConsoleColor?, string> StandardOutWrite
-)
+) : ICommandDependencies
 {
+  Result<string> ICommandDependencies.TryLoadFileString(string filePath)
+  {
+    return TryLoadFileString(filePath);
+  }
+
+  Task<Result<ProcessExecResult>> ICommandDependencies.ProcessExecutor(ProcessExecRequest request)
+  {
+    return ProcessExecutor(request.ToProcessStartInfo());
+  }
+
+  string ICommandDependencies.GetLibraryRootPath()
+  {
+    return GetLibraryRootPath();
+  }
+
+  Result<FileCopyRequest> ICommandDependencies.CopyTemplateToPath(
+    FileCopyRequest request,
+    IReadOnlyDictionary<string, string> templateParameters)
+  {
+    return CopyTemplateToPath(request, templateParameters);
+  }
+
+  Result<bool> ICommandDependencies.DoesFileExist(string filePath)
+  {
+    return DoesFileExist(filePath);
+  }
+
+  string ICommandDependencies.GetInitTemplatesDirectoryPath()
+  {
+    return GetInitTemplatesDirectoryPath();
+  }
+
+  string ICommandDependencies.GetFileName(string path)
+  {
+    return GetFileName(path);
+  }
+
+  Task<Result<(string FileName, string Content)>> ICommandDependencies.TryWriteFileStringAsync(
+    (string FileName, string Content) file)
+  {
+    return TryWriteFileStringAsync(file);
+  }
+
+  Task<Result<DirectoryCopyResult>> ICommandDependencies.TryCopyDirectoryAsync(DirectoryCopyRequest request)
+  {
+    return TryCopyDirectoryAsync(request);
+  }
+
+  Result<string> ICommandDependencies.TryGetCurrentDirectory()
+  {
+    return TryGetCurrentDirectory();
+  }
+
+  Result<string> ICommandDependencies.TryGetParentDirectory(string path)
+  {
+    return TryGetParentDirectory(path);
+  }
+
+  void ICommandDependencies.StandardOutWrite(ConsoleColor? color, string text)
+  {
+    StandardOutWrite(color, text);
+  }
+
+  string ICommandDependencies.CombinePath(string prefix, string suffix)
+  {
+    return CombinePath(prefix, suffix);
+  }
+
+  Result<string> ICommandDependencies.EnsureDirectoryExists(string path)
+  {
+    return EnsureDirectoryExists(path);
+  }
+
+  Result<string> ICommandDependencies.EnsureFileExists(string filePath)
+  {
+    return EnsureFileExists(filePath);
+  }
+
+  IReadOnlyDictionary<string, string> ICommandDependencies.GetEnvironmentVariables()
+  {
+    return GetEnvironmentVariables();
+  }
+
+  void ICommandDependencies.StandardOutWriteLine(string text)
+  {
+    StandardOutWriteLine(text);
+  }
+
+  void ICommandDependencies.StandardErrorWriteLine(string text)
+  {
+    StandardErrorWriteLine(text);
+  }
+
   /// <summary>
   ///   Initializes a new instance of <see cref="CommandDependencies" /> using the default environment providers.
   /// </summary>
@@ -93,30 +186,6 @@ public record CommandDependencies(
 
         Console.Out.Write(value);
         Console.ResetColor();
-      }
-    );
-  }
-
-  public void StandardOutWriteAll(IEnumerable<(ConsoleColor? OptionalColor, string Value)> items)
-  {
-    foreach ((ConsoleColor? OptionalColor, string Value) tuple in items)
-    {
-      StandardOutWrite(tuple.OptionalColor, tuple.Value);
-    }
-  }
-
-  public void StandardOutWriteAsLine(IEnumerable<(ConsoleColor? OptionalColor, string Value)> items)
-  {
-    StandardOutWriteAll(items);
-    StandardOutWrite(arg1: null, Environment.NewLine);
-  }
-
-  public void LogDebug(string message, ConsoleColor? color = null)
-  {
-    StandardOutWriteAsLine(
-      new[]
-      {
-        ((ConsoleColor?)(color ?? ConsoleColor.Magenta), message)
       }
     );
   }

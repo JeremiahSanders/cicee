@@ -9,7 +9,7 @@ public static class MetaCiEnvVarUpdateCommand
   public const string CommandName = "update";
   public const string CommandDescription = "Modifies an existing project CI environment variable.";
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
     Option<string> name = VariablesOptions.CreateNameRequired();
@@ -44,6 +44,7 @@ public static class MetaCiEnvVarUpdateCommand
     const string optionName = "--secret";
     const string optionShort = "-s";
     const string optionDescription = "Is this environment variable secret?";
+
     return new Option<bool?>(
       new[]
       {
@@ -60,6 +61,7 @@ public static class MetaCiEnvVarUpdateCommand
     const string optionName = "--required";
     const string optionShort = "-r";
     const string optionDescription = "Is this environment variable required?";
+
     return new Option<bool?>(
       new[]
       {
@@ -76,6 +78,7 @@ public static class MetaCiEnvVarUpdateCommand
     const string optionName = "--description";
     const string optionShort = "-d";
     const string optionDescription = "Environment variable description.";
+
     return new Option<string?>(
       new[]
       {

@@ -17,7 +17,7 @@ public static class TemplateLibEntrypoint
   /// <param name="shell">A library shell type.</param>
   /// <param name="force">Should we forcibly overwrite existing files?</param>
   /// <returns>An asynchronous exit code.</returns>
-  public static async Task<int> HandleAsync(CommandDependencies dependencies, string projectRoot,
+  public static async Task<int> HandleAsync(ICommandDependencies dependencies, string projectRoot,
     LibraryShellTemplate? shell, bool force)
   {
     return (await TryHandleAsync(dependencies, projectRoot, shell, force)).ToExitCode();
@@ -31,7 +31,7 @@ public static class TemplateLibEntrypoint
   /// <param name="shell">A library shell type.</param>
   /// <param name="force">Should we forcibly overwrite existing files?</param>
   /// <returns>An asynchronous <see cref="Result{A}" />.</returns>
-  public static async Task<Result<TemplateLibResult>> TryHandleAsync(CommandDependencies dependencies,
+  public static async Task<Result<TemplateLibResult>> TryHandleAsync(ICommandDependencies dependencies,
     string projectRoot, LibraryShellTemplate? shell, bool force)
   {
     return await new Result<TemplateLibRequest>(new TemplateLibRequest(projectRoot, shell, force)).BindAsync(

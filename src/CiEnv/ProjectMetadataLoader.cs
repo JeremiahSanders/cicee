@@ -25,94 +25,114 @@ public static class ProjectMetadataLoader
   }
 
   public static Result<(string FilePath, ProjectMetadata ProjectMetadata)> TryFindProjectMetadata(
-    Func<string, Result<string>> ensureDirectoryExists, Func<string, Result<string>> ensureFileExists,
-    Func<string, Result<string>> tryLoadFileString, Func<string, string, string> combinePath, string projectRoot)
+    Func<string, Result<string>> ensureDirectoryExists,
+    Func<string, Result<string>> ensureFileExists,
+    Func<string, Result<string>> tryLoadFileString,
+    Func<string, string, string> combinePath,
+    string projectRoot)
   {
-    return ensureDirectoryExists(projectRoot).Bind(
-      _ => RelativeProjectMetadataNames.Fold(
-        new Result<(string FilePath, ProjectMetadata ProjectMetadata)>(
-          new BadRequestException(
-            $"Failed to find a suitable metadata file. Add a {DefaultMetadataFileName} file in the project root."
-          )
-        ),
-        (lastResult, filePath) => lastResult.BindFailure(
-          _ => TryLoadFromFile(ensureFileExists, tryLoadFileString, combinePath(projectRoot, filePath))
-            .Map(metadata => (combinePath(projectRoot, filePath), metadata))
-        )
-      )
-    );
-  }
-
-  public static Result<string> InferProjectMetadataPath(Func<string, Result<string>> ensureDirectoryExists,
-    Func<string, Result<string>> ensureFileExists, Func<string, Result<string>> tryLoadFileString,
-    Func<string, string, string> combinePath, Func<string, Result<string>> tryGetParentDirectory,
-    Func<Result<string>> tryGetCurrentDirectory)
-  {
-    return tryGetCurrentDirectory().Bind(
-      initialDirectory => TryInferProjectMetadataFromDirectories(
-        ensureDirectoryExists,
-        ensureFileExists,
-        tryLoadFileString,
-        combinePath,
-        tryGetParentDirectory,
-        initialDirectory
-      )
-    );
-  }
-
-  public static Result<string> TryInferProjectMetadataFromDirectories(
-    Func<string, Result<string>> ensureDirectoryExists, Func<string, Result<string>> ensureFileExists,
-    Func<string, Result<string>> tryLoadFileString, Func<string, string, string> combinePath,
-    Func<string, Result<string>> tryGetParentDirectory, string initialDirectory)
-  {
-    return TryFindProjectMetadata(
-      ensureDirectoryExists,
-      ensureFileExists,
-      tryLoadFileString,
-      combinePath,
-      initialDirectory
-    ).Map(tuple => tuple.FilePath).Match(
-      value => new Result<string>(value),
-      _ => tryGetParentDirectory(initialDirectory)
-        .Bind(
-          parentDirectory => parentDirectory == initialDirectory
-            ? new Result<string>(
-              new InvalidOperationException(message: "Metadata not found and no parent directories available.")
-            )
-            : new Result<string>(parentDirectory)
-        ).Bind(
-          parentDirectory => TryInferProjectMetadataFromDirectories(
-            ensureDirectoryExists,
-            ensureFileExists,
-            tryLoadFileString,
-            combinePath,
-            tryGetParentDirectory,
-            parentDirectory
-          )
-        )
-    );
-  }
-
-  public static Result<ProjectMetadata> TryLoadFromFile(Func<string, Result<string>> ensureFileExists,
-    Func<string, Result<string>> tryLoadFileString, string filePath)
-  {
-    return ensureFileExists(filePath)
+    return ensureDirectoryExists(projectRoot)
       .Bind(
-        validatedFile => tryLoadFileString(validatedFile).MapFailure(
-          loadingFailure => new BadRequestException(message: "Failed to load project metadata.", loadingFailure)
-        )
-      ).Bind(
-        content => Json.TryDeserialize<ProjectMetadata>(content).MapFailure(
-          deserializationFailure => new BadRequestException(
-            message: "Failed to deserialize project metadata.",
-            deserializationFailure
+        _ => RelativeProjectMetadataNames.Fold(
+          new Result<(string FilePath, ProjectMetadata ProjectMetadata)>(
+            new BadRequestException(
+              $"Failed to find a suitable metadata file. Add a {DefaultMetadataFileName} file in the project root."
+            )
+          ),
+          (lastResult, filePath) => lastResult.BindFailure(
+            _ => TryLoadFromFile(ensureFileExists, tryLoadFileString, combinePath(projectRoot, filePath))
+              .Map(metadata => (combinePath(projectRoot, filePath), metadata))
           )
         )
       );
   }
 
+  public static Result<string> InferProjectMetadataPath(
+    Func<string, Result<string>> ensureDirectoryExists,
+    Func<string, Result<string>> ensureFileExists,
+    Func<string, Result<string>> tryLoadFileString,
+    Func<string, string, string> combinePath,
+    Func<string, Result<string>> tryGetParentDirectory,
+    Func<Result<string>> tryGetCurrentDirectory)
+  {
+    return tryGetCurrentDirectory()
+      .Bind(
+        initialDirectory => TryInferProjectMetadataFromDirectories(
+          ensureDirectoryExists,
+          ensureFileExists,
+          tryLoadFileString,
+          combinePath,
+          tryGetParentDirectory,
+          initialDirectory
+        )
+      );
+  }
 
-  public static ProjectMetadata InferProjectMetadata(CommandDependencies dependencies, string validatedProjectRoot)
+  public static Result<string> TryInferProjectMetadataFromDirectories(
+    Func<string, Result<string>> ensureDirectoryExists,
+    Func<string, Result<string>> ensureFileExists,
+    Func<string, Result<string>> tryLoadFileString,
+    Func<string, string, string> combinePath,
+    Func<string, Result<string>> tryGetParentDirectory,
+    string initialDirectory)
+  {
+    return TryFindProjectMetadata(
+        ensureDirectoryExists,
+        ensureFileExists,
+        tryLoadFileString,
+        combinePath,
+        initialDirectory
+      )
+      .Map(tuple => tuple.FilePath)
+      .Match(
+        value => new Result<string>(value),
+        _ => tryGetParentDirectory(initialDirectory)
+          .Bind(
+            parentDirectory => parentDirectory == initialDirectory
+              ? new Result<string>(
+                new InvalidOperationException(message: "Metadata not found and no parent directories available.")
+              )
+              : new Result<string>(parentDirectory)
+          )
+          .Bind(
+            parentDirectory => TryInferProjectMetadataFromDirectories(
+              ensureDirectoryExists,
+              ensureFileExists,
+              tryLoadFileString,
+              combinePath,
+              tryGetParentDirectory,
+              parentDirectory
+            )
+          )
+      );
+  }
+
+  public static Result<ProjectMetadata> TryLoadFromFile(
+    Func<string, Result<string>> ensureFileExists,
+    Func<string, Result<string>> tryLoadFileString,
+    string filePath)
+  {
+    return ensureFileExists(filePath)
+      .Bind(
+        validatedFile => tryLoadFileString(validatedFile)
+          .MapFailure(
+            loadingFailure => new BadRequestException(message: "Failed to load project metadata.", loadingFailure)
+          )
+      )
+      .Bind(
+        content => Json
+          .TryDeserialize<ProjectMetadata>(content)
+          .MapFailure(
+            deserializationFailure => new BadRequestException(
+              message: "Failed to deserialize project metadata.",
+              deserializationFailure
+            )
+          )
+      );
+  }
+
+
+  public static ProjectMetadata InferProjectMetadata(ICommandDependencies dependencies, string validatedProjectRoot)
   {
     return new ProjectMetadata
     {
@@ -122,13 +142,15 @@ public static class ProjectMetadataLoader
     };
   }
 
-  private static string InferProjectTitle(CommandDependencies dependencies, string validatedProjectRoot)
+  private static string InferProjectTitle(ICommandDependencies dependencies, string validatedProjectRoot)
   {
     return dependencies.GetFileName(validatedProjectRoot);
   }
 
-  private static string InferProjectName(CommandDependencies dependencies, string validatedProjectRoot)
+  private static string InferProjectName(ICommandDependencies dependencies, string validatedProjectRoot)
   {
-    return dependencies.GetFileName(validatedProjectRoot).ToKebabCase();
+    return dependencies
+      .GetFileName(validatedProjectRoot)
+      .ToKebabCase();
   }
 }
