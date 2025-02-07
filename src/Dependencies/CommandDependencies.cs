@@ -38,7 +38,7 @@ public record CommandDependencies(
   Action<string> StandardOutWriteLine,
   Action<string> StandardErrorWriteLine,
   Func<string, Result<string>> TryLoadFileString,
-  Func<ProcessStartInfo, Task<Result<ProcessExecResult>>> ProcessExecutor,
+  Func<ProcessStartInfo, Action<string>?, Task<Result<ProcessExecResult>>> ProcessExecutor,
   Func<string> GetLibraryRootPath,
   Func<FileCopyRequest, IReadOnlyDictionary<string, string>, Result<FileCopyRequest>> CopyTemplateToPath,
   Func<string, Result<bool>> DoesFileExist,
@@ -56,9 +56,9 @@ public record CommandDependencies(
     return TryLoadFileString(filePath);
   }
 
-  Task<Result<ProcessExecResult>> ICommandDependencies.ProcessExecutor(ProcessExecRequest request)
+  Task<Result<ProcessExecResult>> ICommandDependencies.ProcessExecutor(ProcessExecRequest request, Action<string>? debugLogger)
   {
-    return ProcessExecutor(request.ToProcessStartInfo());
+    return ProcessExecutor(request.ToProcessStartInfo(), debugLogger);
   }
 
   string ICommandDependencies.GetLibraryRootPath()
@@ -163,7 +163,7 @@ public record CommandDependencies(
         Console.ResetColor();
       },
       Io.TryLoadFileString,
-      processStartInfo => ProcessHelpers.ExecuteProcessAsync(processStartInfo, debugLogger: null),
+      (processStartInfo, debugLogger) => ProcessHelpers.ExecuteProcessAsync(processStartInfo, debugLogger),
       Io.GetLibraryRootPath,
       Io.CopyTemplateToPath,
       Io.DoesFileExist,

@@ -22,7 +22,7 @@ public static class DependencyHelper
       GetEnvironmentVariables = () => new Dictionary<string, string>(),
       GetInitTemplatesDirectoryPath = () => "/temp/cicee/init/templates",
       GetLibraryRootPath = () => "/cicee/lib",
-      ProcessExecutor = info => new Result<ProcessExecResult>(new ProcessExecResult()).AsTask(),
+      ProcessExecutor = (info, debugLogger) => new Result<ProcessExecResult>(new ProcessExecResult()).AsTask(),
       StandardErrorWriteLine = _ => { },
       StandardOutWriteLine = _ => { },
       TryLoadFileString = path => new Result<string>(new Exception($"Path {path} not arranged.")),

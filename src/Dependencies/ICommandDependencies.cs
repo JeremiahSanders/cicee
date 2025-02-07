@@ -16,7 +16,7 @@ public interface ICommandDependencies
   Result<string> TryLoadFileString(string filePath);
 
   /// <summary>Attempt to invoke a process and await its completion.</summary>
-  Task<Result<ProcessExecResult>> ProcessExecutor(ProcessExecRequest processStartInfo);
+  Task<Result<ProcessExecResult>> ProcessExecutor(ProcessExecRequest processStartInfo, Action<string>? debugLogger = null);
 
   /// <summary>Gets the CICEE assembly's <c>lib</c> content directory path.</summary>
   string GetLibraryRootPath();

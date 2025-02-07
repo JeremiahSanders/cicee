@@ -17,7 +17,7 @@ public static class LibExecEntrypoint
   private const string ProjectMetadata = "PROJECT_METADATA";
   private const string ExecDir = "EXEC_DIR";
 
-  private static Result<ProcessExecRequest> TryCreateProcessStartInfo(
+  private static Result<ProcessExecRequest> TryCreateProcessExecRequest(
     ICommandDependencies dependencies,
     LibExecRequest request)
   {
@@ -97,10 +97,10 @@ public static class LibExecEntrypoint
 
   public static Task<Result<LibExecResponse>> TryHandleAsync(ICommandDependencies dependencies, LibExecRequest request)
   {
-    return TryCreateProcessStartInfo(dependencies, request)
+    return TryCreateProcessExecRequest(dependencies, request)
       .BindAsync(
-        async processStartInfo => (await dependencies.ProcessExecutor(processStartInfo)).Map(
-          processExecResult => new LibExecResponse(processStartInfo, processExecResult)
+        async processExecRequest => (await dependencies.ProcessExecutor(processExecRequest, debugMessage => dependencies.LogDebug(debugMessage, ConsoleColor.DarkGray))).Map(
+          processExecResult => new LibExecResponse(processExecRequest, processExecResult)
           {
             Shell = request.Shell
           }

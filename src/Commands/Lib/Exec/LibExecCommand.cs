@@ -8,8 +8,9 @@ public static class LibExecCommand
 {
   public const string LibExecName = "exec";
 
-  public const string LibExecDescription =
-    "Execute a command within a shell which has the CICEE CI shell library and is initialized for the project environment.";
+  public static string GetDescription(ICommandDependencies dependencies){
+    return $"Execute a command within a shell which has the CICEE CI shell library ({dependencies.GetLibraryRootPath()}) and is initialized for the project environment.";
+  }
 
   private static Option<string> ShellCommandOption()
   {
@@ -32,7 +33,7 @@ public static class LibExecCommand
     Option<string> commandOption = ShellCommandOption();
     Option<string> projectRootOption = ProjectRootOption.Create(dependencies);
     Option<string> metadataOption = ProjectMetadataOption.Create(dependencies);
-    Command command = new(LibExecName, LibExecDescription)
+    Command command = new(LibExecName, GetDescription(dependencies))
     {
       shellOption, commandOption, projectRootOption, metadataOption
     };

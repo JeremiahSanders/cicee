@@ -51,7 +51,7 @@ public class ExecHandler
     {
       return (await ScriptHarness
         .CreateProcessStartInfo(dependencies, execRequestContext)
-        .BindAsync(dependencies.ProcessExecutor)).Map(_ => execRequestContext);
+        .BindAsync(request=> dependencies.ProcessExecutor(request))).Map(_ => execRequestContext);
     }
 
     async Task<Result<ExecRequestContext>> HandleDirectAsync()
