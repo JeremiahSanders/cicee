@@ -10,4 +10,4 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
 SCRIPT_LOCATION="$(dirname "${BASH_SOURCE[0]}")"
 
-"${SCRIPT_LOCATION}/cicee-local.sh" exec --harness direct --project-root "${PROJECT_ROOT}" --command "ci/bin/compose.sh"
+"${SCRIPT_LOCATION}/cicee-local.sh" exec --harness direct --project-root "${PROJECT_ROOT}" --command "ci/bin/compose.sh" --verbosity "Verbose"
