@@ -25,9 +25,10 @@ public static class ProcessHelpers
     // On Windows, 'bash' is provided by WSL. That maintains separate environment variables.
     // We need to use Git Bash, if it exists.
     string programFiles = Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles);
-    if (!string.IsNullOrWhiteSpace(programFiles))
+
+    if (!string.IsNullOrWhiteSpace(programFiles) && IsEnvironmentWindows())
     {
-      // Program Files exists; we must be on Windows.
+      // Program Files is defined and OS appears to be Windows.
       string expectedGitBashPath = Path.Combine(programFiles, path2: "Git", path3: "bin", path4: "bash.exe");
 
       if (File.Exists(expectedGitBashPath))
@@ -50,40 +51,59 @@ public static class ProcessHelpers
     }
 
     return (path, isWsl);
+
+    bool IsEnvironmentWindows()
+    {
+      return Environment.OSVersion.Platform switch
+      {
+        PlatformID.Win32S => true,
+        PlatformID.Win32Windows => true,
+        PlatformID.Win32NT => true,
+        PlatformID.WinCE => true,
+        PlatformID.Unix => false,
+        PlatformID.Xbox => false,
+        PlatformID.MacOSX => false,
+        PlatformID.Other => false,
+        _ => false
+      };
+    }
   }
 
-  public static Task<Result<ProcessExecResult>> ExecuteProcessAsync(ProcessStartInfo processStartInfo,
+  public static Task<Result<ProcessExecResult>> ExecuteProcessAsync(
+    ProcessStartInfo processStartInfo,
     Action<string>? debugLogger = null)
   {
-    return Prelude.TryAsync(
-      async () =>
-      {
-        debugLogger?.Invoke(
-          $"Starting process.\n  Filename: {processStartInfo.FileName}\n  Arguments: {processStartInfo.Arguments}"
-        );
-        Process? process = Process.Start(processStartInfo);
-        if (process == null)
+    return Prelude
+      .TryAsync(
+        async () =>
         {
-          throw new ExecutionException($"Failed to start process {processStartInfo.FileName}", exitCode: 1);
-        }
-
-        debugLogger?.Invoke($"Process filename {processStartInfo.FileName} started with id {process.Id}.");
-        await process.WaitForExitAsync();
-        debugLogger?.Invoke($"Process {process.Id} exited with exit code {process.ExitCode}.");
-        if (process.ExitCode != 0)
-        {
-          throw new ExecutionException(
-            $"{processStartInfo.FileName} returned non-zero exit code: {process.ExitCode}",
-            process.ExitCode
+          debugLogger?.Invoke(
+            $"Starting process.\n  Filename: {processStartInfo.FileName}\n  Arguments: {processStartInfo.Arguments}"
           );
-        }
+          Process? process = Process.Start(processStartInfo);
+          if (process == null)
+          {
+            throw new ExecutionException($"Failed to start process {processStartInfo.FileName}", exitCode: 1);
+          }
 
-        return new ProcessExecResult
-        {
-          ExitCode = process.ExitCode
-        };
-      }
-    ).Try();
+          debugLogger?.Invoke($"Process filename {processStartInfo.FileName} started with id {process.Id}.");
+          await process.WaitForExitAsync();
+          debugLogger?.Invoke($"Process {process.Id} exited with exit code {process.ExitCode}.");
+          if (process.ExitCode != 0)
+          {
+            throw new ExecutionException(
+              $"{processStartInfo.FileName} returned non-zero exit code: {process.ExitCode}",
+              process.ExitCode
+            );
+          }
+
+          return new ProcessExecResult
+          {
+            ExitCode = process.ExitCode
+          };
+        }
+      )
+      .Try();
   }
 
   /// <summary>
@@ -109,27 +129,31 @@ public static class ProcessHelpers
   /// </param>
   /// <returns></returns>
   public static Result<ProcessStartInfo> TryCreateBashProcessStartInfo(
-    IReadOnlyDictionary<string, string> requiredEnvironment, IReadOnlyDictionary<string, string> ambientEnvironment,
+    IReadOnlyDictionary<string, string> requiredEnvironment,
+    IReadOnlyDictionary<string, string> ambientEnvironment,
     string arguments)
   {
     (string bashPath, bool isWslBash) = TryFindBash();
-    return new Result<string>(CreateProcessArguments(isWslBash)).Bind(ValidateArgumentsLength).Map(
-      validatedProcessArguments =>
-      {
-        ProcessStartInfo startInfo = new(bashPath, validatedProcessArguments);
-        foreach (KeyValuePair<string, string> keyValuePair in ambientEnvironment)
-        {
-          startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
-        }
 
-        foreach (KeyValuePair<string, string> keyValuePair in requiredEnvironment)
+    return new Result<string>(CreateProcessArguments(isWslBash))
+      .Bind(ValidateArgumentsLength)
+      .Map(
+        validatedProcessArguments =>
         {
-          startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
-        }
+          ProcessStartInfo startInfo = new(bashPath, validatedProcessArguments);
+          foreach (KeyValuePair<string, string> keyValuePair in ambientEnvironment)
+          {
+            startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
+          }
 
-        return startInfo;
-      }
-    );
+          foreach (KeyValuePair<string, string> keyValuePair in requiredEnvironment)
+          {
+            startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
+          }
+
+          return startInfo;
+        }
+      );
 
     string CreateProcessArguments(bool isWsl)
     {
@@ -137,7 +161,8 @@ public static class ProcessHelpers
       string environmentVariableAssignments = isWsl
         ? string.Join(
           separator: ' ',
-          requiredEnvironment.Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
+          requiredEnvironment
+            .Where(kvp => !string.IsNullOrWhiteSpace(kvp.Value))
             .Select(kvp => $"{kvp.Key}=\\\"{kvp.Value}\\\"")
         ) + " "
         : string.Empty;
@@ -150,6 +175,7 @@ public static class ProcessHelpers
   {
     // Maximum argument length reference: https://docs.microsoft.com/en-us/dotnet/api/system.diagnostics.processstartinfo.arguments?view=net-5.0
     const int inclusiveMaxArgumentsLength = 32698;
+
     return processArguments.Length > inclusiveMaxArgumentsLength
       ? new Result<string>(
         new ArgumentException(

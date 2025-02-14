@@ -12,7 +12,7 @@
   <PropertyGroup>
     <Authors>jds</Authors>
     <Company/>
-    <Copyright>Copyright (c) 2024 Jeremiah Sanders</Copyright>
+    <Copyright>Copyright (c) 2025 Jeremiah Sanders</Copyright>
     <Description>Continuous Integration Containerized Execution Environment</Description>
     <PackageId>cicee</PackageId>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
