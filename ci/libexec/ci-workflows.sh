@@ -65,12 +65,6 @@ ci-compose() {
       --output "${BUILD_UNPACKAGED_DIST}/net6.0" \
       -p:Version="${PROJECT_VERSION_DIST}" \
       --framework net6.0 &&
-    printf "\nBeginning 'dotnet publish' targeting .NET 7...\n\n" &&
-    dotnet publish "${PROJECT_ROOT}/src" \
-      --configuration Release \
-      --output "${BUILD_UNPACKAGED_DIST}/net7.0" \
-      -p:Version="${PROJECT_VERSION_DIST}" \
-      --framework net7.0 &&
     printf "\nBeginning 'dotnet publish' targeting .NET 8...\n\n" &&
     dotnet publish "${PROJECT_ROOT}/src" \
       --configuration Release \
