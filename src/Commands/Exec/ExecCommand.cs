@@ -59,7 +59,7 @@ public static class ExecCommand
         "--harness",
         "-h"
       },
-      () => ExecInvocationHarness.Script,
+      () => ExecInvocationHarness.Direct,
       description:
       "Invocation harness. Determines if CICEE directly invokes Docker commands or uses a shell script to invoke Docker commands."
     )
