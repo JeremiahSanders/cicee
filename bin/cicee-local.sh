@@ -8,6 +8,7 @@ set -o pipefail # Fail pipelines if any command errors, not just the last one.
 
 # Context
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && cd .. && pwd)"
+LOCAL_CICEE_TEMP_DIR="${TMPDIR}/cicee-entrypoint"
 
 function __generate_cicee_binary(){
   targetFramework="net8.0"
@@ -15,10 +16,10 @@ function __generate_cicee_binary(){
   #   NOTE: Previous implementations used `dotnet run -- lib`. This stopped working.
   #     When using `dotnet run` the raw output to STDOUT is prefixed with invisible control characters. Those characters trigger file not found responses from `source <path>`.
   #     However, if the DLL is executed with `dotnet <dll>` then the output of STDOUT lacks the control characters and it can be loaded with `source`.
-  rm -rf "${PROJECT_ROOT}/build/cicee-entrypoint" &&
-    mkdir -p "${PROJECT_ROOT}/build/cicee-entrypoint" &&
-    dotnet publish "${PROJECT_ROOT}/src" --framework "${targetFramework}" --output "${PROJECT_ROOT}/build/cicee-entrypoint"
+  rm -rf "${LOCAL_CICEE_TEMP_DIR}" &&
+    mkdir -p "${LOCAL_CICEE_TEMP_DIR}" &&
+    dotnet publish "${PROJECT_ROOT}/src" --framework "${targetFramework}" --output "${LOCAL_CICEE_TEMP_DIR}"
 }
 
 # Now run 'exec' using the Direct harness
-__generate_cicee_binary && dotnet "${PROJECT_ROOT}/build/cicee-entrypoint/cicee.dll" $@
+__generate_cicee_binary && dotnet "${LOCAL_CICEE_TEMP_DIR}/cicee.dll" $@
