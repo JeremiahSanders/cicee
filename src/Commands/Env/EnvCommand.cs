@@ -8,7 +8,7 @@ namespace Cicee.Commands.Env;
 
 public class EnvCommand
 {
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     return new Command(name: "env", description: "Commands which interact with the current environment.")
     {

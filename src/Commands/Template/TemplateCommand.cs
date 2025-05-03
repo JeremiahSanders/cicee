@@ -8,7 +8,7 @@ namespace Cicee.Commands.Template;
 
 public static class TemplateCommand
 {
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Command command = new(
       name: "template",
@@ -16,6 +16,7 @@ public static class TemplateCommand
     );
     command.AddCommand(TemplateInitCommand.Create(dependencies));
     command.AddCommand(TemplateLibCommand.Create(dependencies));
+
     return command;
   }
 }

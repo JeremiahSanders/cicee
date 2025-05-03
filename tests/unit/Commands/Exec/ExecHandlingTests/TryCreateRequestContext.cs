@@ -17,9 +17,9 @@ public class TryCreateRequestContext
 {
   public static IEnumerable<object[]> GenerateTestCases()
   {
-    string defaultProjectRoot = "/code";
+    const string defaultProjectRoot = "/in-memory-test-case";
     string defaultProjectName = $"name-{Guid.NewGuid():D}";
-    string defaultVersion = $"0.0.0-sha-{Guid.NewGuid().ToString(format: "N").Substring(startIndex: 0, length: 7)}";
+    string defaultVersion = $"0.0.0-sha-{Guid.NewGuid().ToString(format: "N")[..7]}";
     string defaultTitle = $"Title {Guid.NewGuid():D}";
     ProjectMetadata defaultProjectMetadata = new()
     {
@@ -46,20 +46,29 @@ public class TryCreateRequestContext
       }
     };
 
-    Func<string, string, string> combinePath = (path1, path2) => $"{path1}/{path2}";
+    string defaultProjectMetadataPath = CombinePath(defaultProjectRoot, path2: ".project-metadata.json");
+    string defaultCiDockerfilePath = CombinePath(defaultProjectRoot, CombinePath(path1: "ci", path2: "Dockerfile"));
+    string defaultCiDockerComposeProject = CombinePath(
+      defaultProjectRoot,
+      CombinePath(path1: "ci", path2: "docker-compose.project.yml")
+    );
+    string defaultCiDockerComposeDependencies = CombinePath(
+      defaultProjectRoot,
+      CombinePath(path1: "ci", path2: "docker-compose.dependencies.yml")
+    );
+
     CommandDependencies baseDependencies = DependencyHelper.CreateMockDependencies() with
     {
-      CombinePath = combinePath,
-      DoesFileExist = file =>
-      {
-        string projectMetadataPath = combinePath(defaultProjectRoot, arg2: ".project-metadata.json");
-        string ciDockerfilePath = combinePath(defaultProjectRoot, combinePath(arg1: "ci", arg2: "Dockerfile"));
-
-        return file == projectMetadataPath || file == ciDockerfilePath;
-      },
+      CombinePath = CombinePath,
+      DoesFileExist =
+      filePath =>
+        filePath == defaultProjectMetadataPath ||
+        filePath == defaultCiDockerfilePath ||
+        filePath == defaultCiDockerComposeProject ||
+        filePath == defaultCiDockerComposeDependencies,
       TryLoadFileString = file =>
       {
-        string projectMetadataPath = combinePath(defaultProjectRoot, arg2: ".project-metadata.json");
+        string projectMetadataPath = CombinePath(defaultProjectRoot, path2: ".project-metadata.json");
 
         return file == projectMetadataPath
           ? Json.TrySerialize(defaultProjectMetadata)
@@ -79,18 +88,18 @@ public class TryCreateRequestContext
       defaultProjectMetadata,
       baseRequest.Command,
       baseRequest.Entrypoint,
-      combinePath(baseRequest.ProjectRoot, combinePath(arg1: "ci", arg2: "Dockerfile")),
+      CombinePath(baseRequest.ProjectRoot, CombinePath(path1: "ci", path2: "Dockerfile")),
       Image: null,
       ExecInvocationHarness.Script,
       ExecVerbosity.Normal,
-      combinePath(baseRequest.ProjectRoot, arg2: "ci"),
+      CombinePath(baseRequest.ProjectRoot, path2: "ci"),
       new[]
       {
-        combinePath(baseRequest.ProjectRoot, combinePath(arg1: "ci", arg2: "docker-compose.project.yml")),
-        combinePath(baseRequest.ProjectRoot, combinePath(arg1: "ci", arg2: "docker-compose.dependencies.yml")),
-        combinePath(baseDependencies.GetLibraryRootPath(), arg2: "docker-compose.yml"),
-        combinePath(baseDependencies.GetLibraryRootPath(), arg2: "docker-compose.dockerfile.yml"),
-        combinePath(baseRequest.ProjectRoot, combinePath(arg1: "ci", arg2: "docker-compose.project.yml"))
+        CombinePath(baseRequest.ProjectRoot, CombinePath(path1: "ci", path2: "docker-compose.project.yml")),
+        CombinePath(baseRequest.ProjectRoot, CombinePath(path1: "ci", path2: "docker-compose.dependencies.yml")),
+        CombinePath(baseDependencies.GetLibraryRootPath(), path2: "docker-compose.yml"),
+        CombinePath(baseDependencies.GetLibraryRootPath(), path2: "docker-compose.dockerfile.yml"),
+        CombinePath(baseRequest.ProjectRoot, CombinePath(path1: "ci", path2: "docker-compose.project.yml"))
       },
       baseDependencies.CombinePath(baseRequest.ProjectRoot, baseDependencies.CombinePath(arg1: "ci", arg2: "lib")),
       IoContext.CreateCiDockerfileImageTag(defaultProjectMetadata.Name)
@@ -104,6 +113,11 @@ public class TryCreateRequestContext
     {
       TestCase(happyPathDependencies, happyPathRequest, happyPathResult)
     };
+
+    string CombinePath(string path1, string path2)
+    {
+      return $"{path1}/{path2}";
+    }
 
     object[] TestCase(CommandDependencies dependencies, ExecRequest request, Result<ExecRequestContext> expected)
     {

@@ -1,6 +1,8 @@
 using System;
 
-namespace Cicee.Dependencies;
+using Cicee.Dependencies;
+
+namespace Cicee.Edges.Processes;
 
 public static class ProcessExecResultExtensions
 {

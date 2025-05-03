@@ -4,32 +4,37 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 
+using Cicee.Dependencies;
+
 using LanguageExt;
 using LanguageExt.Common;
 
-namespace Cicee.Dependencies;
+namespace Cicee.Edges.Filesystem;
 
 public static class Io
 {
   public static Result<bool> DoesFileExist(string file)
   {
-    return Prelude.Try(() => File.Exists(file)).Try();
+    return Prelude
+      .Try(() => File.Exists(file))
+      .Try();
+  }
+
+  public static Result<bool> DoesDirectoryExist(string directory)
+  {
+    return Prelude
+      .Try(() => Directory.Exists(directory))
+      .Try();
   }
 
   public static Result<string> EnsureDirectoryExists(string directory)
   {
-    return Directory.Exists(directory)
-      ? new Result<string>(directory)
-      : new Result<string>(new DirectoryNotFoundException($"Directory '{directory}' does not exist."));
-  }
-
-  public static Result<string> EnsureFileExists(string file)
-  {
-    return DoesFileExist(file).Bind(
-      exists => exists
-        ? new Result<string>(file)
-        : new Result<string>(new FileNotFoundException($"File '{file}' does not exist.", file))
-    );
+    return DoesDirectoryExist(directory)
+      .Bind(exists =>
+        exists
+          ? new Result<string>(directory)
+          : new Result<string>(new DirectoryNotFoundException($"Directory '{directory}' does not exist."))
+      );
   }
 
   /// <summary>
@@ -50,6 +55,7 @@ public static class Io
     static string WindowsToLinuxPath(string path)
     {
       string[] driveAndPath = path.Split(separator: ":\\");
+
       return $"/{driveAndPath[0].ToLowerInvariant()}/{driveAndPath[1].Replace(oldChar: '\\', newChar: '/')}";
     }
   }
@@ -60,10 +66,12 @@ public static class Io
   public static string GetLibraryRootPath()
   {
     string executionPath = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+
     return Path.Combine(executionPath, path2: "lib");
   }
 
-  public static Result<FileCopyRequest> CopyTemplateToPath(FileCopyRequest copyRequest,
+  public static Result<FileCopyRequest> CopyTemplateToPath(
+    FileCopyRequest copyRequest,
     IReadOnlyDictionary<string, string> templateValues)
   {
     return TryCopyTemplateFile(copyRequest.SourcePath, copyRequest.DestinationPath, templateValues)
@@ -78,17 +86,22 @@ public static class Io
   public static string GetInitTemplatesDirectoryPath()
   {
     string executionPath = Path.GetDirectoryName(Assembly.GetEntryAssembly()!.Location)!;
+
     return Path.Combine(executionPath, path2: "templates", path3: "init");
   }
 
   public static Result<string> TryGetCurrentDirectory()
   {
-    return Prelude.Try(Directory.GetCurrentDirectory).Try();
+    return Prelude
+      .Try(Directory.GetCurrentDirectory)
+      .Try();
   }
 
   public static Result<string> TryLoadFileString(string file)
   {
-    return Prelude.Try(() => File.ReadAllText(file)).Try();
+    return Prelude
+      .Try(() => File.ReadAllText(file))
+      .Try();
   }
 
   public static string PathCombine2(string path1, string path2)
@@ -101,37 +114,42 @@ public static class Io
     return Path.Combine(path1, path2, path3);
   }
 
-  public static Result<(string Source, string Destination)> TryCopyTemplateFile(string source, string destination,
+  public static Result<(string Source, string Destination)> TryCopyTemplateFile(
+    string source,
+    string destination,
     IReadOnlyDictionary<string, string> tokenReplacements)
   {
-    return Prelude.Try(
-      () =>
-      {
-        return Prelude.pipe(
-          source,
-          File.ReadAllText,
-          InterpolateValues,
-          contents =>
-          {
-            CreateDirectoryIfNotExists();
-            File.WriteAllText(destination, contents);
-            return (source, destination);
-          }
-        );
-      }
-    ).Try();
+    return Prelude
+      .Try(() =>
+        {
+          return Prelude.pipe(
+            source,
+            File.ReadAllText,
+            InterpolateValues,
+            contents =>
+            {
+              CreateDirectoryIfNotExists();
+              File.WriteAllText(destination, contents);
+
+              return (source, destination);
+            }
+          );
+        }
+      )
+      .Try();
 
     string InterpolateValues(string content)
     {
-      return tokenReplacements.SelectMany(
-        kvp => new[]
-        {
-          new KeyValuePair<string, string>($"<%= {kvp.Key} %>", kvp.Value),
-          new KeyValuePair<string, string>($"<%={kvp.Key}%>", kvp.Value),
-          new KeyValuePair<string, string>($"<%={kvp.Key} %>", kvp.Value),
-          new KeyValuePair<string, string>($"<%= {kvp.Key}%>", kvp.Value)
-        }
-      ).Fold(content, (latestContent, keyValuePair) => latestContent.Replace(keyValuePair.Key, keyValuePair.Value));
+      return tokenReplacements
+        .SelectMany(kvp => new[]
+          {
+            new KeyValuePair<string, string>($"<%= {kvp.Key} %>", kvp.Value),
+            new KeyValuePair<string, string>($"<%={kvp.Key}%>", kvp.Value),
+            new KeyValuePair<string, string>($"<%={kvp.Key} %>", kvp.Value),
+            new KeyValuePair<string, string>($"<%= {kvp.Key}%>", kvp.Value)
+          }
+        )
+        .Fold(content, (latestContent, keyValuePair) => latestContent.Replace(keyValuePair.Key, keyValuePair.Value));
     }
 
     void CreateDirectoryIfNotExists()
@@ -147,20 +165,24 @@ public static class Io
   public static Task<Result<(string FileName, string Content)>> TryWriteFileStringAsync(
     (string FileName, string Content) tuple)
   {
-    return Prelude.TryAsync(
-      async () =>
-      {
-        await File.WriteAllTextAsync(tuple.FileName, tuple.Content);
-        return tuple;
-      }
-    ).Try();
+    return Prelude
+      .TryAsync(async () =>
+        {
+          await File.WriteAllTextAsync(tuple.FileName, tuple.Content);
+
+          return tuple;
+        }
+      )
+      .Try();
   }
 
   public static Task<Result<DirectoryCopyResult>> TryCopyDirectoryAsync(DirectoryCopyRequest request)
   {
     (string sourceDirectory, string destinationDirectory, bool overwrite) = request;
 
-    return Prelude.TryAsync(CopyDirectoryAsync).Try();
+    return Prelude
+      .TryAsync(CopyDirectoryAsync)
+      .Try();
 
     Task<DirectoryCopyResult> CopyDirectoryAsync()
     {
@@ -228,9 +250,10 @@ public static class Io
 
   public static Result<string> TryGetParentDirectory(string path)
   {
-    return Prelude.Try(
-      () => new DirectoryInfo(path).Parent?.FullName ??
-            throw new DirectoryNotFoundException($"No parent found for: {path}")
-    ).Try();
+    return Prelude
+      .Try(() => new DirectoryInfo(path).Parent?.FullName ??
+                 throw new DirectoryNotFoundException($"No parent found for: {path}")
+      )
+      .Try();
   }
 }

@@ -25,7 +25,7 @@ public static class MetaVersionBumpCommand
     };
   }
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
     Option<bool> dryRun = DryRunOption.Create();

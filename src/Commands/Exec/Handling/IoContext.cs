@@ -14,11 +14,11 @@ namespace Cicee.Commands.Exec.Handling;
 [SuppressMessage(category: "ReSharper", checkId: "UnusedParameter.Local")]
 public static class IoContext
 {
-  private static string CreateCiDockerfilePath(CommandDependencies dependencies, ExecRequest request)
+  private static string CreateCiDockerfilePath(ICommandDependencies dependencies, ExecRequest request)
   {
     return dependencies.CombinePath(
       request.ProjectRoot,
-      dependencies.CombinePath(HandlingConstants.CiDirectoryName, arg2: "Dockerfile")
+      dependencies.CombinePath(HandlingConstants.CiDirectoryName, suffix: "Dockerfile")
     );
   }
 
@@ -41,7 +41,7 @@ public static class IoContext
   }
 
   public static ExecRequestContext DisplayExecContext(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -75,13 +75,13 @@ public static class IoContext
     {
       IReadOnlyDictionary<string, string> environmentDisplay =
         IoEnvironment.GetExecEnvironment(dependencies, execRequestContext, forcePathsToLinux: false);
-      dependencies.StandardOutWriteLine(obj: "CICEE Execution Environment:");
+      dependencies.StandardOutWriteLine(text: "CICEE Execution Environment:");
       WriteEnvironmentVariables(environmentDisplay);
     }
   }
 
   public static Result<ExecRequestContext> TryCreateRequestContext(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequest request)
   {
     return dependencies
@@ -107,7 +107,7 @@ public static class IoContext
           .AsResult.NotNullOrWhitespace(request.Image)
           .BindFailure(_ => dependencies.EnsureFileExists(CreateCiDockerfilePath(dependencies, request)))
           .MapFailure(
-            exception => new BadRequestException(
+            exception => BadRequestException.FromException(
               $"Image argument was not provided and '{CreateCiDockerfilePath(dependencies, request)}; does not exist.",
               exception
             )
@@ -123,7 +123,7 @@ public static class IoContext
           string? dockerfile = ciDirectory == null
             ? null
             : dependencies
-              .EnsureFileExists(dependencies.CombinePath(ciDirectory, arg2: "Dockerfile"))
+              .EnsureFileExists(dependencies.CombinePath(ciDirectory, suffix: "Dockerfile"))
               .Match(string? (file) => file, _ => null);
           string[] dockerComposeFiles = GetDockerComposeFiles();
 
@@ -224,7 +224,7 @@ declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project
       composeFiles = composeFiles.Concat(
         new[]
         {
-          dependencies.CombinePath(ciceeLibRoot, arg2: "docker-compose.yml")
+          dependencies.CombinePath(ciceeLibRoot, suffix: "docker-compose.yml")
         }
       );
 // - Import the ci-exec service image source (Dockerfile or image)
@@ -233,11 +233,11 @@ declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project
         useImage
           ? new[]
           {
-            dependencies.CombinePath(ciceeLibRoot, arg2: "docker-compose.image.yml")
+            dependencies.CombinePath(ciceeLibRoot, suffix: "docker-compose.image.yml")
           }
           : new[]
           {
-            dependencies.CombinePath(ciceeLibRoot, arg2: "docker-compose.dockerfile.yml")
+            dependencies.CombinePath(ciceeLibRoot, suffix: "docker-compose.dockerfile.yml")
           }
       );
 // Re-add project, to load project settings last (to override all other dependencies, e.g., CICEE defaults).
@@ -256,7 +256,7 @@ declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project
   }
 
   public static Result<ExecRequestContext> ValidateContext(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -274,7 +274,7 @@ declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project
             Require.AsResult.NotNullOrWhitespace(context.Entrypoint)
         )
         .MapFailure(
-          exception => new BadRequestException(
+          exception => BadRequestException.FromException(
             message: "At least one of command or entrypoint must be provided.",
             exception
           )
@@ -288,7 +288,7 @@ declare -r DOCKERCOMPOSE_PROJECT_ROOT="${PROJECT_ROOT}/docker-compose.ci.project
         .EnsureDirectoryExists(contextWithStartupCommand.ProjectRoot)
         .MapFailure(
           exception => exception is DirectoryNotFoundException
-            ? new BadRequestException($"Project root '{contextWithStartupCommand.ProjectRoot}' cannot be found.")
+            ? BadRequestException.FromMessage($"Project root '{contextWithStartupCommand.ProjectRoot}' cannot be found.")
             : exception
         )
         .Map(projectRoot => contextWithStartupCommand);

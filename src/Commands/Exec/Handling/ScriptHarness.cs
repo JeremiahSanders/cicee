@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 
 using Cicee.Dependencies;
+using Cicee.Edges.Filesystem;
+using Cicee.Edges.Processes;
 
 using LanguageExt.Common;
 
@@ -10,8 +12,8 @@ namespace Cicee.Commands.Exec.Handling;
 
 public static class ScriptHarness
 {
-  public static Result<ProcessStartInfo> CreateProcessStartInfo(
-    CommandDependencies dependencies,
+  public static Result<ProcessExecRequest> CreateProcessStartInfo(
+    ICommandDependencies dependencies,
     ExecRequestContext execRequestContext
   )
   {
@@ -24,7 +26,7 @@ public static class ScriptHarness
       .EnsureFileExists(ciceeExecPath)
       .MapFailure(
         exception => exception is FileNotFoundException
-          ? new BadRequestException($"Failed to find library file: {ciceeExecPath}")
+          ? BadRequestException.FromMessage($"Failed to find library file: {ciceeExecPath}")
           : exception
       )
       .Bind(

@@ -7,18 +7,17 @@ namespace Cicee.Commands.Lib;
 
 public static class LibEntrypoint
 {
-  public static Func<LibraryShellTemplate?, Task<int>> CreateHandler(CommandDependencies dependencies)
+  public static Func<LibraryShellTemplate?, Task<int>> CreateHandler(ICommandDependencies dependencies)
   {
     return shell => HandleAsync(dependencies, new LibRequest(shell));
   }
 
-  public static async Task<int> HandleAsync(CommandDependencies dependencies, LibRequest request)
+  public static async Task<int> HandleAsync(ICommandDependencies dependencies, LibRequest request)
   {
-    return (await LibHandling.HandleAsync(dependencies, request)).TapFailure(
-      exception =>
-      {
-        dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
-      }
-    ).ToExitCode();
+    return (await LibHandling.HandleAsync(dependencies, request))
+      .TapFailure(
+        exception => { dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage()); }
+      )
+      .ToExitCode();
   }
 }

@@ -4,6 +4,10 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 
+using Cicee.Edges;
+using Cicee.Edges.Filesystem;
+using Cicee.Edges.Processes;
+
 using LanguageExt.Common;
 
 namespace Cicee.Dependencies;
@@ -13,7 +17,6 @@ namespace Cicee.Dependencies;
 /// </summary>
 /// <param name="CombinePath"></param>
 /// <param name="EnsureDirectoryExists"></param>
-/// <param name="EnsureFileExists"></param>
 /// <param name="GetEnvironmentVariables"></param>
 /// <param name="StandardOutWriteLine"></param>
 /// <param name="StandardErrorWriteLine"></param>
@@ -33,12 +36,11 @@ namespace Cicee.Dependencies;
 public record CommandDependencies(
   Func<string, string, string> CombinePath,
   Func<string, Result<string>> EnsureDirectoryExists,
-  Func<string, Result<string>> EnsureFileExists,
   Func<IReadOnlyDictionary<string, string>> GetEnvironmentVariables,
   Action<string> StandardOutWriteLine,
   Action<string> StandardErrorWriteLine,
   Func<string, Result<string>> TryLoadFileString,
-  Func<ProcessStartInfo, Task<Result<ProcessExecResult>>> ProcessExecutor,
+  Func<ProcessStartInfo, Action<string>?, Task<Result<ProcessExecResult>>> ProcessExecutor,
   Func<string> GetLibraryRootPath,
   Func<FileCopyRequest, IReadOnlyDictionary<string, string>, Result<FileCopyRequest>> CopyTemplateToPath,
   Func<string, Result<bool>> DoesFileExist,
@@ -49,8 +51,98 @@ public record CommandDependencies(
   Func<Result<string>> TryGetCurrentDirectory,
   Func<string, Result<string>> TryGetParentDirectory,
   Action<ConsoleColor?, string> StandardOutWrite
-)
+) : ICommandDependencies
 {
+  Result<string> IFileDependencies.TryLoadFileString(string filePath)
+  {
+    return TryLoadFileString(filePath);
+  }
+
+  Task<Result<ProcessExecResult>> IProcessDependencies.ProcessExecutor(
+    ProcessExecRequest request,
+    Action<string>? debugLogger)
+  {
+    return ProcessExecutor(request.ToProcessStartInfo(), debugLogger);
+  }
+
+  string IEnvironmentDependencies.GetLibraryRootPath()
+  {
+    return GetLibraryRootPath();
+  }
+
+  Result<FileCopyRequest> IFileDependencies.CopyTemplateToPath(
+    FileCopyRequest request,
+    IReadOnlyDictionary<string, string> templateParameters)
+  {
+    return CopyTemplateToPath(request, templateParameters);
+  }
+
+  Result<bool> IFileDependencies.DoesFileExist(string filePath)
+  {
+    return DoesFileExist(filePath);
+  }
+
+  string IEnvironmentDependencies.GetInitTemplatesDirectoryPath()
+  {
+    return GetInitTemplatesDirectoryPath();
+  }
+
+  string IPathDependencies.GetFileName(string path)
+  {
+    return GetFileName(path);
+  }
+
+  Task<Result<(string FileName, string Content)>> IFileDependencies.TryWriteFileStringAsync(
+    (string FileName, string Content) file)
+  {
+    return TryWriteFileStringAsync(file);
+  }
+
+  Task<Result<DirectoryCopyResult>> IDirectoryDependencies.TryCopyDirectoryAsync(DirectoryCopyRequest request)
+  {
+    return TryCopyDirectoryAsync(request);
+  }
+
+  Result<string> IDirectoryDependencies.TryGetCurrentDirectory()
+  {
+    return TryGetCurrentDirectory();
+  }
+
+  Result<string> IPathDependencies.TryGetParentDirectory(string path)
+  {
+    return TryGetParentDirectory(path);
+  }
+
+  void IConsoleDependencies.StandardOutWrite(ConsoleColor? color, string text)
+  {
+    StandardOutWrite(color, text);
+  }
+
+  string IPathDependencies.CombinePath(string prefix, string suffix)
+  {
+    return CombinePath(prefix, suffix);
+  }
+
+  Result<string> IDirectoryDependencies.EnsureDirectoryExists(string path)
+  {
+    return EnsureDirectoryExists(path);
+  }
+
+  IReadOnlyDictionary<string, string> IEnvironmentDependencies.GetEnvironmentVariables()
+  {
+    return GetEnvironmentVariables();
+  }
+
+  void IConsoleDependencies.StandardOutWriteLine(string text)
+  {
+    StandardOutWriteLine(text);
+  }
+
+  void IConsoleDependencies.StandardErrorWriteLine(string text)
+  {
+    StandardErrorWriteLine(text);
+  }
+
   /// <summary>
   ///   Initializes a new instance of <see cref="CommandDependencies" /> using the default environment providers.
   /// </summary>
@@ -60,7 +152,6 @@ public record CommandDependencies(
     return new CommandDependencies(
       Io.PathCombine2,
       Io.EnsureDirectoryExists,
-      Io.EnsureFileExists,
       EnvironmentVariableHelpers.GetEnvironmentVariables,
       Console.Out.WriteLine,
       line =>
@@ -70,7 +161,7 @@ public record CommandDependencies(
         Console.ResetColor();
       },
       Io.TryLoadFileString,
-      processStartInfo => ProcessHelpers.ExecuteProcessAsync(processStartInfo, debugLogger: null),
+      ProcessHelpers.ExecuteProcessAsync,
       Io.GetLibraryRootPath,
       Io.CopyTemplateToPath,
       Io.DoesFileExist,
@@ -93,30 +184,6 @@ public record CommandDependencies(
 
         Console.Out.Write(value);
         Console.ResetColor();
-      }
-    );
-  }
-
-  public void StandardOutWriteAll(IEnumerable<(ConsoleColor? OptionalColor, string Value)> items)
-  {
-    foreach ((ConsoleColor? OptionalColor, string Value) tuple in items)
-    {
-      StandardOutWrite(tuple.OptionalColor, tuple.Value);
-    }
-  }
-
-  public void StandardOutWriteAsLine(IEnumerable<(ConsoleColor? OptionalColor, string Value)> items)
-  {
-    StandardOutWriteAll(items);
-    StandardOutWrite(arg1: null, Environment.NewLine);
-  }
-
-  public void LogDebug(string message, ConsoleColor? color = null)
-  {
-    StandardOutWriteAsLine(
-      new[]
-      {
-        ((ConsoleColor?)(color ?? ConsoleColor.Magenta), message)
       }
     );
   }
