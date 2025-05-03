@@ -6,7 +6,7 @@ namespace Cicee.Commands.Template.Init;
 
 public static class TemplateInitCommand
 {
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectRoot = ProjectRootOption.Create(dependencies);
     Option<bool> force = ForceOption.Create();
@@ -19,6 +19,7 @@ public static class TemplateInitCommand
       projectRoot,
       force
     );
+
     return command;
   }
 }

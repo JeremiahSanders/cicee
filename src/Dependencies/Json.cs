@@ -27,15 +27,17 @@ public static class Json
     Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
   };
 
-  public static Result<T> TryDeserialize<T>(string possibleJson)
+  public static Result<T> TryDeserialize<T>(string possibleJson) where T : notnull
   {
-    return Prelude.Try(
-      () =>
-      {
-        T? deserialized = JsonSerializer.Deserialize<T>(possibleJson, DefaultOptions);
-        return deserialized ?? throw new Exception($"Failed to deserialize. Value:\n{possibleJson}");
-      }
-    ).Try()!;
+    return Prelude
+      .Try(() =>
+        {
+          T? deserialized = JsonSerializer.Deserialize<T>(possibleJson, DefaultOptions);
+
+          return deserialized ?? throw new Exception($"Failed to deserialize. Value:\n{possibleJson}");
+        }
+      )
+      .Try();
   }
 
   public static Result<string> TrySerialize<T>(T obj)
@@ -45,6 +47,8 @@ public static class Json
 
   public static Result<string> TrySerialize<T>(T obj, JsonSerializerOptions options)
   {
-    return Prelude.Try(() => JsonSerializer.Serialize(obj, options)).Try()!;
+    return Prelude
+      .Try(() => JsonSerializer.Serialize(obj, options))
+      .Try()!;
   }
 }

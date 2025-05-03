@@ -8,7 +8,7 @@ namespace Cicee.Commands.Meta;
 
 public static class MetaCommand
 {
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Command command = new(name: "meta", description: "Commands interacting with project metadata.");
 

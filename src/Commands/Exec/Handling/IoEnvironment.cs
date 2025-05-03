@@ -1,13 +1,14 @@
 using System.Collections.Generic;
 
 using Cicee.Dependencies;
+using Cicee.Edges.Filesystem;
 
 namespace Cicee.Commands.Exec.Handling;
 
 public static class IoEnvironment
 {
   public static IReadOnlyDictionary<string, string> GetExecEnvironment(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     ExecRequestContext context,
     bool forcePathsToLinux
   )

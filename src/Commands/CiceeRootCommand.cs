@@ -14,7 +14,7 @@ internal static class CiceeRootCommand
 {
   public static RootCommand Create()
   {
-    CommandDependencies dependencies = CommandDependencies.Create();
+    ICommandDependencies dependencies = CommandDependencies.Create();
     RootCommand command = new(description: "cicee")
     {
       EnvCommand.Create(dependencies),
@@ -24,6 +24,7 @@ internal static class CiceeRootCommand
       MetaCommand.Create(dependencies),
       TemplateCommand.Create(dependencies)
     };
+
     return command;
   }
 }

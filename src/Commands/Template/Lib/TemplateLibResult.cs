@@ -2,6 +2,7 @@ using System.Collections.Generic;
 
 using Cicee.Commands.Lib;
 using Cicee.Dependencies;
+using Cicee.Edges.Filesystem;
 
 namespace Cicee.Commands.Template.Lib;
 

@@ -6,8 +6,18 @@ namespace Cicee.Commands;
 [ExcludeFromCodeCoverage]
 public class BadRequestException : Exception
 {
-  public BadRequestException(string message, Exception? innerException = null)
+  private BadRequestException(string message, Exception? innerException = null)
     : base(message, innerException)
   {
+  }
+
+  public static BadRequestException FromMessage(string message)
+  {
+    return new BadRequestException(message);
+  }
+
+  public static BadRequestException FromException(string message, Exception innterException)
+  {
+    return new BadRequestException(message, innterException);
   }
 }

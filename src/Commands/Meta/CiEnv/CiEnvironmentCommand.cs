@@ -11,7 +11,7 @@ public static class CiEnvironmentCommand
   public const string CommandDescription = "Commands related to the project's CI environment.";
   public const string CommandAlias = "cienv";
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Command command = new(CommandName, CommandDescription);
     command.AddAlias(CommandAlias);

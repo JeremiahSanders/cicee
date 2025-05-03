@@ -7,7 +7,7 @@ namespace Cicee.Commands.Exec;
 public static class ExecEntrypoint
 {
   public static async Task<int> HandleAsync(
-    CommandDependencies dependencies,
+    ICommandDependencies dependencies,
     string projectRoot,
     string? command,
     string? entrypoint,

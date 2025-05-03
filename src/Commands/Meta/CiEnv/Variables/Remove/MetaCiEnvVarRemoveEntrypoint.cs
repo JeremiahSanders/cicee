@@ -8,7 +8,7 @@ namespace Cicee.Commands.Meta.CiEnv.Variables.Remove;
 
 public static class MetaCiEnvVarRemoveEntrypoint
 {
-  public static Func<string, string, Task<int>> CreateHandler(CommandDependencies dependencies)
+  public static Func<string, string, Task<int>> CreateHandler(ICommandDependencies dependencies)
   {
     return Handle;
 
@@ -27,12 +27,11 @@ public static class MetaCiEnvVarRemoveEntrypoint
               )
             );
           }
-        ).TapFailure(
-          exception =>
-          {
-            dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
-          }
-        ).ToExitCode();
+        )
+        .TapFailure(
+          exception => { dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage()); }
+        )
+        .ToExitCode();
     }
   }
 }

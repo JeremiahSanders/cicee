@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 
 using Cicee.CiEnv;
 using Cicee.Dependencies;
+using Cicee.Edges.Filesystem;
+using Cicee.Edges.Processes;
 
 using LanguageExt.Common;
 
@@ -17,7 +19,8 @@ public static class LibExecEntrypoint
   private const string ProjectMetadata = "PROJECT_METADATA";
   private const string ExecDir = "EXEC_DIR";
 
-  private static Result<ProcessStartInfo> TryCreateProcessStartInfo(CommandDependencies dependencies,
+  private static Result<ProcessExecRequest> TryCreateProcessExecRequest(
+    ICommandDependencies dependencies,
     LibExecRequest request)
   {
     string projectRoot = request.Shell == LibraryShellTemplate.Bash
@@ -26,28 +29,35 @@ public static class LibExecEntrypoint
     string projectMetadata = request.Shell == LibraryShellTemplate.Bash
       ? Io.NormalizeToLinuxPath(request.MetadataPath)
       : request.MetadataPath;
-    string? execDir = dependencies.TryGetCurrentDirectory().IfFail(projectRoot);
+    string? execDir = dependencies
+      .TryGetCurrentDirectory()
+      .IfFail(projectRoot);
 
     return request.Shell switch
     {
       LibraryShellTemplate.Bash => CreateBash(),
-      _ => new Result<ProcessStartInfo>(new BadRequestException($"Unsupported shell: {request.Shell}"))
+      _ => new Result<ProcessExecRequest>(BadRequestException.FromMessage($"Unsupported shell: {request.Shell}"))
     };
 
     Dictionary<string, string> GetProcessEnvironment()
     {
-      Dictionary<string, string> env = dependencies.GetEnvironmentVariables().ToDictionary(
-        kvp => kvp.Key,
-        kvp => kvp.Value
-      );
+      Dictionary<string, string> env = dependencies
+        .GetEnvironmentVariables()
+        .ToDictionary(
+          kvp => kvp.Key,
+          kvp => kvp.Value
+        );
       env[ProjectRoot] = projectRoot;
       env[ProjectMetadata] = projectMetadata;
       env[ExecDir] = execDir;
 
-      Dictionary<string, string> fallbacks = request.Metadata.CiEnvironment.Variables.Where(IsDefaultNeeded)
+      Dictionary<string, string> fallbacks = request
+        .Metadata.CiEnvironment.Variables.Where(IsDefaultNeeded)
         .ToDictionary(variable => variable.Name, variable => variable.DefaultValue!);
 
-      return env.Concat(fallbacks).ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
+      return env
+        .Concat(fallbacks)
+        .ToDictionary(kvp => kvp.Key, kvp => kvp.Value);
 
       bool IsDefaultNeeded(ProjectEnvironmentVariable variable)
       {
@@ -58,7 +68,7 @@ public static class LibExecEntrypoint
       }
     }
 
-    Result<ProcessStartInfo> CreateBash()
+    Result<ProcessExecRequest> CreateBash()
     {
       const string execScript = "exec.sh";
       string scriptPath = Io.NormalizeToLinuxPath(
@@ -87,59 +97,70 @@ public static class LibExecEntrypoint
     }
   }
 
-  public static Task<Result<LibExecResponse>> TryHandleAsync(CommandDependencies dependencies, LibExecRequest request)
+  public static Task<Result<LibExecResponse>> TryHandleAsync(ICommandDependencies dependencies, LibExecRequest request)
   {
-    return TryCreateProcessStartInfo(dependencies, request).BindAsync(
-      async processStartInfo => (await dependencies.ProcessExecutor(processStartInfo)).Map(
-        processExecResult => new LibExecResponse(processStartInfo, processExecResult)
-        {
-          Shell = request.Shell
-        }
-      )
-    );
-  }
-
-  private static Result<LibExecRequest> TryCreateRequest(CommandDependencies dependencies,
-    LibraryShellTemplate template, string command, string projectRoot, string metadataPath)
-  {
-    return Require.AsResult.NotNullOrWhitespace(command).Bind(
-      validatedCommand => dependencies.EnsureDirectoryExists(projectRoot).Bind(
-        validatedRoot => ProjectMetadataLoader.TryLoadFromFile(
-          dependencies.EnsureFileExists,
-          dependencies.TryLoadFileString,
-          metadataPath
-        ).Map(
-          metadata => new LibExecRequest
+    return TryCreateProcessExecRequest(dependencies, request)
+      .BindAsync(
+        async processExecRequest => (await dependencies.ProcessExecutor(processExecRequest, debugMessage => dependencies.LogDebug(debugMessage, ConsoleColor.DarkGray))).Map(
+          processExecResult => new LibExecResponse(processExecRequest, processExecResult)
           {
-            Command = validatedCommand,
-            Metadata = metadata,
-            MetadataPath = metadataPath,
-            ProjectRoot = validatedRoot,
-            Shell = template
+            Shell = request.Shell
           }
         )
-      )
-    );
+      );
   }
 
-  public static async Task<int> HandleAsync(CommandDependencies dependencies, LibraryShellTemplate template,
-    string command, string projectRoot, string metadataPath)
+  private static Result<LibExecRequest> TryCreateRequest(
+    ICommandDependencies dependencies,
+    LibraryShellTemplate template,
+    string command,
+    string projectRoot,
+    string metadataPath)
   {
-    return (await TryCreateRequest(dependencies, template, command, projectRoot, metadataPath).TapSuccess(
-      request =>
-      {
-        dependencies.StandardOutWriteLine($"Beginning {request.Shell} CI shell execution.");
-      }
-    ).BindAsync(request => TryHandleAsync(dependencies, request))).TapSuccess(
-      response =>
-      {
-        dependencies.StandardOutWriteLine(obj: "Execution succeeded.");
-      }
-    ).TapFailure(
-      exception =>
-      {
-        dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
-      }
-    ).ToExitCode();
+    return Require
+      .AsResult.NotNullOrWhitespace(command)
+      .Bind(
+        validatedCommand => dependencies
+          .EnsureDirectoryExists(projectRoot)
+          .Bind(
+            validatedRoot => ProjectMetadataLoader
+              .TryLoadFromFile(
+                dependencies.EnsureFileExists,
+                dependencies.TryLoadFileString,
+                metadataPath
+              )
+              .Map(
+                metadata => new LibExecRequest
+                {
+                  Command = validatedCommand,
+                  Metadata = metadata,
+                  MetadataPath = metadataPath,
+                  ProjectRoot = validatedRoot,
+                  Shell = template
+                }
+              )
+          )
+      );
+  }
+
+  public static async Task<int> HandleAsync(
+    ICommandDependencies dependencies,
+    LibraryShellTemplate template,
+    string command,
+    string projectRoot,
+    string metadataPath)
+  {
+    return (await TryCreateRequest(dependencies, template, command, projectRoot, metadataPath)
+        .TapSuccess(
+          request => { dependencies.StandardOutWriteLine($"Beginning {request.Shell} CI shell execution."); }
+        )
+        .BindAsync(request => TryHandleAsync(dependencies, request)))
+      .TapSuccess(
+        response => { dependencies.StandardOutWriteLine(text: "Execution succeeded."); }
+      )
+      .TapFailure(
+        exception => { dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage()); }
+      )
+      .ToExitCode();
   }
 }
