@@ -11,6 +11,10 @@ using Cicee.Dependencies;
 using LanguageExt;
 using LanguageExt.Common;
 
+
+
+using System.Diagnostics;
+using System.Runtime.InteropServices;
 namespace Cicee.Edges.Processes;
 
 public static class ProcessHelpers
@@ -141,7 +145,8 @@ public static class ProcessHelpers
         {
           ProcessExecRequest startInfo = new()
           {
-            FileName = bashPath, Arguments = validatedProcessArguments
+            FileName = bashPath,
+            Arguments = validatedProcessArguments
           };
           foreach (KeyValuePair<string, string> keyValuePair in ambientEnvironment)
           {
@@ -187,4 +192,90 @@ public static class ProcessHelpers
       )
       : new Result<string>(processArguments);
   }
+  
+
+
+
+
+
+public static async Task<string?> Which(string command, ICommandDependencies dependencies)
+{
+    const string PathVariable = "PATH";
+    const string PathExtVariable = "PATHEXT";
+    var environmentVariables = dependencies.GetEnvironmentVariables();
+
+    environmentVariables.TryGetValue(PathVariable, out var pathValue);
+    environmentVariables.TryGetValue(PathExtVariable, out var pathExtValue);
+    var pathEnv = pathValue; // Environment.GetEnvironmentVariable(PathVariable);
+    if (pathEnv == null) return null;
+
+    var extensions = OperatingSystem.IsWindows()
+        ? pathExtValue // Environment.GetEnvironmentVariable(PathExtVariable)
+          ?.Split(';', StringSplitOptions.RemoveEmptyEntries) ?? new[] { ".exe", ".bat", ".cmd" }
+        : new[] { "" };
+
+    foreach (var dir in pathEnv.Split(Path.PathSeparator))
+    {
+        foreach (var ext in extensions)
+        {
+            var fullPath = dependencies.CombinePath(dir, command + ext);  // Path.Combine(dir, command + ext);
+            if (File.Exists(fullPath))
+            {
+                if (!OperatingSystem.IsWindows())
+                {
+                    var fileInfo = new FileInfo(fullPath);
+                    if ((fileInfo.Attributes & FileAttributes.Directory) == 0 &&
+                        await IsExecutableUnix(fullPath, dependencies))
+                    {
+                        return fullPath;
+                    }
+                }
+                else
+                {
+                    return fullPath;
+                }
+            }
+        }
+    }
+
+    return null;
+}
+
+private static async Task<bool> IsExecutableUnix(string path, ICommandDependencies dependencies)
+{
+    const string shPath = "/bin/sh";
+
+    var info = new ProcessExecRequest
+    {
+        FileName = shPath,
+        Arguments = $"-c \"[ -x '{path}' ]\"",
+        UseShellExecute = false
+    };
+    var result = await dependencies.ProcessExecutor(info);
+    return result.Map(result => result.ExitCode == 0).IfFail(false);
+
+    // var psi = new ProcessStartInfo
+    // {
+    //     FileName = shPath,
+    //     Arguments = $"-c \"[ -x '{path}' ]\"",
+    //     RedirectStandardOutput = true,
+    //     UseShellExecute = false,
+    //     CreateNoWindow = true
+    // };
+
+    // using var process = Process.Start(psi);
+    // process?.WaitForExit();
+    // return process?.ExitCode == 0;
+}
+
+
+
+
+
+
+
+
+
+
+
 }
