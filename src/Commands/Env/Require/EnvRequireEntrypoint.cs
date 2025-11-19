@@ -10,7 +10,7 @@ public static class EnvRequireEntrypoint
 {
   private const int DefaultFailureExitCode = -1;
 
-  public static async Task<int> HandleAsync(CommandDependencies dependencies, string? projectRoot, string? file)
+  public static async Task<int> HandleAsync(ICommandDependencies dependencies, string? projectRoot, string? file)
   {
     return (await TryCreateRequest(projectRoot, file)
       .MapAsync(request => EnvRequireHandling.TryHandleAsync(dependencies, request))).ToExitCode();

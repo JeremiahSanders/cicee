@@ -14,7 +14,8 @@ public static class ProjectEnvironmentHelpers
   internal const string SecretString = "***redacted***";
 
   public static IReadOnlyDictionary<ProjectEnvironmentVariable, string> GetEnvironmentDisplay(
-    Func<IReadOnlyDictionary<string, string>> getEnvironmentVariables, ProjectMetadata projectMetadata)
+    Func<IReadOnlyDictionary<string, string>> getEnvironmentVariables,
+    ProjectMetadata projectMetadata)
   {
     IReadOnlyDictionary<string, string> knownEnvironment = getEnvironmentVariables();
 
@@ -22,31 +23,42 @@ public static class ProjectEnvironmentHelpers
 
     string GetVariableValue(ProjectEnvironmentVariable variable)
     {
-      KeyValuePair<string, string> possibleValue = knownEnvironment.FirstOrDefault(
-        kvp => kvp.Key.Equals(variable.Name, StringComparison.InvariantCultureIgnoreCase)
-      );
+      KeyValuePair<string, string> possibleValue =
+        knownEnvironment.FirstOrDefault(kvp => kvp.Key.Equals(
+            variable.Name,
+            StringComparison.InvariantCultureIgnoreCase
+          )
+        );
       bool hasValue = !default(KeyValuePair<string, string>).Equals(possibleValue);
+
       return hasValue ? variable.Secret ? SecretString : possibleValue.Value : string.Empty;
     }
   }
 
   public static Result<ProjectMetadata> ValidateEnvironment(
-    Func<IReadOnlyDictionary<string, string>> getEnvironmentVariables, ProjectMetadata projectMetadata)
+    Func<IReadOnlyDictionary<string, string>> getEnvironmentVariables,
+    ProjectMetadata projectMetadata)
   {
     IReadOnlyDictionary<string, string> knownEnvironment = getEnvironmentVariables();
     string[] knownVariables = knownEnvironment.Keys.ToArray();
-    string[] missingVariables = projectMetadata.CiEnvironment.Variables
+    string[] missingVariables = projectMetadata
+      .CiEnvironment.Variables
       .Where(envVariable => envVariable.Required && !knownVariables.Contains(envVariable.Name))
-      .Select(envVariable => envVariable.Name).OrderBy(Prelude.identity).ToArray();
+      .Select(envVariable => envVariable.Name)
+      .OrderBy(Prelude.identity)
+      .ToArray();
 
     return missingVariables.Any()
       ? new Result<ProjectMetadata>(
-        new BadRequestException($"Missing environment variables: {string.Join(separator: ", ", missingVariables)}")
+        BadRequestException.FromMessage(
+          $"Missing environment variables: {string.Join(separator: ", ", missingVariables)}"
+        )
       )
       : new Result<ProjectMetadata>(projectMetadata);
   }
 
-  public static void DisplayProjectEnvironmentValues(Action<string> standardOutWriteLine,
+  public static void DisplayProjectEnvironmentValues(
+    Action<string> standardOutWriteLine,
     Action<ConsoleColor?, string> standardOutWrite,
     IReadOnlyDictionary<ProjectEnvironmentVariable, string> environmentVariableDisplayValues)
   {

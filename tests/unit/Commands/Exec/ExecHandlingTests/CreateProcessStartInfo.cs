@@ -95,8 +95,7 @@ public class CreateProcessStartInfo
   {
     Result<ProcessStartInfoResult> actualResult = ScriptHarness
       .CreateProcessStartInfo(dependencies, execRequestContext)
-      .Map(
-        result => new ProcessStartInfoResult(
+      .Map(result => new ProcessStartInfoResult(
           result.FileName,
           result.Arguments,
           new Dictionary<string, string>(
@@ -105,32 +104,30 @@ public class CreateProcessStartInfo
         )
       );
 
-    expectedResult.IfSucc(
-      expected =>
+    expectedResult.IfSucc(expected =>
       {
-        actualResult.IfSucc(
-          actual =>
+        actualResult.IfSucc(actual =>
           {
             actual.FileName.ShouldBe(expected.FileName);
             actual.Arguments.ShouldBe(expected.Arguments);
             // Selecting only those which are expected because actual keys will contain everything from the current test execution process (when ProcessStartInfo is created).
-            var actualFilteredEnvironment = actual
+            List<KeyValuePair<string, string>> actualFilteredEnvironment = actual
               .Environment.Where(kvp => expected.Environment.Keys.Contains(kvp.Key))
               .OrderBy(kvp => kvp.Key)
               .ToList();
-            var expectedEnv = expected.Environment.OrderBy(kvp => kvp.Key).ToList();
+            List<KeyValuePair<string, string>> expectedEnv = expected
+              .Environment.OrderBy(kvp => kvp.Key)
+              .ToList();
             actualFilteredEnvironment.ShouldBeEquivalentTo(expectedEnv);
           }
         );
         actualResult.IfFailThrow();
       }
     );
-    expectedResult.IfFail(
-      exception =>
+    expectedResult.IfFail(exception =>
       {
         actualResult.IfSucc(actual => throw new Exception(message: "Should have failed"));
-        actualResult.IfFail(
-          actual =>
+        actualResult.IfFail(actual =>
           {
             Assert.Equal(exception.GetType(), actual.GetType());
             Assert.Equal(exception.Message, actual.Message);
@@ -141,8 +138,8 @@ public class CreateProcessStartInfo
   }
 
   public record ProcessStartInfoResult(
-    string FileName,
-    string Arguments,
+    string? FileName,
+    string? Arguments,
     IReadOnlyDictionary<string, string> Environment
   );
 }

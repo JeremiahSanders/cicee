@@ -7,7 +7,7 @@ namespace Cicee.Commands.Env.Require;
 
 public static class EnvRequireCommand
 {
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string?> projectRoot = ProjectRootOption.CreateOptional(dependencies);
     Option<string?> file = ProjectMetadataFile(

@@ -59,7 +59,7 @@ public static class ExecCommand
         "--harness",
         "-h"
       },
-      () => ExecInvocationHarness.Script,
+      () => ExecInvocationHarness.Direct,
       description:
       "Invocation harness. Determines if CICEE directly invokes Docker commands or uses a shell script to invoke Docker commands."
     )
@@ -85,7 +85,7 @@ public static class ExecCommand
     };
   }
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectRoot = ProjectRootOption.Create(dependencies);
     Option<string> serviceCommand = ServiceCommandOption();

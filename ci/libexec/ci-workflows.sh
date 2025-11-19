@@ -30,7 +30,7 @@ declare WORKFLOWS_SCRIPT_DIRECTORY="$(dirname "${WORKFLOWS_SCRIPT_LOCATION}")"
 PROJECT_ROOT="${PROJECT_ROOT:-$(cd "${WORKFLOWS_SCRIPT_DIRECTORY}" && cd ../.. && pwd)}"
 
 # Load the CI action library.
-source "$(dotnet run --project src --framework net8.0 -- lib)"
+source "${PROJECT_ROOT}/src/lib/ci/bash/ci.sh"
 
 ####
 #-- BEGIN Workflow Compositions
@@ -65,12 +65,6 @@ ci-compose() {
       --output "${BUILD_UNPACKAGED_DIST}/net6.0" \
       -p:Version="${PROJECT_VERSION_DIST}" \
       --framework net6.0 &&
-    printf "\nBeginning 'dotnet publish' targeting .NET 7...\n\n" &&
-    dotnet publish "${PROJECT_ROOT}/src" \
-      --configuration Release \
-      --output "${BUILD_UNPACKAGED_DIST}/net7.0" \
-      -p:Version="${PROJECT_VERSION_DIST}" \
-      --framework net7.0 &&
     printf "\nBeginning 'dotnet publish' targeting .NET 8...\n\n" &&
     dotnet publish "${PROJECT_ROOT}/src" \
       --configuration Release \

@@ -10,7 +10,7 @@ public static class TemplateLibCommand
   public const string Description =
     "Initialize project CI with CICEE execution library. Supports 'cicee exec'-like behavior without CICEE installation.";
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectRoot = ProjectRootOption.Create(dependencies);
     Option<LibraryShellTemplate?> shell = ShellOption.CreateOptional();
@@ -30,6 +30,7 @@ public static class TemplateLibCommand
       shell,
       force
     );
+
     return command;
   }
 }

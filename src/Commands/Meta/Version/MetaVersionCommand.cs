@@ -11,7 +11,7 @@ public static class MetaVersionCommand
   public const string CommandName = "version";
   public const string CommandDescription = "Gets version in project metadata.";
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
     Command command = new(CommandName, CommandDescription)

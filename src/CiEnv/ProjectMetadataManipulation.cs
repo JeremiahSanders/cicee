@@ -24,8 +24,10 @@ public static class ProjectMetadataManipulation
   /// <param name="projectMetadataPath"></param>
   /// <param name="version"></param>
   /// <returns></returns>
-  public static async Task<Result<Version>> UpdateVersionInMetadata(CommandDependencies dependencies,
-    string projectMetadataPath, Version version)
+  public static async Task<Result<Version>> UpdateVersionInMetadata(
+    ICommandDependencies dependencies,
+    string projectMetadataPath,
+    Version version)
   {
     return (await ModifyMetadataJson(
       dependencies,
@@ -33,6 +35,7 @@ public static class ProjectMetadataManipulation
       jsonObject =>
       {
         jsonObject[propertyName: "version"] = version.GetVersionString();
+
         return jsonObject;
       }
     )).Map(_ => version);
@@ -46,7 +49,9 @@ public static class ProjectMetadataManipulation
   /// <param name="updatedVariables"></param>
   /// <returns></returns>
   public static async Task<Result<ProjectEnvironmentVariable[]>> UpdateVariablesInMetadata(
-    CommandDependencies dependencies, string projectMetadataPath, ProjectEnvironmentVariable[] updatedVariables)
+    ICommandDependencies dependencies,
+    string projectMetadataPath,
+    ProjectEnvironmentVariable[] updatedVariables)
   {
     return (await ModifyMetadataJson(
       dependencies,
@@ -65,6 +70,7 @@ public static class ProjectMetadataManipulation
     JsonNode variables = envObject.ContainsKey(variablesNodeName) ? envObject[variablesNodeName]! : new JsonArray();
     JsonNode variablesNode = variablesMutator(variables);
     ciEnvNode[variablesNodeName] = variablesNode;
+
     return ciEnvNode;
   }
 
@@ -74,27 +80,38 @@ public static class ProjectMetadataManipulation
     JsonNode ciEnvNode = rootJsonObject.ContainsKey(ciEnvNodeName) ? rootJsonObject[ciEnvNodeName]! : new JsonObject();
     ciEnvNode = ciEnvNodeMutator(ciEnvNode);
     rootJsonObject[ciEnvNodeName] = ciEnvNode;
+
     return rootJsonObject;
   }
 
   private static async Task<Result<(string FileName, string Content, JsonObject MetadataJson)>> ModifyMetadataJson(
-    CommandDependencies dependencies, string projectMetadataPath, Func<JsonObject, JsonObject> mutator)
+    ICommandDependencies dependencies,
+    string projectMetadataPath,
+    Func<JsonObject, JsonObject> mutator)
   {
-    return await dependencies.TryLoadFileString(projectMetadataPath)
-      .MapSafe(content => JsonNode.Parse(content)!.AsObject()).MapSafe(mutator).BindAsync(
-        async metadataJson => await Json.TrySerialize(metadataJson).BindAsync(
-          async jsonString =>
-            (await dependencies.TryWriteFileStringAsync((projectMetadataPath, jsonString))).Map(
-              tuple => (tuple.FileName, tuple.Content, metadataJson)
-            )
-        )
+    return await dependencies
+      .TryLoadFileString(projectMetadataPath)
+      .MapSafe(content => JsonNode.Parse(content)!.AsObject())
+      .MapSafe(mutator)
+      .BindAsync(
+        async metadataJson => await Json
+          .TrySerialize(metadataJson)
+          .BindAsync(
+            async jsonString =>
+              (await dependencies.TryWriteFileStringAsync((projectMetadataPath, jsonString))).Map(
+                tuple => (tuple.FileName, tuple.Content, metadataJson)
+              )
+          )
       );
   }
 
   private static JsonArray VariablesToJsonArray(IEnumerable<ProjectEnvironmentVariable> updatedVariables)
   {
     return new JsonArray(
-      updatedVariables.Select(variable => new JsonObject(GetProperties(variable))).Cast<JsonNode>().ToArray()
+      updatedVariables
+        .Select(variable => new JsonObject(GetProperties(variable)))
+        .Cast<JsonNode>()
+        .ToArray()
     );
   }
 
@@ -114,15 +131,20 @@ public static class ProjectMetadataManipulation
   private static string GetCiEnvVariablesNodeName(JsonNode ciEnvironmentNode)
   {
     JsonObject nodeObject = ciEnvironmentNode.AsObject();
-    return nodeObject.Select(item => item.Key).FirstOrDefault(
-      key => key.Equals(ExpectedCiEnvVariablesNodeName, StringComparison.InvariantCultureIgnoreCase)
-    ) ?? ExpectedCiEnvVariablesNodeName;
+
+    return nodeObject
+      .Select(item => item.Key)
+      .FirstOrDefault(
+        key => key.Equals(ExpectedCiEnvVariablesNodeName, StringComparison.InvariantCultureIgnoreCase)
+      ) ?? ExpectedCiEnvVariablesNodeName;
   }
 
   private static string GetCiEnvNodeName(JsonObject jsonObject)
   {
-    return jsonObject.Select(item => item.Key).FirstOrDefault(
-      item => item.Equals(ExpectedCiEnvNodeName, StringComparison.InvariantCultureIgnoreCase)
-    ) ?? ExpectedCiEnvNodeName;
+    return jsonObject
+      .Select(item => item.Key)
+      .FirstOrDefault(
+        item => item.Equals(ExpectedCiEnvNodeName, StringComparison.InvariantCultureIgnoreCase)
+      ) ?? ExpectedCiEnvNodeName;
   }
 }

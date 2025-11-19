@@ -14,5 +14,19 @@ services:
       #--
       NUGET_API_KEY:
       NUGET_SOURCE:
+    volumes:      
+      # Hide host build results
+      - type: volume
+        target: /code/src/bin
+      - type: volume
+        target: /code/src/obj
+      - type: volume
+        target: /code/tests/integration/bin
+      - type: volume
+        target: /code/tests/integration/obj
+      - type: volume
+        target: /code/tests/unit/bin
+      - type: volume
+        target: /code/tests/unit/obj
     # NOTE: Root user specified below helps address permissions errors when using the default CICEE Dockerfile.
     user: root

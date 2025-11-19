@@ -54,8 +54,8 @@ public class TryHandleAsyncTests
     CommandDependencies happyPathDependencies = dependencies with
     {
       GetEnvironmentVariables = () => new Dictionary<string, string>(
-        baseArrangedMetadata.CiEnvironment.Variables.Select(
-          variable => new KeyValuePair<string, string>(variable.Name, Randomization.GuidString())
+        baseArrangedMetadata.CiEnvironment.Variables.Select(variable =>
+          new KeyValuePair<string, string>(variable.Name, Randomization.GuidString())
         )
       )
     };
@@ -68,12 +68,13 @@ public class TryHandleAsyncTests
     {
       CiEnvironment = baseArrangedMetadata.CiEnvironment with
       {
-        Variables = baseArrangedMetadata.CiEnvironment.Variables.Select(
-          variable => variable with
-          {
-            Required = true
-          }
-        ).ToArray()
+        Variables = baseArrangedMetadata
+          .CiEnvironment.Variables.Select(variable => variable with
+            {
+              Required = true
+            }
+          )
+          .ToArray()
       }
     };
     CommandDependencies sadPathEnvRequiredUnsetDependencies = dependencies with
@@ -84,7 +85,7 @@ public class TryHandleAsyncTests
           : new Result<string>(new Exception(message: "File not arranged"))
     };
     Result<EnvRequireResult> sadPathEnvRequiredUnsetResult = new(
-      new BadRequestException(
+      BadRequestException.FromMessage(
         $"Missing environment variables: {sadPathEnvRequiredUnsetMetadata.CiEnvironment.Variables.First().Name}"
       )
     );
@@ -97,7 +98,9 @@ public class TryHandleAsyncTests
     };
 
     // NOTE: Parameter order affects displayed test case name in IDE test explorers. Placing request first helps identification.
-    object[] TestCase(EnvRequireRequest request, Result<EnvRequireResult> expected,
+    object[] TestCase(
+      EnvRequireRequest request,
+      Result<EnvRequireResult> expected,
       CommandDependencies commandDependencies)
     {
       return new object[]
@@ -123,7 +126,9 @@ public class TryHandleAsyncTests
 
   [Theory]
   [MemberData(nameof(GenerateTestCases))]
-  public async Task ReturnsExpectedResult(EnvRequireRequest request, Result<EnvRequireResult> expected,
+  public async Task ReturnsExpectedResult(
+    EnvRequireRequest request,
+    Result<EnvRequireResult> expected,
     CommandDependencies dependencies)
   {
     Result<EnvRequireResult> result = await EnvRequireHandling.TryHandleAsync(dependencies, request);

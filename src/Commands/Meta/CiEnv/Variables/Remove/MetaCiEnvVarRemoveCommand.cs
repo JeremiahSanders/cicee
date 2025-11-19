@@ -10,7 +10,7 @@ public static class MetaCiEnvVarRemoveCommand
   public const string CommandDescription = "Removes a project CI environment variable.";
   public const string CommandAlias = "rm";
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
     Option<string> name = VariablesOptions.CreateNameRequired();

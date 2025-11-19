@@ -9,11 +9,16 @@ namespace Cicee.Commands.Meta.CiEnv.Variables.Add;
 public static class MetaCiEnvVarAddEntrypoint
 {
   public static Func<string, string, string, bool, bool, string?, Task<int>> CreateHandler(
-    CommandDependencies dependencies)
+    ICommandDependencies dependencies)
   {
     return Handle;
 
-    async Task<int> Handle(string projectMetadataPath, string name, string description, bool required, bool secret,
+    async Task<int> Handle(
+      string projectMetadataPath,
+      string name,
+      string description,
+      bool required,
+      bool secret,
       string? defaultValue)
     {
       ProjectEnvironmentVariable variable = new()
@@ -24,18 +29,15 @@ public static class MetaCiEnvVarAddEntrypoint
         Required = required,
         Secret = secret
       };
+
       return (await MetaCiEnvVarAddHandling.MetaCiEnvVarAddRequest(dependencies, projectMetadataPath, variable))
         .TapSuccess(
-          variablesAdded =>
-          {
-            dependencies.StandardOutWriteLine($"Added {variable.Name}");
-          }
-        ).TapFailure(
-          exception =>
-          {
-            dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage());
-          }
-        ).ToExitCode();
+          variablesAdded => { dependencies.StandardOutWriteLine($"Added {variable.Name}"); }
+        )
+        .TapFailure(
+          exception => { dependencies.StandardErrorWriteLine(exception.ToExecutionFailureMessage()); }
+        )
+        .ToExitCode();
     }
   }
 }

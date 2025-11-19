@@ -61,6 +61,7 @@ public static class MetaVersionSetCommand
             break;
           case 1:
             tokenValue += ".0"; // Two-field version value
+
             break;
         }
       }
@@ -72,11 +73,12 @@ public static class MetaVersionSetCommand
 
       result.ErrorMessage =
         $"Invalid version format '{initialTokenValue}'. Use complete Major.Minor.Patch, e.g., '2.3.1' or '4.0.0'.";
+
       return null;
     }
   }
 
-  public static Command Create(CommandDependencies dependencies)
+  public static Command Create(ICommandDependencies dependencies)
   {
     Option<string> projectMetadata = ProjectMetadataOption.Create(dependencies);
     Option<bool> dryRun = DryRunOption.Create();

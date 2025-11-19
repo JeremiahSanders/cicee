@@ -6,11 +6,12 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using Cicee.Commands.Exec;
+using Cicee.Dependencies;
 
 using LanguageExt;
 using LanguageExt.Common;
 
-namespace Cicee.Dependencies;
+namespace Cicee.Edges.Processes;
 
 public static class ProcessHelpers
 {
@@ -74,8 +75,7 @@ public static class ProcessHelpers
     Action<string>? debugLogger = null)
   {
     return Prelude
-      .TryAsync(
-        async () =>
+      .TryAsync(async () =>
         {
           debugLogger?.Invoke(
             $"Starting process.\n  Filename: {processStartInfo.FileName}\n  Arguments: {processStartInfo.Arguments}"
@@ -128,7 +128,7 @@ public static class ProcessHelpers
   ///   Arguments which will be passed to <c>bash</c>, in the form of: <c>-c \"${ARGUMENTS}\"</c>
   /// </param>
   /// <returns></returns>
-  public static Result<ProcessStartInfo> TryCreateBashProcessStartInfo(
+  public static Result<ProcessExecRequest> TryCreateBashProcessStartInfo(
     IReadOnlyDictionary<string, string> requiredEnvironment,
     IReadOnlyDictionary<string, string> ambientEnvironment,
     string arguments)
@@ -137,10 +137,12 @@ public static class ProcessHelpers
 
     return new Result<string>(CreateProcessArguments(isWslBash))
       .Bind(ValidateArgumentsLength)
-      .Map(
-        validatedProcessArguments =>
+      .Map(validatedProcessArguments =>
         {
-          ProcessStartInfo startInfo = new(bashPath, validatedProcessArguments);
+          ProcessExecRequest startInfo = new()
+          {
+            FileName = bashPath, Arguments = validatedProcessArguments
+          };
           foreach (KeyValuePair<string, string> keyValuePair in ambientEnvironment)
           {
             startInfo.Environment[keyValuePair.Key] = keyValuePair.Value;
